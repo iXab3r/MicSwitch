@@ -1,0 +1,68 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:micSwitch="clr-namespace:MicSwitch"
+                    xmlns:eye="http://coderush.net/poeeye/">
+
+    <ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary.MergedDictionaries>
+
+    <DataTemplate DataType="{x:Type micSwitch:MicSwitchOverlayViewModel}">
+        <Grid Focusable="False">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0" Width="64" Height="64" HorizontalAlignment="Left"
+                  Opacity="{Binding Opacity}">
+                <Grid.LayoutTransform>
+                    <ScaleTransform ScaleX="{Binding ListScaleFactor}" ScaleY="{Binding ListScaleFactor}" />
+                </Grid.LayoutTransform>
+                <Image Source="{Binding Mute, Converter={StaticResource MicrophoneMuteStateToIcoConverter}}"/>
+            </Grid>
+            <Grid Grid.Row="1" DockPanel.Dock="Bottom"
+                  Visibility="{Binding IsLocked, Converter={StaticResource TrueToCollapsedFalseToVisibleConverter}}">
+                <Border Background="{StaticResource OverlayTitleBackgroundBrushKey}"
+                        BorderBrush="{StaticResource OverlayBorderBrushKey}"
+                        eye:EnableDragHelper.EnableDrag="True"></Border>
+                <Border 
+                    BorderThickness="1"
+                    Margin="3">
+                <StackPanel Orientation="Vertical">
+                    <DockPanel Margin="0,3" LastChildFill="True">
+                        <TextBlock DockPanel.Dock="Left" MinWidth="50"
+                                   TextAlignment="Right"
+                                   Text="Opacity: " />
+
+                        <Slider DockPanel.Dock="Left"
+                                Value="{Binding Opacity}"
+                                Minimum="0.1"
+                                TickFrequency="0.1"
+                                IsSnapToTickEnabled="True"
+                                Margin="10,0"
+                                Width="70"
+                                Maximum="1" />
+                    </DockPanel>
+
+                    <DockPanel Margin="0,3" LastChildFill="True">
+                        <TextBlock DockPanel.Dock="Left" MinWidth="50"
+                                   TextAlignment="Right"
+                                   Text="Scale: " />
+
+                        <Slider DockPanel.Dock="Left"
+                                Value="{Binding ListScaleFactor}"
+                                Minimum="0.5"
+                                TickFrequency="0.1"
+                                IsSnapToTickEnabled="True"
+                                Margin="10,0"
+                                Width="70"
+                                Maximum="1.5" />
+                    </DockPanel>
+
+                </StackPanel>
+            </Border>
+                
+            </Grid>
+            
+        </Grid>
+    </DataTemplate>
+</ResourceDictionary>
