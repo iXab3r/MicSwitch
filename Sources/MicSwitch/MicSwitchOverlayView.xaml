@@ -3,9 +3,6 @@
                     xmlns:micSwitch="clr-namespace:MicSwitch"
                     xmlns:eye="http://coderush.net/poeeye/">
 
-    <ResourceDictionary.MergedDictionaries>
-    </ResourceDictionary.MergedDictionaries>
-
     <DataTemplate DataType="{x:Type micSwitch:MicSwitchOverlayViewModel}">
         <Grid Focusable="False">
             <Grid.RowDefinitions>

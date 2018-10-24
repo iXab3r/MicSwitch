@@ -210,6 +210,7 @@
     <Compile Include="MicrophoneProvider.cs" />
     <Compile Include="MicSwitchConfig.cs" />
     <Compile Include="MicSwitchOverlayViewModel.cs" />
+    <Compile Include="Modularity\ConfigProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>

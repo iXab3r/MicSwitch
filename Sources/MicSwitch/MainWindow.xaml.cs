@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows.Forms;
 using DynamicData;
+using MicSwitch.Modularity;
 using PoeEye;
 using PoeShared.Modularity;
 using PoeShared.Native;
@@ -24,8 +25,7 @@ namespace MicSwitch
         {
             InitializeComponent();
 
-            AppArguments.Instance.IsDebugMode = true;
-            container.RegisterType<IConfigProvider, PoeEyeConfigProviderInMemory>();
+            container.RegisterType<IConfigProvider, ConfigProviderFromFile>();
             container.RegisterType<IMicrophoneController, MicrophoneController>();
             container.RegisterSingleton<IMicSwitchOverlayViewModel, MicSwitchOverlayViewModel>();
             
