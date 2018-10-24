@@ -34,6 +34,7 @@ namespace MicSwitch
                     throw new ApplicationException($"Failed to parse command line args: {string.Join(" ", arguments)}");
                 }
 
+
                 InitializeLogging();
                 Log.Debug($"[App..ctor] Arguments: {arguments.DumpToText()}");
                 Log.Debug($"[App..ctor] Parsed args: {AppArguments.Instance.DumpToText()}");
@@ -43,6 +44,7 @@ namespace MicSwitch
                 Log.Debug($"[App..ctor] UI Scheduler: {RxApp.MainThreadScheduler}");
                 RxApp.MainThreadScheduler = DispatcherScheduler.Current;
                 RxApp.TaskpoolScheduler = TaskPoolScheduler.Default;
+                App.Current.ShutdownMode = ShutdownMode.OnMainWindowClose;
                 Log.Debug($"[App..ctor] New UI Scheduler: {RxApp.MainThreadScheduler}");
             }
             catch (Exception ex)

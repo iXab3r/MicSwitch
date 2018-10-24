@@ -15,11 +15,13 @@ using System.Windows.Forms;
 using System.Windows.Input;
 using Common.Logging;
 using NAudio.Mixer;
+using PoeEye;
 using PoeShared;
 using PoeShared.Audio;
 using PoeShared.Modularity;
 using Prism.Commands;
 using ReactiveUI;
+using Application = System.Windows.Application;
 
 namespace MicSwitch
 {
@@ -138,7 +140,7 @@ namespace MicSwitch
             {
                 Log.Debug($"Closing application");
                 configProvider.Save(configProvider.ActualConfig);
-                Environment.Exit(0);
+                Application.Current.Shutdown();
             });
 
             this.WhenAnyValue(x => x.WindowState)
@@ -148,7 +150,7 @@ namespace MicSwitch
             ShowAppCommand = new DelegateCommand(() => { WindowState = WindowState.Normal; });
             
             var executingAssembly = Assembly.GetExecutingAssembly();
-            Title = $"{executingAssembly.GetName().Name} v{executingAssembly.GetName().Version}";
+            Title = $"{(AppArguments.Instance.IsDebugMode ? "[D]" : "")} {executingAssembly.GetName().Name} v{executingAssembly.GetName().Version}";
         }
 
         public ReadOnlyObservableCollection<MicrophoneLineData> Microphones { get; }

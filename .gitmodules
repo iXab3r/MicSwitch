@@ -1,0 +1,4 @@
+[submodule "Submodules/PoeEye"]
+	path = Submodules/PoeEye
+	url = https://github.com/iXab3r/PoeEye.git
+	branch = MicSwitch
