@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Windows.Forms;
 using DynamicData;
 using MicSwitch.Modularity;
@@ -31,16 +32,12 @@ namespace MicSwitch
             
             container.AddExtension(new CommonRegistrations());
 
-            var micSwitchOverlayDependencyName = "MicSwitchOverlay";
+            var micSwitchOverlayDependencyName = "MicSwitchOverlayAllWindows";
             container.RegisterOverlayController(micSwitchOverlayDependencyName, micSwitchOverlayDependencyName);
 
             var matcher = new RegexStringMatcher()
                 .AddToWhitelist(".*");
-            container
-                .RegisterType<IWindowTracker>(
-                    micSwitchOverlayDependencyName,
-                    new ContainerControlledLifetimeManager(),
-                    new InjectionFactory(unity => unity.Resolve<WindowTracker>(new DependencyOverride<IStringMatcher>(matcher))));
+            container.RegisterWindowTracker(micSwitchOverlayDependencyName, matcher);
 
             var overlayController = container.Resolve<IOverlayWindowController>(micSwitchOverlayDependencyName);
             var overlayViewModelFactory = container.Resolve<IFactory<IMicSwitchOverlayViewModel, IOverlayWindowController>>();

@@ -57,6 +57,10 @@
       <HintPath>..\packages\Unity.5.8.11\lib\net46\CommonServiceLocator.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="ControlzEx, Version=3.0.2.4, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\packages\ControlzEx.3.0.2.4\lib\net45\ControlzEx.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="DynamicData, Version=6.5.1.2479, Culture=neutral, PublicKeyToken=null">
       <HintPath>..\packages\DynamicData.6.5.1.2479\lib\net46\DynamicData.dll</HintPath>
       <Private>True</Private>
@@ -146,7 +150,7 @@
     <Reference Include="System.Windows" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
-      <HintPath>..\packages\MahApps.Metro.1.4.3\lib\net45\System.Windows.Interactivity.dll</HintPath>
+      <HintPath>..\packages\ControlzEx.3.0.2.4\lib\net45\System.Windows.Interactivity.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Xml" />
@@ -190,6 +194,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="WPF\Hotkeys\HotkeyGesture.cs" />
+    <Compile Include="WPF\Hotkeys\HotkeyBox.cs" />
+    <Compile Include="WPF\Hotkeys\HotkeyConverter.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -205,6 +212,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="MicSwitchOverlayView.xaml" />
+    <Page Include="Themes\HotKeyBox.xaml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MainWindowViewModel.cs" />

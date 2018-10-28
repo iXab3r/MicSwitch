@@ -9,6 +9,8 @@ namespace MicSwitch
         public bool IsPushToTalkMode { get; set; }
         
         public MicrophoneLineData MicrophoneLineId { get; set; }
+
+        public string MicrophoneHotkey { get; set; }
         
         public int Version { get; set; } = 1;
         

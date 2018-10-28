@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicSwitch", "MicSwitch\MicS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoeShared", "PoeShared\PoeShared.csproj", "{12DF53DD-7144-4D2D-B7A1-B4BC5BBDFB69}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicSwitch.Tests", "MicSwitch.Tests\MicSwitch.Tests.csproj", "{310144FC-DB75-4DBD-BE58-BDE9FBC22F41}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{12DF53DD-7144-4D2D-B7A1-B4BC5BBDFB69}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{12DF53DD-7144-4D2D-B7A1-B4BC5BBDFB69}.Release|Any CPU.ActiveCfg = Debug|Any CPU
 		{12DF53DD-7144-4D2D-B7A1-B4BC5BBDFB69}.Release|Any CPU.Build.0 = Debug|Any CPU
+		{310144FC-DB75-4DBD-BE58-BDE9FBC22F41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{310144FC-DB75-4DBD-BE58-BDE9FBC22F41}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{310144FC-DB75-4DBD-BE58-BDE9FBC22F41}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{310144FC-DB75-4DBD-BE58-BDE9FBC22F41}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

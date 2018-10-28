@@ -14,7 +14,9 @@
                 <Grid.LayoutTransform>
                     <ScaleTransform ScaleX="{Binding ListScaleFactor}" ScaleY="{Binding ListScaleFactor}" />
                 </Grid.LayoutTransform>
-                <Image Source="{Binding Mute, Converter={StaticResource MicrophoneMuteStateToIcoConverter}}"/>
+                <Image 
+                    RenderOptions.BitmapScalingMode="HighQuality"
+                    Source="{Binding Mute, Converter={StaticResource MicrophoneMuteStateToImageConverter}}"/>
             </Grid>
             <Grid Grid.Row="1" DockPanel.Dock="Bottom"
                   Visibility="{Binding IsLocked, Converter={StaticResource TrueToCollapsedFalseToVisibleConverter}}">
@@ -52,7 +54,7 @@
                                 IsSnapToTickEnabled="True"
                                 Margin="10,0"
                                 Width="70"
-                                Maximum="1.5" />
+                                Maximum="2" />
                     </DockPanel>
 
                 </StackPanel>

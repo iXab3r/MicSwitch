@@ -19,4 +19,17 @@
             </converters:Mapping.To>
         </converters:Mapping>
     </converters:MapConverter>
+    
+    <converters:MapConverter x:Key="MicrophoneMuteStateToImageConverter" FallbackBehavior="ReturnUnsetValue">
+        <converters:Mapping From="{StaticResource FalseValue}">
+            <converters:Mapping.To>
+                <BitmapImage UriSource="../Resources/microphoneEnabled.png"/>
+            </converters:Mapping.To>
+        </converters:Mapping>
+        <converters:Mapping From="{StaticResource TrueValue}">
+            <converters:Mapping.To>
+                <BitmapImage UriSource="../Resources/microphoneDisabled.png"/>
+            </converters:Mapping.To>
+        </converters:Mapping>
+    </converters:MapConverter>
 </ResourceDictionary>
