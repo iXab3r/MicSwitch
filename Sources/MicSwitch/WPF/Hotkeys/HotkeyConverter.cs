@@ -7,7 +7,7 @@ using System.Windows.Input;
 
 namespace MicSwitch.WPF.Hotkeys
 {
-    public class HotkeyConverter : TypeConverter
+    public class HotkeyConverter : System.ComponentModel.TypeConverter
     {
         private const char ModifiersDelimiter = '+';
         private static readonly KeyConverter KeyConverter = new KeyConverter();

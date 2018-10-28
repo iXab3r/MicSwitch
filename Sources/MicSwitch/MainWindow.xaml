@@ -1,149 +1,139 @@
 ﻿<controls:MetroWindow x:Class="MicSwitch.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:micSwitch="clr-namespace:MicSwitch"
-        xmlns:tb="http://www.hardcodet.net/taskbar"
-        xmlns:converters="http://schemas.kent.boogaart.com/converters"
-        xmlns:blue="http://www.nuget.org/Blue.MVVM"
-        xmlns:hotkeys="clr-namespace:MicSwitch.WPF.Hotkeys"
-        xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
-        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-        xmlns:fa="http://schemas.fontawesome.io/icons/"
-        mc:Ignorable="d"
-        d:DataContext="{d:DesignInstance micSwitch:MainWindowViewModel}"
-        WindowState="{Binding WindowState}"
-        WindowStartupLocation="CenterScreen"
-        ResizeMode="CanMinimize"
-        WindowStyle="SingleBorderWindow"
-        ShowInTaskbar="{Binding ShowInTaskbar, Mode=TwoWay}"
-        Title="{Binding Title}" Width="350" SizeToContent="Height">
-        <Window.Resources>
-        </Window.Resources>
-        
-        <Window.Icon>
-                <Binding Path="MicrophoneMuted" Converter="{StaticResource MicrophoneMuteStateToIcoConverter}"/>
-        </Window.Icon>
-        
-        <controls:MetroWindow.LeftWindowCommands>
-                <controls:WindowCommands ShowSeparators="True">
-                        <Button
-                                fa:Awesome.Content="FolderOpen"
-                                FontFamily="{StaticResource FontAwesome}"
-                                Margin="5,0"
-                                FontWeight="Bold"
-                                ToolTip="Open PoeEye folder"
-                                Command="{Binding OpenAppDataDirectoryCommand}" />
-                </controls:WindowCommands>
+                      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                      xmlns:micSwitch="clr-namespace:MicSwitch"
+                      xmlns:tb="http://www.hardcodet.net/taskbar"
+                      xmlns:blue="http://www.nuget.org/Blue.MVVM"
+                      xmlns:hotkeys="clr-namespace:MicSwitch.WPF.Hotkeys"
+                      xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
+                      xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+                      xmlns:fa="http://schemas.fontawesome.io/icons/"
+                      mc:Ignorable="d"
+                      d:DataContext="{d:DesignInstance micSwitch:MainWindowViewModel}"
+                      WindowState="{Binding WindowState}"
+                      WindowStartupLocation="CenterScreen"
+                      ResizeMode="CanMinimize"
+                      WindowStyle="SingleBorderWindow"
+                      ShowInTaskbar="{Binding ShowInTaskbar, Mode=TwoWay}"
+                      Title="{Binding Title}" Width="350" SizeToContent="Height">
+    <Window.Resources>
+    </Window.Resources>
 
-        </controls:MetroWindow.LeftWindowCommands>
-        <DockPanel>
-                <tb:TaskbarIcon Visibility="{Binding TrayIconVisibility, Mode=TwoWay}"
-                                ToolTipText="{Binding Title}"
-                                LeftClickCommand="{Binding ShowAppCommand}"
-                                DoubleClickCommand="{Binding ShowAppCommand}">
-                        <tb:TaskbarIcon.IconSource>
-                                <Binding Path="MicrophoneMuted" Converter="{StaticResource MicrophoneMuteStateToIcoConverter}"/>
-                        </tb:TaskbarIcon.IconSource>
-                        <tb:TaskbarIcon.ContextMenu>
-                                <ContextMenu >
-                                        <MenuItem Header="Show main window" Command="{Binding ShowAppCommand}"/>
-                                        <Separator/>
-                                        <MenuItem Header="Exit app" Command="{Binding ExitAppCommand}"/>
-                                </ContextMenu>
-                        </tb:TaskbarIcon.ContextMenu>
-                </tb:TaskbarIcon>
-                
-                <GroupBox DockPanel.Dock="Top" 
-                        Header="Microphone line"
-                        Style="{DynamicResource MaterialDesignGroupBox}"
-                        Margin="3"
-                        materialDesign:ColorZoneAssist.Mode="Accent"
-                        materialDesign:ShadowAssist.ShadowDepth="Depth3"
-                        BorderThickness="1">
-                        <DockPanel>
-                                <ComboBox DockPanel.Dock="Top" 
-                                          ItemsSource="{Binding Microphones}" 
-                                          SelectedItem="{Binding MicrophoneLine}"
-                                          DisplayMemberPath="Name"></ComboBox>
-                                <DockPanel DockPanel.Dock="Top" Margin="0,3" LastChildFill="True">
-                                        <TextBlock DockPanel.Dock="Left" MinWidth="100"
-                                                   TextAlignment="Right"
-                                                   Text="Volume: " />
+    <Window.Icon>
+        <Binding Path="MicrophoneMuted" Converter="{StaticResource MicrophoneMuteStateToIcoConverter}" />
+    </Window.Icon>
 
-                                        <TextBlock DockPanel.Dock="Right"
-                                                   MinWidth="50"
-                                                   TextAlignment="Left"
-                                                   Margin="5,0">
-                                                <TextBlock.Text>
-                                                        <Binding Path="MicrophoneVolume" StringFormat="{}{0:F1}%">
-                                                                <Binding.Converter>
-                                                                        <blue:MultiplyDoubleConverter MinValue="0" 
-                                                                                                      Factor="100"
-                                                                                                      MaxValue="100" />
-                                                                </Binding.Converter>
-                                                        </Binding>
-                                                </TextBlock.Text>
-                                        </TextBlock>
+    <controls:MetroWindow.LeftWindowCommands>
+        <controls:WindowCommands ShowSeparators="True">
+            <Button
+                fa:Awesome.Content="FolderOpen"
+                FontFamily="{StaticResource FontAwesome}"
+                Margin="5,0"
+                FontWeight="Bold"
+                ToolTip="Open PoeEye folder"
+                Command="{Binding OpenAppDataDirectoryCommand}" />
+        </controls:WindowCommands>
 
-                                        <Slider DockPanel.Dock="Left"
-                                                Value="{Binding MicrophoneVolume}"
-                                                Minimum="0" Maximum="1"
-                                                TickFrequency="0.1"
-                                                Width="100" />
-                                </DockPanel>
-                
-                                <DockPanel DockPanel.Dock="Top" Margin="0,3" LastChildFill="True">
-                                        <TextBlock DockPanel.Dock="Left" MinWidth="100"
-                                                   TextAlignment="Right"
-                                                   Text="Mute: " />
-                                        <ToggleButton
-                                                DockPanel.Dock="Left" HorizontalAlignment="Left"
-                                                IsChecked="{Binding MicrophoneMuted}" />
-                                </DockPanel>
-                        </DockPanel>
-                </GroupBox>
+    </controls:MetroWindow.LeftWindowCommands>
+    <DockPanel>
+        <tb:TaskbarIcon Visibility="{Binding TrayIconVisibility, Mode=TwoWay}"
+                        ToolTipText="{Binding Title}"
+                        LeftClickCommand="{Binding ShowAppCommand}"
+                        DoubleClickCommand="{Binding ShowAppCommand}">
+            <tb:TaskbarIcon.IconSource>
+                <Binding Path="MicrophoneMuted" Converter="{StaticResource MicrophoneMuteStateToIcoConverter}" />
+            </tb:TaskbarIcon.IconSource>
+            <tb:TaskbarIcon.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Show main window" Command="{Binding ShowAppCommand}" />
+                    <Separator />
+                    <MenuItem Header="Exit app" Command="{Binding ExitAppCommand}" />
+                </ContextMenu>
+            </tb:TaskbarIcon.ContextMenu>
+        </tb:TaskbarIcon>
 
-                <GroupBox DockPanel.Dock="Top" 
-                        Header="Hotkey settings"
-                        Style="{DynamicResource MaterialDesignGroupBox}"
-                        Margin="3"
-                        materialDesign:ColorZoneAssist.Mode="Accent"
-                        materialDesign:ShadowAssist.ShadowDepth="Depth1"
-                        BorderThickness="1">
-                        <DockPanel>
-                                <DockPanel DockPanel.Dock="Top" Margin="0,3" LastChildFill="True">
-                                        <TextBlock DockPanel.Dock="Left" MinWidth="100"
-                                                   TextAlignment="Right"
-                                                   Text="Push-to-talk: " />
-                                        <ToggleButton
-                                                DockPanel.Dock="Left" HorizontalAlignment="Left"
-                                                IsChecked="{Binding IsPushToTalkMode}" />
-                                </DockPanel>
-                
-                                <DockPanel DockPanel.Dock="Top" Margin="0,3" LastChildFill="True">
-                                        <TextBlock DockPanel.Dock="Left" MinWidth="100"
-                                                   TextAlignment="Right"
-                                                   Text="Hotkey: " />
-                                        <hotkeys:HotKeyBox HotKey="{Binding Hotkey}"/>
-                                </DockPanel>
-                        </DockPanel>
-                </GroupBox>
-                
-                <Button DockPanel.Dock="Top" Command="{Binding ToggleOverlayLockCommand}"
-                        Margin="3">
-                        <Button.Content>
-                                <Grid>
-                                        <TextBlock Text="&#xf09c; Unlock overlay" 
-                                                   Visibility="{Binding Overlay.IsLocked, Converter={StaticResource TrueToVisibleFalseToCollapsedConverter}}"/>
-                                        <TextBlock Text="&#xf023; Lock overlay" 
-                                                   Visibility="{Binding Overlay.IsLocked, Converter={StaticResource TrueToCollapsedFalseToVisibleConverter}}"/>
-                                </Grid>
-                        </Button.Content>
-                </Button>
+        <DockPanel DockPanel.Dock="Top" Margin="3">
+            <ComboBox DockPanel.Dock="Top"
+                      ItemsSource="{Binding Microphones}"
+                      SelectedItem="{Binding MicrophoneLine}"
+                      DisplayMemberPath="Name" />
+            <DockPanel DockPanel.Dock="Top" Margin="0,3" LastChildFill="True">
+                <TextBlock DockPanel.Dock="Left" MinWidth="100"
+                           TextAlignment="Right"
+                           Text="Volume: " />
 
-                <Label Padding="0"/>
+                <TextBlock DockPanel.Dock="Right"
+                           MinWidth="50"
+                           TextAlignment="Left"
+                           Margin="5,0">
+                    <TextBlock.Text>
+                        <Binding Path="MicrophoneVolume" StringFormat="{}{0:F1}%">
+                            <Binding.Converter>
+                                <blue:MultiplyDoubleConverter MinValue="0"
+                                                              Factor="100"
+                                                              MaxValue="100" />
+                            </Binding.Converter>
+                        </Binding>
+                    </TextBlock.Text>
+                </TextBlock>
+
+                <Slider DockPanel.Dock="Left"
+                        Value="{Binding MicrophoneVolume}"
+                        Minimum="0" Maximum="1"
+                        TickFrequency="0.1"
+                        Width="100" />
+            </DockPanel>
+
+            <DockPanel DockPanel.Dock="Top" Margin="0,3" LastChildFill="True">
+                <TextBlock DockPanel.Dock="Left" MinWidth="100"
+                           TextAlignment="Right"
+                           Text="Mute: " />
+                <ToggleButton
+                    DockPanel.Dock="Left" HorizontalAlignment="Left"
+                    IsChecked="{Binding MicrophoneMuted}" />
+            </DockPanel>
         </DockPanel>
-</controls:MetroWindow>
 
+        <GroupBox DockPanel.Dock="Top"
+                  Header="Hotkey settings"
+                  Style="{DynamicResource MaterialDesignGroupBox}"
+                  Margin="3"
+                  materialDesign:ColorZoneAssist.Mode="Accent"
+                  materialDesign:ShadowAssist.ShadowDepth="Depth1"
+                  BorderThickness="1">
+            <DockPanel>
+                <DockPanel DockPanel.Dock="Top" Margin="0,3" LastChildFill="True">
+                    <TextBlock DockPanel.Dock="Left" MinWidth="100"
+                               TextAlignment="Right"
+                               Text="Push-to-talk: " />
+                    <ToggleButton
+                        DockPanel.Dock="Left" HorizontalAlignment="Left"
+                        IsChecked="{Binding IsPushToTalkMode}" />
+                </DockPanel>
+
+                <DockPanel DockPanel.Dock="Top" Margin="0,3" LastChildFill="True">
+                    <TextBlock DockPanel.Dock="Left" MinWidth="100"
+                               TextAlignment="Right"
+                               Text="Hotkey: " />
+                    <hotkeys:HotKeyBox HotKey="{Binding Hotkey}" />
+                </DockPanel>
+            </DockPanel>
+        </GroupBox>
+
+        <Button DockPanel.Dock="Top" Command="{Binding ToggleOverlayLockCommand}"
+                Margin="3">
+            <Button.Content>
+                <Grid>
+                    <TextBlock Text="&#xf09c; Unlock overlay"
+                               Visibility="{Binding Overlay.IsLocked, Converter={StaticResource TrueToVisibleFalseToCollapsedConverter}}" />
+                    <TextBlock Text="&#xf023; Lock overlay"
+                               Visibility="{Binding Overlay.IsLocked, Converter={StaticResource TrueToCollapsedFalseToVisibleConverter}}" />
+                </Grid>
+            </Button.Content>
+        </Button>
+
+        <Label Padding="0" />
+    </DockPanel>
+</controls:MetroWindow>
