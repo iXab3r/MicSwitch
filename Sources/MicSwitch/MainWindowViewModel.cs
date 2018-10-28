@@ -268,7 +268,7 @@ namespace MicSwitch
         
         private async Task OpenAppDataDirectory()
         {
-            await Task.Run(() => Process.Start(ExplorerExecutablePath, AppArguments.AppDomainDirectory));
+            await Task.Run(() => Process.Start(ExplorerExecutablePath, AppArguments.Instance.AppDataDirectory));
         }
     }
 }

@@ -17,7 +17,7 @@ namespace MicSwitch.Modularity
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(ConfigProviderFromFile));
 
-        private static readonly string ConfigFileDirectory = Path.Combine(AppArguments.AppDomainDirectory, "config");
+        private static readonly string ConfigFileDirectory = Path.Combine(AppArguments.Instance.AppDataDirectory);
 
         private static readonly string DebugConfigFileName = @"configDebugMode.cfg";
         private static readonly string ReleaseConfigFileName = @"config.cfg";

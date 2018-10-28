@@ -27,15 +27,16 @@ namespace MicSwitch
             try
             {
                 var arguments = Environment.GetCommandLineArgs();
+                AppArguments.Instance.AppName = "MicSwitch";
 
                 if (!AppArguments.Parse(arguments))
                 {
-                    SharedLog.Instance.InitializeLogging("Startup");
+                    SharedLog.Instance.InitializeLogging("Startup", AppArguments.Instance.AppName);
                     throw new ApplicationException($"Failed to parse command line args: {string.Join(" ", arguments)}");
                 }
 
-
                 InitializeLogging();
+
                 Log.Debug($"[App..ctor] Arguments: {arguments.DumpToText()}");
                 Log.Debug($"[App..ctor] Parsed args: {AppArguments.Instance.DumpToText()}");
                 Log.Debug($"[App..ctor] Culture: {Thread.CurrentThread.CurrentCulture}, UICulture: {Thread.CurrentThread.CurrentUICulture}");
@@ -110,11 +111,11 @@ namespace MicSwitch
             RxApp.DefaultExceptionHandler = SharedLog.Instance.Errors;
             if (AppArguments.Instance.IsDebugMode)
             {
-                SharedLog.Instance.InitializeLogging("Debug");
+                SharedLog.Instance.InitializeLogging("Debug", AppArguments.Instance.AppName);
             }
             else
             {
-                SharedLog.Instance.InitializeLogging("Release");
+                SharedLog.Instance.InitializeLogging("Release", AppArguments.Instance.AppName);
             }
         }
 
