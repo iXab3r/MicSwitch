@@ -13,6 +13,7 @@ void Main()
 	var nuspecFileName = $"{appName}.nuspec";
 	var nuspecFilePath = Path.Combine(homeDir, nuspecFileName);
 	var version = GetSpecVersion(nuspecFilePath);
+	version.Dump("NuSpec version");
 
 	var nupkgFileName = $@"{appName}.{version}.nupkg";
 	var nupkgFilePath = Path.Combine(scriptDir, nupkgFileName);
