@@ -325,13 +325,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="AppReadme\Compare-NET-Objects-Help.chm" />
     <None Include="packages.config" />
     <None Include="Resources\Currencies\Orb_of_Annulment_inventory_icon.png" />
     <Page Include="Themes\Converters.xaml" />
     <Page Include="Themes\Generic.xaml" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+  <ItemGroup>
     <ProjectReference Include="..\PoeShared\PoeShared.csproj">
       <Project>{12df53dd-7144-4d2d-b7a1-b4bc5bbdfb69}</Project>
       <Name>PoeShared</Name>
