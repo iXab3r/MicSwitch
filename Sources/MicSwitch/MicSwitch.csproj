@@ -141,10 +141,6 @@
       <HintPath>..\packages\Newtonsoft.Json.8.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="PoeShared, Version=0.0.618.0, Culture=neutral, PublicKeyToken=null" Condition=" '$(Configuration)' == 'Release' ">
-      <HintPath>..\packages\PoeShared.0.0.618\lib\net461\PoeShared.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="Prism, Version=7.1.0.172, Culture=neutral, PublicKeyToken=40ee6c3a2184dc59">
       <HintPath>..\packages\Prism.Core.7.1.0.172-pre\lib\net45\Prism.dll</HintPath>
       <Private>True</Private>
