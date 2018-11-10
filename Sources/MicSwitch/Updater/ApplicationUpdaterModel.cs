@@ -96,7 +96,7 @@ namespace MicSwitch.Updater
                 }
 
                 MostRecentVersionAppFolder = new DirectoryInfo(newVersionFolder);
-                UpdatedVersion = lastAppliedRelease.Version;
+                UpdatedVersion = lastAppliedRelease.Version.Version;
                 LatestVersion = null;
             }
         }
