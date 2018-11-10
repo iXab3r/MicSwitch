@@ -16,7 +16,11 @@ void Main()
 	var nupkgFilePath = Path.Combine(scriptDir, nupkgFileName);
 
 	var releasesFolderName = "Releases";
-	var squirrelPath = Path.Combine(homeDir, $@"packages\squirrel.windows.1.0.2\tools\Squirrel.exe");
+	var squirrelPath = Path.Combine(homeDir, $@"packages\squirrel.windows.1.9.0\tools\Squirrel.exe");
+	if (!File.Exists(squirrelPath))
+	{
+		throw new FileNotFoundException($@"Squirrel executable not found '{squirrelPath}' !");
+	}
 	var squirrelLogPath = Path.Combine(Path.GetDirectoryName(squirrelPath), "SquirrelSetup.log");
 
 	var sourceReleasesFolderPath = Path.Combine(Path.GetDirectoryName(squirrelPath), releasesFolderName);
