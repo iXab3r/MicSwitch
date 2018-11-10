@@ -4,6 +4,8 @@
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="pack://application:,,,/PoeShared;component/Themes/Styles.xaml" />
         <ResourceDictionary Source="pack://application:,,,/MicSwitch;component/Themes/HotKeyBox.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/MicSwitch;component/Updater/ApplicationUpdaterView.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/MicSwitch;component/MicSwitchOverlayView.xaml" />
         <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/materialdesigntheme.togglebutton.xaml" />
     </ResourceDictionary.MergedDictionaries>
 

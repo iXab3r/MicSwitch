@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Windows.Forms;
 using DynamicData;
 using MicSwitch.Modularity;
+using MicSwitch.Updater;
 using PoeEye;
 using PoeShared.Modularity;
 using PoeShared.Native;
@@ -28,6 +29,7 @@ namespace MicSwitch
 
             container.RegisterType<IConfigProvider, ConfigProviderFromFile>();
             container.RegisterType<IMicrophoneController, MicrophoneController>();
+            container.RegisterType<IApplicationUpdaterModel, ApplicationUpdaterModel>();
             container.RegisterSingleton<IMicSwitchOverlayViewModel, MicSwitchOverlayViewModel>();
             
             container.AddExtension(new CommonRegistrations());

@@ -18,6 +18,7 @@ using System.Windows.Input;
 using Common.Logging;
 using DynamicData.Binding;
 using MahApps.Metro.Controls;
+using MicSwitch.Updater;
 using MicSwitch.WPF.Hotkeys;
 using NAudio.Mixer;
 using PoeEye;
@@ -53,11 +54,13 @@ namespace MicSwitch
             [NotNull] IMicrophoneController microphoneController,
             [NotNull] IMicSwitchOverlayViewModel overlay,
             [NotNull] IAudioNotificationsManager audioNotificationsManager,
+            [NotNull] ApplicationUpdaterViewModel appUpdater,
             [NotNull] [Dependency(WellKnownWindows.MainWindow)] IWindowTracker mainWindowTracker,
             [NotNull] IConfigProvider<MicSwitchConfig> configProvider)
         {
             this.microphoneController = microphoneController;
-            
+
+            this.ApplicationUpdater = appUpdater;
             this.mainWindowTracker = mainWindowTracker;
             this.BindPropertyTo(x => x.IsActive, mainWindowTracker, x => x.IsActive).AddTo(Anchors);
             
@@ -265,6 +268,8 @@ namespace MicSwitch
             get => microphoneController.Mute ?? false;
             set => microphoneController.Mute = value;
         }
+        
+        public ApplicationUpdaterViewModel ApplicationUpdater { get; }
         
         private async Task OpenAppDataDirectory()
         {
