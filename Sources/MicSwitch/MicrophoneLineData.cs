@@ -2,6 +2,8 @@
 {
     internal sealed class MicrophoneLineData
     {
+        public static readonly MicrophoneLineData Empty = new MicrophoneLineData(){ Name = "Not selected" };
+        
         public string LineId { get; set; }
         
         public string Name { get; set; }

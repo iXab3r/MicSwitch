@@ -1,18 +1,10 @@
-﻿using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Windows.Forms;
-using DynamicData;
-using MicSwitch.Modularity;
+﻿using MicSwitch.Modularity;
 using MicSwitch.Updater;
-using PoeEye;
 using PoeShared.Modularity;
 using PoeShared.Native;
 using PoeShared.Prism;
 using PoeShared.Scaffolding;
 using Unity;
-using Unity.Injection;
-using Unity.Lifetime;
-using Unity.Resolution;
 
 namespace MicSwitch
 {
@@ -46,7 +38,7 @@ namespace MicSwitch
             var overlayViewModel = overlayViewModelFactory.Create(overlayController);
             overlayController.RegisterChild(overlayViewModel);
 
-            this.DataContext = container.Resolve<MainWindowViewModel>();
+            DataContext = container.Resolve<MainWindowViewModel>();
         }
     }
 }

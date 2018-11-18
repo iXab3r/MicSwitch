@@ -1,0 +1,9 @@
+﻿namespace MicSwitch
+{
+    internal struct TwoStateNotification
+    {
+        public string On { get; set; }
+        
+        public string Off { get; set; }
+    }
+}

@@ -283,6 +283,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="TwoStateNotification.cs" />
     <Compile Include="Updater\ApplicationUpdaterModel.cs" />
     <Compile Include="Updater\ApplicationUpdaterViewModel.cs" />
     <Compile Include="Updater\BasicAuthFileDownloader.cs" />
@@ -333,7 +334,6 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
-    <None Include="Resources\Currencies\Orb_of_Annulment_inventory_icon.png" />
     <Page Include="Themes\Converters.xaml" />
     <Page Include="Themes\Generic.xaml" />
   </ItemGroup>

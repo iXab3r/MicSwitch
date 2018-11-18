@@ -9,8 +9,6 @@
                       xmlns:hotkeys="clr-namespace:MicSwitch.WPF.Hotkeys"
                       xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
                       xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-                      xmlns:fa="http://schemas.fontawesome.io/icons/"
-                      xmlns:updater="clr-namespace:MicSwitch.Updater"
                       xmlns:eye="http://coderush.net/poeeye/"
                       mc:Ignorable="d"
                       d:DataContext="{d:DesignInstance micSwitch:MainWindowViewModel}"
@@ -39,7 +37,7 @@
                 </tb:TaskbarIcon.ContextMenu>
             </tb:TaskbarIcon>
 
-            <DockPanel DockPanel.Dock="Top" Margin="3">
+            <DockPanel DockPanel.Dock="Top" Margin="3" LastChildFill="True">
                 <ComboBox DockPanel.Dock="Top"
                           ItemsSource="{Binding Microphones}"
                           SelectedItem="{Binding MicrophoneLine}"
@@ -67,8 +65,8 @@
                     <Slider DockPanel.Dock="Left"
                             Value="{Binding MicrophoneVolume}"
                             Minimum="0" Maximum="1"
-                            TickFrequency="0.1"
-                            Width="100" />
+                            Margin="5,0"
+                            TickFrequency="0.1" />
                 </DockPanel>
 
                 <DockPanel DockPanel.Dock="Top" Margin="0,3" LastChildFill="True">
@@ -78,6 +76,24 @@
                     <ToggleButton
                         DockPanel.Dock="Left" HorizontalAlignment="Left"
                         IsChecked="{Binding MicrophoneMuted}" />
+                </DockPanel>
+                
+                <DockPanel DockPanel.Dock="Top" Margin="0,3" LastChildFill="False">
+                    <TextBlock DockPanel.Dock="Left" MinWidth="100"
+                               TextAlignment="Right"
+                               Text="Notification: " />
+                    <TextBlock DockPanel.Dock="Left" MinWidth="100"
+                               TextAlignment="Right"
+                               Text="when muted " />
+                    <ContentPresenter
+                        DockPanel.Dock="Left" HorizontalAlignment="Left"
+                        Content="{Binding AudioSelectorWhenMuted}" />
+                    <TextBlock DockPanel.Dock="Left" 
+                               TextAlignment="Right"
+                               Text="when un-muted " />
+                    <ContentPresenter
+                        DockPanel.Dock="Left" HorizontalAlignment="Left"
+                        Content="{Binding AudioSelectorWhenUnmuted}" />
                 </DockPanel>
             </DockPanel>
 

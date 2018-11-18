@@ -24,6 +24,8 @@ using NAudio.Mixer;
 using PoeEye;
 using PoeShared;
 using PoeShared.Audio;
+using PoeShared.Audio.Services;
+using PoeShared.Audio.ViewModels;
 using PoeShared.Modularity;
 using PoeShared.Prism;
 using PoeShared.Scaffolding.WPF;
@@ -54,6 +56,7 @@ namespace MicSwitch
             [NotNull] IMicrophoneController microphoneController,
             [NotNull] IMicSwitchOverlayViewModel overlay,
             [NotNull] IAudioNotificationsManager audioNotificationsManager,
+            [NotNull] IFactory<IAudioNotificationSelectorViewModel> audioSelectorFactory,
             [NotNull] ApplicationUpdaterViewModel appUpdater,
             [NotNull] [Dependency(WellKnownWindows.MainWindow)] IWindowTracker mainWindowTracker,
             [NotNull] IConfigProvider<MicSwitchConfig> configProvider)
@@ -63,7 +66,23 @@ namespace MicSwitch
             this.ApplicationUpdater = appUpdater;
             this.mainWindowTracker = mainWindowTracker;
             this.BindPropertyTo(x => x.IsActive, mainWindowTracker, x => x.IsActive).AddTo(Anchors);
+
+            AudioSelectorWhenMuted = audioSelectorFactory.Create();
+            AudioSelectorWhenUnmuted = audioSelectorFactory.Create();
+
+            Observable.Merge(
+                    AudioSelectorWhenMuted.ObservableForProperty(x => x.SelectedValue, skipInitial: true),
+                    AudioSelectorWhenUnmuted.ObservableForProperty(x => x.SelectedValue, skipInitial: true))
+                .Subscribe(() => this.RaisePropertyChanged(nameof(AudioNotification)), Log.HandleException)
+                .AddTo(Anchors);
             
+            configProvider.ListenTo(x => x.Notification)
+                .Subscribe(cfg =>
+                {
+                    Log.Debug($"Applying new notification configuration: {cfg.DumpToTextRaw()} (current: {AudioNotification.DumpToTextRaw()})");
+                    AudioNotification = cfg;
+                }, Log.HandleException)
+                .AddTo(Anchors);
             Overlay = overlay;
             
             this.BindPropertyTo(x => x.MicrophoneVolume, microphoneController, x => x.VolumePercent).AddTo(Anchors);
@@ -77,26 +96,37 @@ namespace MicSwitch
                 .DistinctUntilChanged()
                 .Where(x => MicrophoneLine != null)
                 .Skip(1) // skip initial setup
-                .Subscribe(x => { audioNotificationsManager.PlayNotification(x.Value ? "beep300" : "beep750"); })
+                .Subscribe(x =>
+                {
+                    var cfg = configProvider.ActualConfig.Notification;
+                    var notificationToPlay = x.Value ? cfg.On : cfg.Off;
+                    Log.Debug($"Playing notification {notificationToPlay} (cfg: {cfg.DumpToTextRaw()})");
+                    audioNotificationsManager.PlayNotification(notificationToPlay);
+                }, Log.HandleUiException)
                 .AddTo(Anchors);
             
             this.WhenAnyValue(x => x.MicrophoneLine)
                 .DistinctUntilChanged()
                 .Where(x => MicrophoneLine != null)
-                .Subscribe(x => microphoneController.LineId = x)
+                .Subscribe(x => microphoneController.LineId = x, Log.HandleException)
                 .AddTo(Anchors);
 
             Observable.Merge(
                     configProvider.ListenTo(x => x.MicrophoneLineId).ToUnit(),
-                    Microphones.ToObservableChangeSet().ToUnit()
-                    )
-                .Select(x => configProvider.ActualConfig.MicrophoneLineId)
-                .Where(x => x != null && !x.Equals(MicrophoneLine))
-                .Select(x => Microphones.FirstOrDefault(line => line.Equals(x)))
-                .Subscribe(x =>
+                    Microphones.ToObservableChangeSet().ToUnit())
+                .Select(_ => configProvider.ActualConfig.MicrophoneLineId)
+                .Subscribe(configLineId =>
                 {
-                    MicrophoneLine = x;
-                })
+                    Log.Debug($"Microphone line configuration changed: {configLineId??MicrophoneLineData.Empty}, known lines: {Microphones.DumpToTextRaw()}");
+
+                    var micLine = Microphones.FirstOrDefault(line => line.Equals(configLineId));
+                    if (micLine == null)
+                    {
+                        Log.Debug($"Selecting first one of available microphone lines, known lines: {Microphones.DumpToTextRaw()}");
+                        micLine = Microphones.FirstOrDefault();
+                    }
+                    MicrophoneLine = micLine;
+                }, Log.HandleException)
                 .AddTo(Anchors);
 
             configProvider.ListenTo(x => x.MicrophoneHotkey)
@@ -179,7 +209,7 @@ namespace MicSwitch
             });
 
             this.WhenAnyValue(x => x.WindowState)
-                .Subscribe(x => ShowInTaskbar = x != WindowState.Minimized)
+                .Subscribe(x => ShowInTaskbar = x != WindowState.Minimized, Log.HandleException)
                 .AddTo(Anchors);
             
             ShowAppCommand = new DelegateCommand(() => { WindowState = WindowState.Normal; });
@@ -193,6 +223,7 @@ namespace MicSwitch
             Observable.Merge(
                     this.ObservableForProperty(x => x.MicrophoneLine, skipInitial:true).ToUnit(),
                     this.ObservableForProperty(x => x.IsPushToTalkMode, skipInitial:true).ToUnit(),
+                    this.ObservableForProperty(x => x.AudioNotification, skipInitial:true).ToUnit(),
                     this.ObservableForProperty(x => x.Hotkey, skipInitial:true).ToUnit())
                 .Subscribe(() =>
                 {
@@ -200,8 +231,9 @@ namespace MicSwitch
                     config.IsPushToTalkMode = IsPushToTalkMode;
                     config.MicrophoneHotkey = (Hotkey ?? new HotkeyGesture()).ToString();
                     config.MicrophoneLineId = MicrophoneLine;
+                    config.Notification = AudioNotification;
                     configProvider.Save(config);
-                })
+                }, Log.HandleException)
                 .AddTo(Anchors);
         }
 
@@ -216,6 +248,10 @@ namespace MicSwitch
         public CommandWrapper OpenAppDataDirectoryCommand { get; }
         
         public IMicSwitchOverlayViewModel Overlay { get; }
+        
+        public IAudioNotificationSelectorViewModel AudioSelectorWhenUnmuted { get; }
+        
+        public IAudioNotificationSelectorViewModel AudioSelectorWhenMuted { get; }
 
         public bool IsActive => mainWindowTracker.IsActive;
 
@@ -267,6 +303,23 @@ namespace MicSwitch
         {
             get => microphoneController.Mute ?? false;
             set => microphoneController.Mute = value;
+        }
+
+        public TwoStateNotification AudioNotification
+        {
+            get
+            {
+                return new TwoStateNotification
+                {
+                    On = AudioSelectorWhenMuted.SelectedValue,
+                    Off = AudioSelectorWhenUnmuted.SelectedValue
+                };
+            }
+            set
+            {
+                AudioSelectorWhenMuted.SelectedValue = value.On;
+                AudioSelectorWhenUnmuted.SelectedValue = value.Off;
+            }
         }
         
         public ApplicationUpdaterViewModel ApplicationUpdater { get; }

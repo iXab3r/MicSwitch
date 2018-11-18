@@ -11,8 +11,12 @@ namespace MicSwitch
         public MicrophoneLineData MicrophoneLineId { get; set; }
 
         public string MicrophoneHotkey { get; set; }
-        
-        public int Version { get; set; } = 1;
+
+        public TwoStateNotification Notification { get; set; } = new TwoStateNotification
+        {
+            On = "Beep300",
+            Off = "Beep750"
+        };
         
         public Point OverlayLocation { get; set; }
         
@@ -23,5 +27,7 @@ namespace MicSwitch
         public bool IsVisible { get; set; } = true;
 
         public double ScaleFactor { get; set; } = 1;
+        
+        public int Version { get; set; } = 1;
     }
 }
