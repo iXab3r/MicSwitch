@@ -13,7 +13,11 @@ Also MicSwitch supports configurable mute/unmute sounds (hi, Discord!) and a con
 - Two Hotkey modes: Push-to-talk and Toggle-mute
 - Auto-update via Github
 
-## Contacts
-[Discord chat](https://discord.gg/BExRm22 "Discord chat")
+## Screenshots
+![](https://i.gyazo.com/b29c83887a199bb02ed3151afdfa99ca.png)
+![](https://i.gyazo.com/f3dec046d7bb7a95b37ffc9196c96dac.png)
+![Unlocked overlay](https://i.gyazo.com/25a0764ab273147d6d792ffe827a68d3.png "Unlocked overlay")
 
-[Issues tracker](https://github.com/iXab3r/MicSwitch/issues)
+## Contacts
+- [Discord chat](https://discord.gg/BExRm22 "Discord chat")
+- [Issues tracker](https://github.com/iXab3r/MicSwitch/issues)
