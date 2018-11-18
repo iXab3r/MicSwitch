@@ -15,4 +15,5 @@ Also MicSwitch supports configurable mute/unmute sounds (hi, Discord!) and a con
 
 ## Contacts
 [Discord chat](https://discord.gg/BExRm22 "Discord chat")
+
 [Issues tracker](https://github.com/iXab3r/MicSwitch/issues)
