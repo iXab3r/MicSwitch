@@ -1,14 +1,24 @@
-﻿namespace MicSwitch
+﻿using JsonFx.Json;
+
+namespace MicSwitch
 {
-    internal sealed class MicrophoneLineData
+    internal struct MicrophoneLineData
     {
-        public static readonly MicrophoneLineData Empty = new MicrophoneLineData(){ Name = "Not selected" };
+        public static readonly MicrophoneLineData Empty = new MicrophoneLineData(){ Name = "No name" };
         
         public string LineId { get; set; }
         
         public string Name { get; set; }
 
-        private bool Equals(MicrophoneLineData other)
+        [JsonIgnore]
+        public bool IsEmpty => string.IsNullOrEmpty(LineId);
+
+        public override string ToString()
+        {
+            return $"{nameof(LineId)}: {LineId}, {nameof(Name)}: {Name}";
+        }
+
+        public bool Equals(MicrophoneLineData other)
         {
             return string.Equals(LineId, other.LineId);
         }
@@ -18,11 +28,6 @@
             if (ReferenceEquals(null, obj))
             {
                 return false;
-            }
-
-            if (ReferenceEquals(this, obj))
-            {
-                return true;
             }
 
             return obj is MicrophoneLineData other && Equals(other);

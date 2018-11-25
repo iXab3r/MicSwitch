@@ -290,6 +290,7 @@
     <Compile Include="Updater\IApplicationUpdaterModel.cs" />
     <Compile Include="Updater\UpdateSettingsConfig.cs" />
     <Compile Include="Updater\UpdateSourceInfo.cs" />
+    <Compile Include="WaveInAudioExEventArgs.cs" />
     <Compile Include="WPF\Hotkeys\HotkeyGesture.cs" />
     <Compile Include="WPF\Hotkeys\HotkeyBox.cs" />
     <Compile Include="WPF\Hotkeys\HotkeyConverter.cs" />

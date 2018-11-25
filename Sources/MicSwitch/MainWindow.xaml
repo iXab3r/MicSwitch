@@ -42,6 +42,7 @@
                           ItemsSource="{Binding Microphones}"
                           SelectedItem="{Binding MicrophoneLine}"
                           DisplayMemberPath="Name" />
+                <Separator DockPanel.Dock="Top" />
                 <DockPanel DockPanel.Dock="Top" Margin="0,3" LastChildFill="True">
                     <TextBlock DockPanel.Dock="Left" MinWidth="100"
                                TextAlignment="Right"

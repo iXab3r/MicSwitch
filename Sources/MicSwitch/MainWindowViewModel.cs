@@ -94,7 +94,7 @@ namespace MicSwitch
 
             this.ObservableForProperty(x => x.MicrophoneMuted, skipInitial:true)
                 .DistinctUntilChanged()
-                .Where(x => MicrophoneLine != null)
+                .Where(x => !MicrophoneLine.IsEmpty)
                 .Skip(1) // skip initial setup
                 .Subscribe(x =>
                 {
@@ -107,7 +107,7 @@ namespace MicSwitch
             
             this.WhenAnyValue(x => x.MicrophoneLine)
                 .DistinctUntilChanged()
-                .Where(x => MicrophoneLine != null)
+                .Where(x => !MicrophoneLine.IsEmpty)
                 .Subscribe(x => microphoneController.LineId = x, Log.HandleException)
                 .AddTo(Anchors);
 
@@ -117,10 +117,10 @@ namespace MicSwitch
                 .Select(_ => configProvider.ActualConfig.MicrophoneLineId)
                 .Subscribe(configLineId =>
                 {
-                    Log.Debug($"Microphone line configuration changed: {configLineId??MicrophoneLineData.Empty}, known lines: {Microphones.DumpToTextRaw()}");
+                    Log.Debug($"Microphone line configuration changed: {configLineId}, known lines: {Microphones.DumpToTextRaw()}");
 
                     var micLine = Microphones.FirstOrDefault(line => line.Equals(configLineId));
-                    if (micLine == null)
+                    if (micLine.IsEmpty)
                     {
                         Log.Debug($"Selecting first one of available microphone lines, known lines: {Microphones.DumpToTextRaw()}");
                         micLine = Microphones.FirstOrDefault();

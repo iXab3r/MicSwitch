@@ -1,9 +1,12 @@
 using System;
 using System.Linq;
+using System.Reactive;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using Common.Logging;
 using NAudio.CoreAudioApi;
 using NAudio.Mixer;
+using NAudio.Wave;
 using PoeShared;
 using PoeShared.Scaffolding;
 using ReactiveUI;
@@ -75,6 +78,44 @@ namespace MicSwitch
             }
         }
 
+        public IObservable<WaveInAudioExEventArgs> AudioStream
+        {
+            get
+            {
+                var mixer = mixerControl;
+                if (mixer == null || mixer.AudioClient == null)
+                {
+                    return Observable.Empty<WaveInAudioExEventArgs>();
+                }
+                Log.Debug($"[AudioStream #{mixer.ID}] Preparing recording source...");
+                return Observable.Create<WaveInAudioExEventArgs>(observer =>
+                {
+                    Log.Debug($"[AudioStream #{mixer.ID}] Initializing recording...");
+
+                    var waveIn = new WasapiCapture(mixer);
+                    var waveFormat = waveIn.WaveFormat;
+                    var anchors = new CompositeDisposable();
+                    Disposable.Create(() =>
+                    {
+                        Log.Debug($"[AudioStream #{mixer.ID}] Stopping recording...");
+                        waveIn.StopRecording();
+                    });
+                    Observable.FromEventPattern<WaveInEventArgs>(
+                            h => waveIn.DataAvailable += h, h => waveIn.DataAvailable -= h)
+                        .Select(x => x.EventArgs)
+                        .Select(x => new WaveInAudioExEventArgs(x.Buffer, x.BytesRecorded, waveFormat))
+                        .Subscribe(observer)
+                        .AddTo(anchors);
+                    Log.Debug($"[AudioStream #{mixer.ID}] Starting recording...");
+                    waveIn.StartRecording();
+                    Log.Debug($"[AudioStream #{mixer.ID}] Streaming data...");
+
+                    return anchors;
+                });
+
+            }
+        }
+
         private void Update()
         {
             this.RaisePropertyChanged(nameof(VolumePercent));
@@ -83,13 +124,22 @@ namespace MicSwitch
 
         private void InitializeLine()
         {
-            Log.Info($"Binding to line #{lineId}...");
+            Log.Info($"Binding to line ({lineId})...");
             VolumePercent = null;
             Mute = null;
-            mixerControl = lineId == null ? null : new MicrophoneProvider().GetMixerControl(lineId.LineId);
+            mixerControl = lineId.IsEmpty ? null : new MicrophoneProvider().GetMixerControl(lineId.LineId);
             if (mixerControl != null)
             {
-                Log.Info($"Successfully bound to line #{lineId}, volume: {VolumePercent}, isOn: {Mute}");
+                var description = new
+                {
+                    mixerControl.ID,
+                    mixerControl.State,
+                    mixerControl.FriendlyName,
+                    mixerControl.DeviceFriendlyName,
+                    mixerControl.IconPath,
+                    AudioClientFormat = mixerControl.AudioClient?.MixFormat,
+                };
+                Log.Info($"Successfully bound to line #{lineId}, volume: {VolumePercent}, isOn: {Mute}, line: {description}");
             }
         }
     }
