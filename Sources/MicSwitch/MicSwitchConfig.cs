@@ -11,6 +11,8 @@ namespace MicSwitch
         public MicrophoneLineData MicrophoneLineId { get; set; }
 
         public string MicrophoneHotkey { get; set; }
+        
+        public string MicrophoneHotkeyAlt { get; set; }
 
         public TwoStateNotification Notification { get; set; } = new TwoStateNotification
         {

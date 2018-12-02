@@ -119,7 +119,9 @@
                         <TextBlock DockPanel.Dock="Left" MinWidth="100"
                                    TextAlignment="Right"
                                    Text="Hotkey: " />
-                        <hotkeys:HotKeyBox HotKey="{Binding Hotkey}" />
+                        <hotkeys:HotKeyBox HotKey="{Binding Hotkey}" MinWidth="120"/>
+                        <TextBlock DockPanel.Dock="Left" Text=" or " />
+                        <hotkeys:HotKeyBox HotKey="{Binding HotkeyAlt}" MinWidth="120"/>
                     </DockPanel>
                 </DockPanel>
             </GroupBox>

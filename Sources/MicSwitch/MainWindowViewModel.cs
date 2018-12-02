@@ -10,7 +10,9 @@ using JetBrains.Annotations;
 using PoeShared.Native;
 using PoeShared.Scaffolding;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
@@ -43,13 +45,15 @@ namespace MicSwitch
 
         private readonly IMicrophoneController microphoneController;
         private readonly IWindowTracker mainWindowTracker;
-        
+        private readonly IConfigProvider<MicSwitchConfig> configProvider;
+
         private MicrophoneLineData microphoneLine;
         private bool isPushToTalkMode;
         private WindowState windowState;
         private Visibility trayIconVisibility;
         private bool showInTaskbar;
         private HotkeyGesture hotkey;
+        private HotkeyGesture hotkeyAlt;
 
         public MainWindowViewModel(
             [NotNull] IKeyboardEventsSource eventSource,
@@ -65,6 +69,7 @@ namespace MicSwitch
 
             this.ApplicationUpdater = appUpdater;
             this.mainWindowTracker = mainWindowTracker;
+            this.configProvider = configProvider;
             this.BindPropertyTo(x => x.IsActive, mainWindowTracker, x => x.IsActive).AddTo(Anchors);
 
             AudioSelectorWhenMuted = audioSelectorFactory.Create();
@@ -129,49 +134,20 @@ namespace MicSwitch
                 }, Log.HandleException)
                 .AddTo(Anchors);
 
-            configProvider.ListenTo(x => x.MicrophoneHotkey)
-                .Where(x => x != null)
-                .Select(x => (HotkeyGesture)new HotkeyConverter().ConvertFrom(x))
-                .DistinctUntilChanged()
-                .ObserveOnDispatcher()
-                .Select(configHotkey =>
+            BuildHotkeySubscription(eventSource)
+                .Where(x =>
                 {
-                    Log.Info($"New hotkey assigned: {configHotkey}");
-                    if (!configHotkey.Equals(this.hotkey))
+                    if (!mainWindowTracker.IsActive)
                     {
-                        Log.Debug($"Syncing config hotkey with UI hotkey, {Hotkey} (UI) becomes {configHotkey}(config)");
-                        Hotkey = configHotkey;
+                        Log.Trace($"Main window is NOT active, processing hotkey {x.Key} (isDown: {x})");
+                        return true;
                     }
-                    
-                    var hotkeyDown = 
-                        Observable.Merge(
-                            eventSource.WhenMouseDown.Select(x => new HotkeyGesture(x.Button)),
-                            eventSource.WhenKeyDown.Select(x => new HotkeyGesture(x.KeyCode.ToInputKey(), x.Modifiers.ToModifiers())))
-                        .Where(x => configHotkey.Equals(x))
-                        .Select(x => new { KeyDown = true });
-                    var hotkeyUp = 
-                        Observable.Merge(
-                            eventSource.WhenMouseUp.Select(x => new HotkeyGesture(x.Button)),
-                            eventSource.WhenKeyUp.Select(x => new HotkeyGesture(x.KeyCode.ToInputKey(), x.Modifiers.ToModifiers())))
-                         .Where(x => configHotkey.Equals(x))
-                         .Select(x => new { KeyDown = false });
-
-                    return Observable.Merge(hotkeyDown, hotkeyUp)
-                        .Where(x =>
-                        {
-                            if (!mainWindowTracker.IsActive)
-                            {
-                                Log.Trace($"Main window is NOT active, processing hotkey {configHotkey} (isDown: {x})");
-                                return true;
-                            }
-                            else
-                            {
-                                Log.Trace($"Main window is active, skipping hotkey {configHotkey} (isDown: {x})");
-                                return false;
-                            }
-                        });
+                    else
+                    {
+                        Log.Trace($"Main window is active, skipping hotkey {x.Key} (isDown: {x})");
+                        return false;
+                    }
                 })
-                .Switch()
                 .Subscribe(keyInfo =>
                 {
                     Log.Debug($"Hotkey pressed, state: {(keyInfo.KeyDown ? "down" : "up")}");
@@ -224,12 +200,14 @@ namespace MicSwitch
                     this.ObservableForProperty(x => x.MicrophoneLine, skipInitial:true).ToUnit(),
                     this.ObservableForProperty(x => x.IsPushToTalkMode, skipInitial:true).ToUnit(),
                     this.ObservableForProperty(x => x.AudioNotification, skipInitial:true).ToUnit(),
+                    this.ObservableForProperty(x => x.HotkeyAlt, skipInitial:true).ToUnit(),
                     this.ObservableForProperty(x => x.Hotkey, skipInitial:true).ToUnit())
                 .Subscribe(() =>
                 {
                     var config = configProvider.ActualConfig.CloneJson();
                     config.IsPushToTalkMode = IsPushToTalkMode;
                     config.MicrophoneHotkey = (Hotkey ?? new HotkeyGesture()).ToString();
+                    config.MicrophoneHotkeyAlt = (HotkeyAlt ?? new HotkeyGesture()).ToString();
                     config.MicrophoneLineId = MicrophoneLine;
                     config.Notification = AudioNotification;
                     configProvider.Save(config);
@@ -278,6 +256,12 @@ namespace MicSwitch
             get => hotkey;
             set => this.RaiseAndSetIfChanged(ref hotkey, value);
         }
+
+        public HotkeyGesture HotkeyAlt
+        {
+            get => hotkeyAlt;
+            set => this.RaiseAndSetIfChanged(ref hotkeyAlt, value);
+        }
         
         public string Title { get; }
 
@@ -307,14 +291,11 @@ namespace MicSwitch
 
         public TwoStateNotification AudioNotification
         {
-            get
+            get => new TwoStateNotification
             {
-                return new TwoStateNotification
-                {
-                    On = AudioSelectorWhenMuted.SelectedValue,
-                    Off = AudioSelectorWhenUnmuted.SelectedValue
-                };
-            }
+                On = AudioSelectorWhenMuted.SelectedValue,
+                Off = AudioSelectorWhenUnmuted.SelectedValue
+            };
             set
             {
                 AudioSelectorWhenMuted.SelectedValue = value.On;
@@ -327,6 +308,37 @@ namespace MicSwitch
         private async Task OpenAppDataDirectory()
         {
             await Task.Run(() => Process.Start(ExplorerExecutablePath, AppArguments.Instance.AppDataDirectory));
+        }
+        
+        private bool IsConfiguredHotkey(HotkeyGesture pressed)
+        {
+            if (pressed == null)
+            {
+                return false;
+            }
+
+            var pressedHotkey = pressed.ToString();
+
+            return pressedHotkey.Equals(this.configProvider.ActualConfig.MicrophoneHotkey) || pressedHotkey.Equals(this.configProvider.ActualConfig.MicrophoneHotkeyAlt);
+        }
+
+        private IObservable<(bool KeyDown, HotkeyGesture Key)> BuildHotkeySubscription(
+            IKeyboardEventsSource eventSource)
+        {
+            var hotkeyDown = 
+                Observable.Merge(
+                        eventSource.WhenMouseDown.Select(x => new HotkeyGesture(x.Button)),
+                        eventSource.WhenKeyDown.Select(x => new HotkeyGesture(x.KeyCode.ToInputKey(), x.Modifiers.ToModifiers())))
+                    .Where(IsConfiguredHotkey)
+                    .Select(x => (KeyDown: true, Key: x));
+            var hotkeyUp = 
+                Observable.Merge(
+                        eventSource.WhenMouseUp.Select(x => new HotkeyGesture(x.Button)),
+                        eventSource.WhenKeyUp.Select(x => new HotkeyGesture(x.KeyCode.ToInputKey(), x.Modifiers.ToModifiers())))
+                    .Where(IsConfiguredHotkey)
+                    .Select(x => (KeyDown: false, Key: x));
+
+            return Observable.Merge(hotkeyDown, hotkeyUp);
         }
     }
 }
