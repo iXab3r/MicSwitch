@@ -138,10 +138,6 @@ namespace MicSwitch.WPF.Hotkeys
             {
                 HotKey = new HotkeyGesture(MouseButton.Middle, currentModifierKeys);
             }
-            else
-            {
-                HotKey = null;
-            }
         }
 
         private void TextBoxOnTextChanged(object sender, TextChangedEventArgs args)
