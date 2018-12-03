@@ -22,8 +22,8 @@ void Main()
 	}
 	
 	var setupFilePath = Path.Combine(releasesPath, "Setup.exe");
-
-	new { 
+	
+	var args = new { 
 		scriptDir, 
 		grPath,
 		setupFilePath, 
@@ -31,6 +31,16 @@ void Main()
 		reponame, 
 		GithubTokenIsSet = !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("GITHUB_TOKEN")) 
 	}.Dump("GitHubRelease Arguments");
+	if (!args.GithubTokenIsSet){
+		$"Trying to read github.token from PasswordManager cache".Dump();
+		var linqToken = Util.GetPassword("github.token", noDefaultSave: true);
+
+		if (!string.IsNullOrWhiteSpace(linqToken))
+		{
+			$"Token is loaded from PasswordManager, length: {linqToken.Length}".Dump();
+			Environment.SetEnvironmentVariable("GITHUB_TOKEN", linqToken);
+		}
+	}
 	
 	var versionInfo = FileVersionInfo.GetVersionInfo(setupFilePath);
 	var version = versionInfo.ProductVersion;
@@ -38,8 +48,15 @@ void Main()
 	versionTag.Dump($"{appName} version");
 	
 	$"Preparing release draft {versionTag}".Dump();
-
-	Util.Cmd(grPath, $"release --user {username} --repo {reponame} --tag {versionTag}", false);
+	try
+	{
+		Util.Cmd(grPath, $"release --user {username} --repo {reponame} --tag {versionTag} --draft", false);
+	}
+	catch (CommandExecutionException ex)
+	{
+		ex.Dump("Failed to create release, trying to cleanup...");
+		Util.Cmd(grPath, $"delete --user {username} --repo {reponame} --tag {versionTag}", false);
+	}
 
 	$"Uploading releases file".Dump();
 	Util.Cmd(grPath, $"upload --user {username} --repo {reponame} --tag {versionTag} --name \"RELEASES\" --file \"{Path.Combine(releasesPath, "RELEASES")}\" --replace", false);
