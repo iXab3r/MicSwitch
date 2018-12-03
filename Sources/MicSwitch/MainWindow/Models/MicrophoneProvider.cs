@@ -1,10 +1,8 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using NAudio.CoreAudioApi;
-using NAudio.Mixer;
 
-namespace MicSwitch
+namespace MicSwitch.MainWindow.Models
 {
     internal sealed class MicrophoneProvider
     {

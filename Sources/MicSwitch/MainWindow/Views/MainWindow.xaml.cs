@@ -1,4 +1,6 @@
-﻿using MicSwitch.Modularity;
+﻿using MicSwitch.MainWindow.Models;
+using MicSwitch.MainWindow.ViewModels;
+using MicSwitch.Modularity;
 using MicSwitch.Updater;
 using PoeShared.Modularity;
 using PoeShared.Native;
@@ -6,7 +8,7 @@ using PoeShared.Prism;
 using PoeShared.Scaffolding;
 using Unity;
 
-namespace MicSwitch
+namespace MicSwitch.MainWindow.Views
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml

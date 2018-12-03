@@ -1,7 +1,7 @@
 using System;
 using NAudio.Wave;
 
-namespace MicSwitch
+namespace MicSwitch.MainWindow.Models
 {
     internal class WaveInAudioExEventArgs : EventArgs
     {

@@ -1,13 +1,15 @@
+using System;
+using System.Reactive.Linq;
 using System.Windows;
 using JetBrains.Annotations;
+using MicSwitch.MainWindow.Models;
+using MicSwitch.Modularity;
 using PoeShared.Modularity;
 using PoeShared.Native;
 using PoeShared.Scaffolding;
 using ReactiveUI;
-using System;
-using System.Reactive.Linq;
 
-namespace MicSwitch
+namespace MicSwitch.MainWindow.ViewModels
 {
     internal sealed class MicSwitchOverlayViewModel : OverlayViewModelBase, IMicSwitchOverlayViewModel
     {

@@ -1,17 +1,14 @@
 using System;
-using System.Linq;
-using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using Common.Logging;
 using NAudio.CoreAudioApi;
-using NAudio.Mixer;
 using NAudio.Wave;
 using PoeShared;
 using PoeShared.Scaffolding;
 using ReactiveUI;
 
-namespace MicSwitch
+namespace MicSwitch.MainWindow.Models
 {
     internal sealed class MicrophoneController : DisposableReactiveObject, IMicrophoneController
     {

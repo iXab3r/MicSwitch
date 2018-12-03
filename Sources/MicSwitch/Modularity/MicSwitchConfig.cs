@@ -1,8 +1,9 @@
 ﻿using System.Windows;
+using MicSwitch.MainWindow.Models;
 using PoeShared.Modularity;
 using PoeShared.Native;
 
-namespace MicSwitch
+namespace MicSwitch.Modularity
 {
     internal sealed class MicSwitchConfig : IPoeEyeConfigVersioned, IOverlayConfig
     {

@@ -1,4 +1,4 @@
-﻿namespace MicSwitch
+﻿namespace MicSwitch.MainWindow.Models
 {
     internal struct TwoStateNotification
     {

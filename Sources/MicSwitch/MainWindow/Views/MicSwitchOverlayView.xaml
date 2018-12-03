@@ -1,9 +1,9 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:micSwitch="clr-namespace:MicSwitch"
-                    xmlns:eye="http://coderush.net/poeeye/">
+                    xmlns:eye="http://coderush.net/poeeye/"
+                    xmlns:viewModels="clr-namespace:MicSwitch.MainWindow.ViewModels">
 
-    <DataTemplate DataType="{x:Type micSwitch:MicSwitchOverlayViewModel}">
+    <DataTemplate DataType="{x:Type viewModels:MicSwitchOverlayViewModel}">
         <Grid Focusable="False">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />

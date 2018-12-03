@@ -283,42 +283,42 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="TwoStateNotification.cs" />
+    <Compile Include="MainWindow\Models\IMicrophoneController.cs" />
+    <Compile Include="MainWindow\Models\MicrophoneController.cs" />
+    <Compile Include="MainWindow\Models\MicrophoneLineData.cs" />
+    <Compile Include="MainWindow\Models\MicrophoneProvider.cs" />
+    <Compile Include="MainWindow\Models\TwoStateNotification.cs" />
+    <Compile Include="MainWindow\Models\WaveInAudioExEventArgs.cs" />
+    <Compile Include="MainWindow\ViewModels\IMicSwitchOverlayViewModel.cs" />
+    <Compile Include="MainWindow\ViewModels\MainWindowViewModel.cs" />
+    <Compile Include="MainWindow\ViewModels\MicSwitchOverlayViewModel.cs" />
+    <Compile Include="MainWindow\Views\MainWindow.xaml.cs">
+      <DependentUpon>MainWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Modularity\MicSwitchConfig.cs" />
     <Compile Include="Updater\ApplicationUpdaterModel.cs" />
     <Compile Include="Updater\ApplicationUpdaterViewModel.cs" />
     <Compile Include="Updater\BasicAuthFileDownloader.cs" />
     <Compile Include="Updater\IApplicationUpdaterModel.cs" />
     <Compile Include="Updater\UpdateSettingsConfig.cs" />
     <Compile Include="Updater\UpdateSourceInfo.cs" />
-    <Compile Include="WaveInAudioExEventArgs.cs" />
     <Compile Include="WPF\Hotkeys\HotkeyGesture.cs" />
     <Compile Include="WPF\Hotkeys\HotkeyBox.cs" />
     <Compile Include="WPF\Hotkeys\HotkeyConverter.cs" />
-    <Page Include="MainWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="IMicrophoneController.cs" />
-    <Compile Include="IMicSwitchOverlayViewModel.cs" />
-    <Compile Include="MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Page Include="MicSwitchOverlayView.xaml" />
+    <Page Include="MainWindow\Views\MainWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="MainWindow\Views\MicSwitchOverlayView.xaml" />
     <Page Include="Themes\HotKeyBox.xaml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MainWindowViewModel.cs" />
-    <Compile Include="MicrophoneController.cs" />
-    <Compile Include="MicrophoneLineData.cs" />
-    <Compile Include="MicrophoneProvider.cs" />
-    <Compile Include="MicSwitchConfig.cs" />
-    <Compile Include="MicSwitchOverlayViewModel.cs" />
-    <Compile Include="Modularity\ConfigProvider.cs" />
+    <Compile Include="Modularity\ConfigProviderFromFile.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>

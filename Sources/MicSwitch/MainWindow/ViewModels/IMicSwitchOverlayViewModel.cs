@@ -1,7 +1,6 @@
-using System.Windows.Input;
 using PoeShared.Native;
 
-namespace MicSwitch
+namespace MicSwitch.MainWindow.ViewModels
 {
     internal interface IMicSwitchOverlayViewModel : IOverlayViewModel
     {

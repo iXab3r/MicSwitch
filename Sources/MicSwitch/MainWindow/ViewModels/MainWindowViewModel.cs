@@ -1,42 +1,34 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Reactive.Disposables;
-using DynamicData;
-using JetBrains.Annotations;
-using PoeShared.Native;
-using PoeShared.Scaffolding;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Forms;
 using System.Windows.Input;
 using Common.Logging;
 using DynamicData.Binding;
-using MahApps.Metro.Controls;
+using JetBrains.Annotations;
+using MicSwitch.MainWindow.Models;
+using MicSwitch.Modularity;
 using MicSwitch.Updater;
 using MicSwitch.WPF.Hotkeys;
-using NAudio.Mixer;
 using PoeEye;
 using PoeShared;
-using PoeShared.Audio;
 using PoeShared.Audio.Services;
 using PoeShared.Audio.ViewModels;
 using PoeShared.Modularity;
+using PoeShared.Native;
 using PoeShared.Prism;
+using PoeShared.Scaffolding;
 using PoeShared.Scaffolding.WPF;
 using Prism.Commands;
 using ReactiveUI;
 using Unity.Attributes;
 using Application = System.Windows.Application;
 
-namespace MicSwitch
+namespace MicSwitch.MainWindow.ViewModels
 {
     internal class MainWindowViewModel : DisposableReactiveObject
     {
@@ -192,8 +184,8 @@ namespace MicSwitch
             
             OpenAppDataDirectoryCommand = CommandWrapper.Create(OpenAppDataDirectory);
 
-            var executingAssembly = Assembly.GetExecutingAssembly();
-            Title = $"{(AppArguments.Instance.IsDebugMode ? "[D]" : "")} {executingAssembly.GetName().Name} v{executingAssembly.GetName().Version}";
+            var executingAssemblyName = Assembly.GetExecutingAssembly().GetName();
+            Title = $"{(AppArguments.Instance.IsDebugMode ? "[D]" : "")} {executingAssemblyName.Name} v{executingAssemblyName.Version}";
             
             // config processing
             Observable.Merge(

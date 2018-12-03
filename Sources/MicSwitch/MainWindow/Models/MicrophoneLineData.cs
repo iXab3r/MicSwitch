@@ -1,6 +1,6 @@
 ﻿using JsonFx.Json;
 
-namespace MicSwitch
+namespace MicSwitch.MainWindow.Models
 {
     internal struct MicrophoneLineData
     {
