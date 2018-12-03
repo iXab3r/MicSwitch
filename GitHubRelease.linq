@@ -58,15 +58,20 @@ void Main()
 		Util.Cmd(grPath, $"delete --user {username} --repo {reponame} --tag {versionTag}", false);
 	}
 
-	$"Uploading releases file".Dump();
-	Util.Cmd(grPath, $"upload --user {username} --repo {reponame} --tag {versionTag} --name \"RELEASES\" --file \"{Path.Combine(releasesPath, "RELEASES")}\" --replace", false);
+	var releasesFileName = $"{Path.Combine(releasesPath, "RELEASES")}";
+	releasesFileName.Dump($"Uploading releases file");
+	Util.Cmd(grPath, $"upload --user {username} --repo {reponame} --tag {versionTag} --name \"RELEASES\" --file \"{releasesFileName}\" --replace", false);
 
-	$"Uploading binaries".Dump();
-	Util.Cmd(grPath, $"upload --user {username} --repo {reponame} --tag {versionTag} --name \"{appName}Setup.{version}.exe\" --file \"{setupFilePath}\" --replace", false);
-	
+	var binaryFileName = $"{appName}Setup.{version}.exe";
+	binaryFileName.Dump($"Uploading binaries");
+	Util.Cmd(grPath, $"upload --user {username} --repo {reponame} --tag {versionTag} --name \"{binaryFileName}\" --file \"{setupFilePath}\" --replace", false);
+
 	foreach (var fileName in packages)
 	{
 		fileName.Dump("Uploading...");
 		Util.Cmd(grPath, $"upload --user {username} --repo {reponame} --tag {versionTag} --file \"{fileName}\" --name \"{Path.GetFileName(fileName)}\" --replace", false);
 	}
+
+	$"Enabling release {versionTag}".Dump();
+	Util.Cmd(grPath, $"edit --user {username} --repo {reponame} --tag {versionTag}", false);
 }
