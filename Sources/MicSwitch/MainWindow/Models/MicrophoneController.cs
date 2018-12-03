@@ -50,7 +50,8 @@ namespace MicSwitch.MainWindow.Models
                     ? Observable.FromEvent<AudioEndpointVolumeNotificationDelegate, AudioVolumeNotificationData>(
                         h => mixer.AudioEndpointVolume.OnVolumeNotification += h,
                         h => mixer.AudioEndpointVolume.OnVolumeNotification -= h)
-                    : Observable.Never<AudioVolumeNotificationData>())
+                      .StartWith(new AudioVolumeNotificationData(mixer.AudioEndpointVolume.NotificationGuid, mixer.AudioEndpointVolume.Mute, mixer.AudioEndpointVolume.MasterVolumeLevel, new float[0], Guid.Empty))
+                    : Observable.Never<AudioVolumeNotificationData>().StartWithDefault())
                 .Switch()
                 .Sample(SamplingInterval)
                 .Where(x => x != null)
