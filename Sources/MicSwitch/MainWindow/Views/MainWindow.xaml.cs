@@ -11,12 +11,12 @@ using Unity;
 namespace MicSwitch.MainWindow.Views
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    ///     Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow 
+    public partial class MainWindow
     {
         private readonly UnityContainer container = new UnityContainer();
-        
+
         public MainWindow()
         {
             InitializeComponent();
@@ -25,7 +25,7 @@ namespace MicSwitch.MainWindow.Views
             container.RegisterType<IMicrophoneController, MicrophoneController>();
             container.RegisterType<IApplicationUpdaterModel, ApplicationUpdaterModel>();
             container.RegisterSingleton<IMicSwitchOverlayViewModel, MicSwitchOverlayViewModel>();
-            
+
             container.AddExtension(new CommonRegistrations());
 
             var micSwitchOverlayDependencyName = "MicSwitchOverlayAllWindows";

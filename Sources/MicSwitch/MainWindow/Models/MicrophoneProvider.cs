@@ -10,20 +10,20 @@ namespace MicSwitch.MainWindow.Models
         {
             return EnumerateLinesInternal().FirstOrDefault(x => x.ID == lineId);
         }
-        
+
         public IEnumerable<MicrophoneLineData> EnumerateLines()
         {
             var devices = EnumerateLinesInternal();
             foreach (var device in devices)
             {
-                yield return new MicrophoneLineData()
+                yield return new MicrophoneLineData
                 {
                     LineId = device.ID,
                     Name = device.FriendlyName
                 };
             }
         }
-        
+
         public IEnumerable<MMDevice> EnumerateLinesInternal()
         {
             var de = new MMDeviceEnumerator();

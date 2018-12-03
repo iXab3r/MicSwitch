@@ -1,5 +1,4 @@
-﻿using System;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 
 namespace MicSwitch.Tests
 {
@@ -11,7 +10,5 @@ namespace MicSwitch.Tests
         {
             Assert.True(true);
         }
-        
-        
     }
 }

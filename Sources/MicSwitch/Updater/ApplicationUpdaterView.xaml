@@ -8,31 +8,31 @@
     </ResourceDictionary.MergedDictionaries>
 
     <DataTemplate DataType="{x:Type updater1:ApplicationUpdaterViewModel}">
-        <DockPanel >
-            <fa:FontAwesome Icon="Warning" 
+        <DockPanel>
+            <fa:FontAwesome Icon="Warning"
                             Margin="5,0"
                             Visibility="{Binding Error, Converter={StaticResource NullToCollapsedConverter}}"
                             Foreground="{StaticResource ValidationSummaryColor3}"
                             VerticalAlignment="Center"
                             ToolTip="{Binding Error}"
-                            FontSize="32"/>
-            
-            <fa:FontAwesome Icon="Refresh" 
+                            FontSize="32" />
+
+            <fa:FontAwesome Icon="Refresh"
                             Margin="5,0"
                             Visibility="{Binding CheckForUpdatesCommand.IsBusy, Converter={StaticResource TrueToVisibleFalseToCollapsedConverter}}"
                             Foreground="{StaticResource AccentColorBrush}"
                             VerticalAlignment="Center"
-                            FontSize="32"/>
-            
-            <fa:FontAwesome Icon="ArrowCircleUp" 
+                            FontSize="32" />
+
+            <fa:FontAwesome Icon="ArrowCircleUp"
                             Margin="5,0"
                             Visibility="{Binding LatestVersion, Converter={StaticResource NullToCollapsedConverter}}"
                             Foreground="{StaticResource AccentColorBrush}"
                             VerticalAlignment="Center"
-                            FontSize="32"/>
-       
+                            FontSize="32" />
+
             <DockPanel>
-                <ContentControl DockPanel.Dock="Bottom" 
+                <ContentControl DockPanel.Dock="Bottom"
                                 Visibility="{Binding UpdatedVersion, Converter={StaticResource NullToCollapsedConverter}}"
                                 Content="{Binding RestartCommand}"
                                 Focusable="False"
@@ -40,7 +40,7 @@
                                 Margin="10"
                                 eye:CommandWrapperHelper.Text="&#xf2d0; Restart application" />
 
-                <ContentControl DockPanel.Dock="Bottom" 
+                <ContentControl DockPanel.Dock="Bottom"
                                 Visibility="{Binding LatestVersion, Converter={StaticResource NullToCollapsedConverter}}"
                                 Content="{Binding ApplyUpdate}"
                                 Focusable="False"
@@ -54,7 +54,7 @@
                         ToolTip="{Binding Error}"
                         Foreground="{StaticResource ValidationSummaryColor3}"
                         Text="{Binding Error}" />
-                
+
                     <TextBlock DockPanel.Dock="Top" Visibility="{Binding StatusText, Converter={StaticResource NullToCollapsedConverter}}"
                                Foreground="WhiteSmoke"
                                FontWeight="Bold"

@@ -78,7 +78,7 @@
                         DockPanel.Dock="Left" HorizontalAlignment="Left"
                         IsChecked="{Binding MicrophoneMuted}" />
                 </DockPanel>
-                
+
                 <DockPanel DockPanel.Dock="Top" Margin="0,3" LastChildFill="False">
                     <TextBlock DockPanel.Dock="Left" MinWidth="100"
                                TextAlignment="Right"
@@ -89,7 +89,7 @@
                     <ContentPresenter
                         DockPanel.Dock="Left" HorizontalAlignment="Left"
                         Content="{Binding AudioSelectorWhenMuted}" />
-                    <TextBlock DockPanel.Dock="Left" 
+                    <TextBlock DockPanel.Dock="Left"
                                TextAlignment="Right"
                                Text="when un-muted " />
                     <ContentPresenter
@@ -119,13 +119,13 @@
                         <TextBlock DockPanel.Dock="Left" MinWidth="100"
                                    TextAlignment="Right"
                                    Text="Hotkey: " />
-                        <hotkeys:HotKeyBox HotKey="{Binding Hotkey}" MinWidth="120"/>
+                        <hotkeys:HotKeyBox HotKey="{Binding Hotkey}" MinWidth="120" />
                         <TextBlock DockPanel.Dock="Left" Text=" or " />
-                        <hotkeys:HotKeyBox HotKey="{Binding HotkeyAlt}" MinWidth="120"/>
+                        <hotkeys:HotKeyBox HotKey="{Binding HotkeyAlt}" MinWidth="120" />
                     </DockPanel>
                 </DockPanel>
             </GroupBox>
-            
+
             <DockPanel Dock="Top" Margin="3,5,3,5">
 
                 <Button DockPanel.Dock="Right" Command="{Binding ToggleOverlayLockCommand}">
@@ -139,7 +139,7 @@
                     </Button.Content>
                 </Button>
             </DockPanel>
-            
+
 
             <Label Padding="0" />
         </DockPanel>
@@ -166,12 +166,11 @@
                 FontWeight="Bold"
                 ToolTip="Open PoeEye folder"
                 Content="&#xF07C;"
-                Command="{Binding OpenAppDataDirectoryCommand}">
-            </Button>
+                Command="{Binding OpenAppDataDirectoryCommand}" />
         </controls:WindowCommands>
     </controls:MetroWindow.LeftWindowCommands>
-    
-    
+
+
     <controls:MetroWindow.RightWindowCommands>
         <controls:WindowCommands ShowSeparators="True">
             <ContentPresenter Content="{Binding ApplicationUpdater.CheckForUpdatesCommand}"

@@ -116,7 +116,7 @@ namespace MicSwitch.Updater
             Log.Debug("[ApplicationUpdaterModel] Update check requested");
 
             Reset();
-            
+
             using (var mgr = await CreateManager())
             {
                 Log.Debug("[ApplicationUpdaterModel] Checking for updates...");
@@ -176,7 +176,7 @@ namespace MicSwitch.Updater
 
             Log.Debug($"[ApplicationUpdaterModel] Using update source: {updateSource.DumpToTextRaw()}");
             var downloader = new BasicAuthFileDownloader(new NetworkCredential(updateSource.Username,
-                                                                               updateSource.Password));
+                updateSource.Password));
             if (updateSource.Uri.Contains("github"))
             {
                 Log.Debug($"[ApplicationUpdaterModel] Using GitHub source: {updateSource.DumpToTextRaw()}");
@@ -251,7 +251,7 @@ namespace MicSwitch.Updater
             if (!fileInfo.Exists)
             {
                 throw new FileNotFoundException($"{updaterExecutableName} not found(path: {fileInfo.FullName}), not a Squirrel-installed app?",
-                                                fileInfo.FullName);
+                    fileInfo.FullName);
             }
 
             return fileInfo.FullName;

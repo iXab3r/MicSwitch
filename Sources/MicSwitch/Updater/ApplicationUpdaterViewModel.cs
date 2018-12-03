@@ -2,7 +2,6 @@
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
-using System.Windows.Input;
 using Common.Logging;
 using Guards;
 using JetBrains.Annotations;
@@ -42,8 +41,8 @@ namespace MicSwitch.Updater
             this.updaterModel = updaterModel;
 
             updaterModel.WhenAnyValue(x => x.UpdatedVersion)
-                        .Subscribe(() => this.RaisePropertyChanged(nameof(UpdatedVersion)))
-                        .AddTo(Anchors);
+                .Subscribe(() => this.RaisePropertyChanged(nameof(UpdatedVersion)))
+                .AddTo(Anchors);
 
             CheckForUpdatesCommand = CommandWrapper
                 .Create(CheckForUpdatesCommandExecuted);
@@ -84,8 +83,8 @@ namespace MicSwitch.Updater
                 .WithPrevious((prev, curr) => new {prev, curr})
                 .Do(timeout => Log.Debug($"[ApplicationUpdaterViewModel] AutoUpdate timeout changed: {timeout.prev} => {timeout.curr}"))
                 .Select(timeout => timeout.curr <= TimeSpan.Zero
-                            ? Observable.Never<long>()
-                            : Observable.Timer(DateTimeOffset.MinValue, timeout.curr, bgScheduler))
+                    ? Observable.Never<long>()
+                    : Observable.Timer(DateTimeOffset.MinValue, timeout.curr, bgScheduler))
                 .Switch()
                 .ObserveOn(uiScheduler)
                 .Subscribe(() => CheckForUpdatesCommand.Execute(null), Log.HandleException)
@@ -99,7 +98,7 @@ namespace MicSwitch.Updater
         public CommandWrapper CheckForUpdatesCommand { get; }
 
         public CommandWrapper RestartCommand { get; }
-    
+
         public CommandWrapper ApplyUpdate { get; }
 
         public string Error
@@ -142,11 +141,11 @@ namespace MicSwitch.Updater
 
             // delaying update so the user could see the progress ring
             await Task.Delay(UiConstants.ArtificialLongDelay);
-            
+
             try
             {
                 var newVersion = await Task.Run(updaterModel.CheckForUpdates);
-                
+
                 if (newVersion != null)
                 {
                     IsOpen = true;
@@ -189,7 +188,7 @@ namespace MicSwitch.Updater
             {
                 await updaterModel.ApplyRelease(updaterModel.LatestVersion);
                 IsOpen = true;
-                StatusText = $"Success !";
+                StatusText = "Success !";
             }
             catch (Exception ex)
             {

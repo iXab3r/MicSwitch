@@ -54,10 +54,10 @@ namespace MicSwitch.Modularity
             loadedConfigs.Clear();
 
             config.Items
-                  .ToList()
-                  .Select(x => x.Content)
-                  .Select(ValidateConfigVersion)
-                  .ForEach(x => loadedConfigs[x.GetType().FullName] = x);
+                .ToList()
+                .Select(x => x.Content)
+                .Select(ValidateConfigVersion)
+                .ForEach(x => loadedConfigs[x.GetType().FullName] = x);
 
             configHasChanged.OnNext(Unit.Default);
         }
@@ -80,7 +80,7 @@ namespace MicSwitch.Modularity
                 Reload();
             }
 
-            return (TConfig)loadedConfigs.GetOrAdd(typeof(TConfig).FullName, key => (TConfig)Activator.CreateInstance(typeof(TConfig)));
+            return (TConfig) loadedConfigs.GetOrAdd(typeof(TConfig).FullName, key => (TConfig) Activator.CreateInstance(typeof(TConfig)));
         }
 
         private IPoeEyeConfig ValidateConfigVersion(IPoeEyeConfig loadedConfig)
@@ -93,9 +93,9 @@ namespace MicSwitch.Modularity
                 return loadedConfig;
             }
 
-            var configTemplate = (IPoeEyeConfigVersioned)loadedConfigs.GetOrAdd(
+            var configTemplate = (IPoeEyeConfigVersioned) loadedConfigs.GetOrAdd(
                 loadedConfig.GetType().FullName,
-                key => (IPoeEyeConfigVersioned)Activator.CreateInstance(loadedConfig.GetType()));
+                key => (IPoeEyeConfigVersioned) Activator.CreateInstance(loadedConfig.GetType()));
 
             if (configTemplate.Version != versionedLoadedConfig.Version)
             {
@@ -132,7 +132,7 @@ namespace MicSwitch.Modularity
             }
             catch (Exception ex)
             {
-                Log.Warn("[ConfigProviderFromFile.Save] Exception occurred, config was not saved correctly",ex);
+                Log.Warn("[ConfigProviderFromFile.Save] Exception occurred, config was not saved correctly", ex);
             }
         }
 
@@ -175,7 +175,7 @@ namespace MicSwitch.Modularity
                 }
 
                 var backupFileName = Path.Combine(Path.GetDirectoryName(configFilePath),
-                                                  $"{Path.GetFileNameWithoutExtension(configFilePath)}.bak{Path.GetExtension(configFilePath)}");
+                    $"{Path.GetFileNameWithoutExtension(configFilePath)}.bak{Path.GetExtension(configFilePath)}");
                 Log.Debug($"[PoeEyeConfigProviderFromFile.Load] Creating a backup of existing config data '{configFilePath}' to '{backupFileName}'");
                 File.Copy(configFilePath, backupFileName);
             }
@@ -191,10 +191,7 @@ namespace MicSwitch.Modularity
 
             public int Version { get; set; } = 1;
 
-            public IEnumerable<PoeEyeConfigMetadata> Items
-            {
-                get => items;
-            }
+            public IEnumerable<PoeEyeConfigMetadata> Items => items;
 
             public PoeEyeCombinedConfig Add(PoeEyeConfigMetadata item)
             {

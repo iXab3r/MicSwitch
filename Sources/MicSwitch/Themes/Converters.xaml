@@ -1,34 +1,34 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:converters="http://schemas.kent.boogaart.com/converters">
-    
+
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="pack://application:,,,/PoeShared;component/Themes/Generic.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
-    
+
     <converters:MapConverter x:Key="MicrophoneMuteStateToIcoConverter" FallbackBehavior="ReturnUnsetValue">
         <converters:Mapping From="{StaticResource FalseValue}">
             <converters:Mapping.To>
-                <BitmapImage UriSource="../Resources/microphoneEnabled.ico"/>
+                <BitmapImage UriSource="../Resources/microphoneEnabled.ico" />
             </converters:Mapping.To>
         </converters:Mapping>
         <converters:Mapping From="{StaticResource TrueValue}">
             <converters:Mapping.To>
-                <BitmapImage UriSource="../Resources/microphoneDisabled.ico"/>
+                <BitmapImage UriSource="../Resources/microphoneDisabled.ico" />
             </converters:Mapping.To>
         </converters:Mapping>
     </converters:MapConverter>
-    
+
     <converters:MapConverter x:Key="MicrophoneMuteStateToImageConverter" FallbackBehavior="ReturnUnsetValue">
         <converters:Mapping From="{StaticResource FalseValue}">
             <converters:Mapping.To>
-                <BitmapImage UriSource="../Resources/microphoneEnabled.png"/>
+                <BitmapImage UriSource="../Resources/microphoneEnabled.png" />
             </converters:Mapping.To>
         </converters:Mapping>
         <converters:Mapping From="{StaticResource TrueValue}">
             <converters:Mapping.To>
-                <BitmapImage UriSource="../Resources/microphoneDisabled.png"/>
+                <BitmapImage UriSource="../Resources/microphoneDisabled.png" />
             </converters:Mapping.To>
         </converters:Mapping>
     </converters:MapConverter>

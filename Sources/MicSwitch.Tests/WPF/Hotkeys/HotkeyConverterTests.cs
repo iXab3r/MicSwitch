@@ -18,7 +18,7 @@ namespace MicSwitch.Tests.WPF.Hotkeys
             // Given
             var instance = CreateInstance();
             var hotkey = new HotkeyGesture(key, modifierKeys);
-            
+
             // When
             var result = instance.ConvertFrom(hotkey.ToString());
 
@@ -28,7 +28,7 @@ namespace MicSwitch.Tests.WPF.Hotkeys
             result.ShouldBe(hotkey);
             result.ToString().ShouldBe(hotkey.ToString());
         }
-        
+
         private HotkeyConverter CreateInstance()
         {
             return new HotkeyConverter();

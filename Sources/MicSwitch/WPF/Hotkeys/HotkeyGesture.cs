@@ -37,7 +37,7 @@ namespace MicSwitch.WPF.Hotkeys
                     key = Key.None;
                     break;
             }
-            
+
             Key = key;
             ModifierKeys = modifierKeys;
         }
@@ -47,7 +47,7 @@ namespace MicSwitch.WPF.Hotkeys
             MouseButton = mouseButton;
             ModifierKeys = modifierKeys;
         }
-        
+
         public HotkeyGesture(MouseButtons mouseButton, ModifierKeys modifierKeys = ModifierKeys.None) : this()
         {
             var button = default(MouseButton?);
@@ -69,6 +69,7 @@ namespace MicSwitch.WPF.Hotkeys
                     button = System.Windows.Input.MouseButton.XButton2;
                     break;
             }
+
             MouseButton = button;
             ModifierKeys = modifierKeys;
         }
@@ -103,7 +104,7 @@ namespace MicSwitch.WPF.Hotkeys
                 sb.Append(GetLocalizedKeyStringUnsafe(UnsafeNative.Constants.VK_CONTROL));
                 sb.Append("+");
             }
-            
+
             if ((ModifierKeys & ModifierKeys.Alt) == ModifierKeys.Alt)
             {
                 sb.Append(GetLocalizedKeyStringUnsafe(UnsafeNative.Constants.VK_MENU));
@@ -125,7 +126,7 @@ namespace MicSwitch.WPF.Hotkeys
             {
                 sb.Append(GetLocalizedKeyString(Key));
             }
-            
+
             if (MouseButton != null)
             {
                 sb.Append($"Mouse{MouseButton}");

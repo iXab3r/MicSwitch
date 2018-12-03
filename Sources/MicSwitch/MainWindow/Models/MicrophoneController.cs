@@ -14,7 +14,7 @@ namespace MicSwitch.MainWindow.Models
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(MicrophoneController));
         private static readonly TimeSpan SamplingInterval = TimeSpan.FromMilliseconds(100);
-        
+
         private MicrophoneLineData lineId;
 
         private MMDevice mixerControl;
@@ -24,7 +24,7 @@ namespace MicSwitch.MainWindow.Models
             this.WhenAnyValue(x => x.LineId)
                 .Subscribe(InitializeLine)
                 .AddTo(Anchors);
-            
+
             this.WhenAnyValue(x => x.MixerControl)
                 .Do(mixer =>
                 {
@@ -41,15 +41,15 @@ namespace MicSwitch.MainWindow.Models
                             mixer.FriendlyName,
                             mixer.DeviceFriendlyName,
                             mixer.IconPath,
-                            AudioClientFormat = mixer.AudioClient?.MixFormat,
+                            AudioClientFormat = mixer.AudioClient?.MixFormat
                         };
                         Log.Info($"Successfully bound to line #{lineId}, volume: {VolumePercent}, isOn: {Mute}, line: {description}");
                     }
                 })
-                .Select(mixer => mixer != null ? 
-                    Observable.FromEvent<AudioEndpointVolumeNotificationDelegate, AudioVolumeNotificationData>(
+                .Select(mixer => mixer != null
+                    ? Observable.FromEvent<AudioEndpointVolumeNotificationDelegate, AudioVolumeNotificationData>(
                         h => mixer.AudioEndpointVolume.OnVolumeNotification += h,
-                        h => mixer.AudioEndpointVolume.OnVolumeNotification -= h) 
+                        h => mixer.AudioEndpointVolume.OnVolumeNotification -= h)
                     : Observable.Never<AudioVolumeNotificationData>())
                 .Switch()
                 .Sample(SamplingInterval)
@@ -65,6 +65,12 @@ namespace MicSwitch.MainWindow.Models
                 .AddTo(Anchors);
         }
 
+        public MMDevice MixerControl
+        {
+            get => mixerControl;
+            private set => this.RaiseAndSetIfChanged(ref mixerControl, value);
+        }
+
         public double? VolumePercent
         {
             get => mixerControl?.AudioEndpointVolume?.MasterVolumeLevelScalar;
@@ -77,7 +83,7 @@ namespace MicSwitch.MainWindow.Models
 
                 Log.Debug($"[#{LineId}] Setting volume to {value.Value} (current: {VolumePercent})");
 
-                mixerControl.AudioEndpointVolume.MasterVolumeLevelScalar = (float)value.Value;
+                mixerControl.AudioEndpointVolume.MasterVolumeLevelScalar = (float) value.Value;
             }
         }
 
@@ -111,48 +117,26 @@ namespace MicSwitch.MainWindow.Models
             }
         }
 
-        public IObservable<WaveInAudioExEventArgs> AudioStream
+        private static IObservable<WaveInAudioExEventArgs> ToAudioStream(MMDevice mixer)
         {
-            get
+            Log.Debug($"[AudioStream #{mixer.ID}] Initializing recording...");
+
+            var waveIn = new WasapiCapture(mixer);
+            var waveFormat = waveIn.WaveFormat;
+            Disposable.Create(() =>
             {
-                var mixer = mixerControl;
-                if (mixer == null || mixer.AudioClient == null)
-                {
-                    return Observable.Empty<WaveInAudioExEventArgs>();
-                }
-                Log.Debug($"[AudioStream #{mixer.ID}] Preparing recording source...");
-                return Observable.Create<WaveInAudioExEventArgs>(observer =>
-                {
-                    Log.Debug($"[AudioStream #{mixer.ID}] Initializing recording...");
+                Log.Debug($"[AudioStream #{mixer.ID}] Stopping recording...");
+                waveIn.StopRecording();
+            });
+            var result = Observable.FromEventPattern<WaveInEventArgs>(
+                    h => waveIn.DataAvailable += h, h => waveIn.DataAvailable -= h)
+                .Select(x => x.EventArgs)
+                .Select(x => new WaveInAudioExEventArgs(x.Buffer, x.BytesRecorded, waveFormat));
+            Log.Debug($"[AudioStream #{mixer.ID}] Starting recording...");
+            waveIn.StartRecording();
+            Log.Debug($"[AudioStream #{mixer.ID}] Streaming data...");
 
-                    var waveIn = new WasapiCapture(mixer);
-                    var waveFormat = waveIn.WaveFormat;
-                    var anchors = new CompositeDisposable();
-                    Disposable.Create(() =>
-                    {
-                        Log.Debug($"[AudioStream #{mixer.ID}] Stopping recording...");
-                        waveIn.StopRecording();
-                    });
-                    Observable.FromEventPattern<WaveInEventArgs>(
-                            h => waveIn.DataAvailable += h, h => waveIn.DataAvailable -= h)
-                        .Select(x => x.EventArgs)
-                        .Select(x => new WaveInAudioExEventArgs(x.Buffer, x.BytesRecorded, waveFormat))
-                        .Subscribe(observer)
-                        .AddTo(anchors);
-                    Log.Debug($"[AudioStream #{mixer.ID}] Starting recording...");
-                    waveIn.StartRecording();
-                    Log.Debug($"[AudioStream #{mixer.ID}] Streaming data...");
-
-                    return anchors;
-                });
-
-            }
-        }
-        
-        public MMDevice MixerControl
-        {
-            get => mixerControl;
-            set => this.RaiseAndSetIfChanged(ref mixerControl, value);
+            return result;
         }
 
         private void Update()

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.IO;
-using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reflection;
 using System.Threading;
@@ -16,12 +14,10 @@ using ReactiveUI;
 namespace MicSwitch
 {
     /// <summary>
-    /// Interaction logic for App.xaml
+    ///     Interaction logic for App.xaml
     /// </summary>
     public partial class App
     {
-        private static ILog Log => SharedLog.Instance.Log;
-
         public App()
         {
             try
@@ -45,7 +41,7 @@ namespace MicSwitch
                 Log.Debug($"[App..ctor] UI Scheduler: {RxApp.MainThreadScheduler}");
                 RxApp.MainThreadScheduler = DispatcherScheduler.Current;
                 RxApp.TaskpoolScheduler = TaskPoolScheduler.Default;
-                App.Current.ShutdownMode = ShutdownMode.OnMainWindowClose;
+                Current.ShutdownMode = ShutdownMode.OnMainWindowClose;
                 Log.Debug($"[App..ctor] New UI Scheduler: {RxApp.MainThreadScheduler}");
             }
             catch (Exception ex)
@@ -54,7 +50,9 @@ namespace MicSwitch
                 throw;
             }
         }
-        
+
+        private static ILog Log => SharedLog.Instance.Log;
+
         private void SingleInstanceValidationRoutine()
         {
             var mutexId = $"MicSwitch{(AppArguments.Instance.IsDebugMode ? "DEBUG" : "RELEASE")}{{567EBFFF-E391-4B38-AC85-469978EB37C4}}";

@@ -4,10 +4,10 @@ namespace MicSwitch.MainWindow.Models
 {
     internal struct MicrophoneLineData
     {
-        public static readonly MicrophoneLineData Empty = new MicrophoneLineData(){ Name = "No name" };
-        
+        public static readonly MicrophoneLineData Empty = new MicrophoneLineData {Name = "No name"};
+
         public string LineId { get; set; }
-        
+
         public string Name { get; set; }
 
         [JsonIgnore]
@@ -35,7 +35,7 @@ namespace MicSwitch.MainWindow.Models
 
         public override int GetHashCode()
         {
-            return (LineId != null ? LineId.GetHashCode() : 0);
+            return LineId != null ? LineId.GetHashCode() : 0;
         }
     }
 }

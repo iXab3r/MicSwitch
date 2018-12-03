@@ -12,15 +12,15 @@ namespace MicSwitch.MainWindow.Models
             BytesRecorded = bytes;
             DataFormat = dataFormat;
         }
-        
+
         /// <summary>
-        /// Buffer containing recorded data. Note that it might not be completely
-        /// full. <seealso cref="P:NAudio.Wave.WaveInEventArgs.BytesRecorded" />
+        ///     Buffer containing recorded data. Note that it might not be completely
+        ///     full. <seealso cref="P:NAudio.Wave.WaveInEventArgs.BytesRecorded" />
         /// </summary>
         public byte[] Buffer { get; }
 
         /// <summary>
-        /// The number of recorded bytes in Buffer. <seealso cref="P:NAudio.Wave.WaveInEventArgs.Buffer" />
+        ///     The number of recorded bytes in Buffer. <seealso cref="P:NAudio.Wave.WaveInEventArgs.Buffer" />
         /// </summary>
         public int BytesRecorded { get; }
 

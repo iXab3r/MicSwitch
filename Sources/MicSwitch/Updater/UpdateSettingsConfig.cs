@@ -10,7 +10,7 @@ namespace MicSwitch.Updater
 
         public static readonly UpdateSourceInfo[] WellKnownUpdateSources =
         {
-            new UpdateSourceInfo {Uri = @"https://github.com/iXab3r/MicSwitch", Description = "GitHub"},
+            new UpdateSourceInfo {Uri = @"https://github.com/iXab3r/MicSwitch", Description = "GitHub"}
         };
 
         public TimeSpan AutoUpdateTimeout { get; set; } = DefaultAutoUpdateTimeout;

@@ -20,14 +20,14 @@ namespace MicSwitch.Tests.WPF.Hotkeys
         {
             // Given
             var hotkey = new HotkeyGesture(key, modifierKeys);
-            
+
             // When
             var toString = hotkey.ToString();
 
             // Then
             toString.ShouldBe(expected);
         }
-        
+
         [TestCase(Key.None, ModifierKeys.None, Key.None, ModifierKeys.None)]
         [TestCase(Key.LeftAlt, ModifierKeys.None, Key.None, ModifierKeys.Alt)]
         [TestCase(Key.LeftAlt, ModifierKeys.Control, Key.None, ModifierKeys.Control | ModifierKeys.Alt)]
@@ -43,7 +43,7 @@ namespace MicSwitch.Tests.WPF.Hotkeys
             hotkey.Key.ShouldBe(expectedKey, () => hotkey.ToString());
             hotkey.ModifierKeys.ShouldBe(expectedModifierKeys, () => hotkey.ToString());
         }
-        
+
         [TestCase(MouseButton.Left, ModifierKeys.None, "MouseLeft")]
         [TestCase(MouseButton.Left, ModifierKeys.Control, "Ctrl+MouseLeft")]
         [TestCase(MouseButton.XButton2, ModifierKeys.Control, "Ctrl+MouseXButton2")]
@@ -51,7 +51,7 @@ namespace MicSwitch.Tests.WPF.Hotkeys
         {
             // Given
             var hotkey = new HotkeyGesture(key, modifierKeys);
-            
+
             // When
             var toString = hotkey.ToString();
 

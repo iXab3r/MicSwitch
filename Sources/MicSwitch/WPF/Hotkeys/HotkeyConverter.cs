@@ -70,7 +70,7 @@ namespace MicSwitch.WPF.Hotkeys
                 modifiersPartRaw = string.Empty;
                 hotkeyPartRaw = source;
             }
-            
+
             var modifiersRaw = ModifierKeysConverter.ConvertFrom(context, culture, modifiersPartRaw);
             var modifiers = (ModifierKeys) modifiersRaw;
 
@@ -87,7 +87,6 @@ namespace MicSwitch.WPF.Hotkeys
             }
 
             return new HotkeyGesture((Key) key, modifiers);
-
         }
 
         public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)

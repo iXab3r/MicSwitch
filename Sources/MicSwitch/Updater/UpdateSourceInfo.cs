@@ -29,7 +29,7 @@ namespace MicSwitch.Updater
                 return false;
             }
 
-            return obj is UpdateSourceInfo && Equals((UpdateSourceInfo)obj);
+            return obj is UpdateSourceInfo && Equals((UpdateSourceInfo) obj);
         }
 
         public override int GetHashCode()

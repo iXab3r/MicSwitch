@@ -28,12 +28,12 @@ namespace MicSwitch.Updater
             {
                 var progressAnchors = new CompositeDisposable();
                 Observable.FromEventPattern<DownloadProgressChangedEventHandler, DownloadProgressChangedEventArgs>(
-                              h => wc.DownloadProgressChanged += h,
-                              h => wc.DownloadProgressChanged -= h)
-                          .Where(x => progress != null)
-                          .Sample(UiConstants.ArtificialShortDelay)
-                          .Subscribe(x => progress(x.EventArgs.ProgressPercentage))
-                          .AddTo(progressAnchors);
+                        h => wc.DownloadProgressChanged += h,
+                        h => wc.DownloadProgressChanged -= h)
+                    .Where(x => progress != null)
+                    .Sample(UiConstants.ArtificialShortDelay)
+                    .Subscribe(x => progress(x.EventArgs.ProgressPercentage))
+                    .AddTo(progressAnchors);
                 try
                 {
                     Log.Debug($"[WebClient.DownloadFile] Downloading file to '{targetFile}', uri: {url} ");
