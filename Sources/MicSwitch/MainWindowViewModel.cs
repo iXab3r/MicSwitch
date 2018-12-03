@@ -338,7 +338,7 @@ namespace MicSwitch
                     .Where(IsConfiguredHotkey)
                     .Select(x => (KeyDown: false, Key: x));
 
-            return Observable.Merge(hotkeyDown, hotkeyUp);
+            return Observable.Merge(hotkeyDown, hotkeyUp).DistinctUntilChanged();
         }
     }
 }
