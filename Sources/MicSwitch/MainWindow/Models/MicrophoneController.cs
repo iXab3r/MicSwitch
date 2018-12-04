@@ -13,7 +13,7 @@ namespace MicSwitch.MainWindow.Models
     internal sealed class MicrophoneController : DisposableReactiveObject, IMicrophoneController
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(MicrophoneController));
-        private static readonly TimeSpan SamplingInterval = TimeSpan.FromMilliseconds(100);
+        private static readonly TimeSpan SamplingInterval = TimeSpan.FromMilliseconds(50);
 
         private MicrophoneLineData lineId;
 
