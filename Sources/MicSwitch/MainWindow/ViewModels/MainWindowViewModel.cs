@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using Common.Logging;
+using DynamicData;
 using DynamicData.Binding;
 using JetBrains.Annotations;
 using MicSwitch.MainWindow.Models;
@@ -79,6 +80,22 @@ namespace MicSwitch.MainWindow.ViewModels
                     AudioNotification = cfg;
                 }, Log.HandleException)
                 .AddTo(Anchors);
+
+            Observable.Merge(configProvider.ListenTo(x => x.MicrophoneHotkey), configProvider.ListenTo(x => x.MicrophoneHotkeyAlt))
+                .Select(x => new
+                {
+                    Hotkey = (HotkeyGesture)new HotkeyConverter().ConvertFrom(configProvider.ActualConfig.MicrophoneHotkey ?? string.Empty), 
+                    HotkeyAlt = (HotkeyGesture)new HotkeyConverter().ConvertFrom(configProvider.ActualConfig.MicrophoneHotkeyAlt ?? string.Empty), 
+                })
+                .ObserveOnDispatcher()
+                .Subscribe(cfg =>
+                {
+                    Log.Debug($"Setting new hotkeys configuration: {cfg.DumpToTextRaw()} (current: {hotkey}, alt: {hotkeyAlt})");
+                    Hotkey = cfg.Hotkey;
+                    HotkeyAlt = cfg.HotkeyAlt;
+                }, Log.HandleException)
+                .AddTo(Anchors);
+            
             Overlay = overlay;
 
             this.BindPropertyTo(x => x.MicrophoneVolume, microphoneController, x => x.VolumePercent).AddTo(Anchors);
@@ -138,6 +155,7 @@ namespace MicSwitch.MainWindow.ViewModels
                     Log.Trace($"Main window is active, skipping hotkey {x.Key} (isDown: {x})");
                     return false;
                 })
+                .ObserveOnDispatcher()
                 .Subscribe(keyInfo =>
                 {
                     Log.Debug($"Hotkey pressed, state: {(keyInfo.KeyDown ? "down" : "up")}");
@@ -310,7 +328,8 @@ namespace MicSwitch.MainWindow.ViewModels
 
             var pressedHotkey = pressed.ToString();
 
-            return pressedHotkey.Equals(configProvider.ActualConfig.MicrophoneHotkey) || pressedHotkey.Equals(configProvider.ActualConfig.MicrophoneHotkeyAlt);
+            return pressedHotkey.Equals(configProvider.ActualConfig.MicrophoneHotkey) || 
+                   pressedHotkey.Equals(configProvider.ActualConfig.MicrophoneHotkeyAlt);
         }
 
         private IObservable<(bool KeyDown, HotkeyGesture Key)> BuildHotkeySubscription(
@@ -329,7 +348,7 @@ namespace MicSwitch.MainWindow.ViewModels
                     .Where(IsConfiguredHotkey)
                     .Select(x => (KeyDown: false, Key: x));
 
-            return Observable.Merge(hotkeyDown, hotkeyUp).DistinctUntilChanged();
+            return Observable.Merge(hotkeyDown, hotkeyUp);
         }
     }
 }
