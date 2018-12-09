@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Interop;
 using Common.Logging;
 using DynamicData;
 using DynamicData.Binding;
@@ -39,6 +40,7 @@ namespace MicSwitch.MainWindow.ViewModels
         private readonly IWindowTracker mainWindowTracker;
 
         private readonly IMicrophoneController microphoneController;
+
         private HotkeyGesture hotkey;
         private HotkeyGesture hotkeyAlt;
         private bool isPushToTalkMode;
@@ -198,7 +200,7 @@ namespace MicSwitch.MainWindow.ViewModels
                 .Subscribe(x => ShowInTaskbar = x != WindowState.Minimized, Log.HandleException)
                 .AddTo(Anchors);
 
-            ShowAppCommand = new DelegateCommand(() => { WindowState = WindowState.Normal; });
+            ShowAppCommand = new DelegateCommand(ShowAppCommandExecuted);
 
             OpenAppDataDirectoryCommand = CommandWrapper.Create(OpenAppDataDirectory);
 
@@ -224,6 +226,36 @@ namespace MicSwitch.MainWindow.ViewModels
                     configProvider.Save(config);
                 }, Log.HandleException)
                 .AddTo(Anchors);
+        }
+
+        private void ShowAppCommandExecuted()
+        {
+            Log.Debug($"ShowApp command activated, windowState: {WindowState}");
+            var mainWindow = Application.Current.MainWindow;
+            if (mainWindow == null)
+            {
+                Log.Warn($"Main window is not assigned yet");
+                return;
+            }
+            
+            Log.Debug($"Activating main window, title: '{mainWindow.Title}' {new Point(mainWindow.Left, mainWindow.Top)}, isActive: {mainWindow.IsActive}, state: {mainWindow.WindowState}, topmost: {mainWindow.Topmost}, style:{mainWindow.WindowStyle}");
+            if (mainWindow.WindowState == WindowState.Minimized)
+            {
+                mainWindow.WindowState = WindowState.Normal;
+            }
+
+            mainWindow.Activate();
+
+            var initialTopmost = mainWindow.Topmost;
+            mainWindow.Topmost = !initialTopmost;
+            mainWindow.Topmost = initialTopmost;
+            
+            var mainWindowHandle = new WindowInteropHelper(mainWindow).Handle;
+            if (mainWindowHandle != IntPtr.Zero && UnsafeNative.GetForegroundWindow() != mainWindowHandle)
+            {
+                Log.Debug($"Setting foreground window, hWnd: 0x{mainWindowHandle.ToInt64():x8}, windowState: {WindowState}");
+                UnsafeNative.SetForegroundWindow(mainWindowHandle);
+            }
         }
 
         public ReadOnlyObservableCollection<MicrophoneLineData> Microphones { get; }
