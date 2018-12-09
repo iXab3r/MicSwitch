@@ -360,7 +360,7 @@ namespace MicSwitch.MainWindow.ViewModels
                 return false;
             }
 
-            if (pressed.Key == Key.None)
+            if (pressed.Key == Key.None && pressed.MouseButton == null)
             {
                 return false;
             }
