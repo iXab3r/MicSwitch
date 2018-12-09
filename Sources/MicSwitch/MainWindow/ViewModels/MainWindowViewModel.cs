@@ -32,6 +32,7 @@ namespace MicSwitch.MainWindow.ViewModels
 {
     internal class MainWindowViewModel : DisposableReactiveObject
     {
+        private static readonly TimeSpan ConfigThrottlingTimeout = TimeSpan.FromSeconds(1);
         private static readonly ILog Log = LogManager.GetLogger(typeof(MainWindowViewModel));
         private static readonly string ExplorerExecutablePath = Environment.ExpandEnvironmentVariables(@"%WINDIR%\explorer.exe");
         private readonly IConfigProvider<MicSwitchConfig> configProvider;
@@ -211,6 +212,7 @@ namespace MicSwitch.MainWindow.ViewModels
                     this.ObservableForProperty(x => x.AudioNotification, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.HotkeyAlt, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.Hotkey, skipInitial: true).ToUnit())
+                .Throttle(ConfigThrottlingTimeout)
                 .Subscribe(() =>
                 {
                     var config = configProvider.ActualConfig.CloneJson();
@@ -322,6 +324,11 @@ namespace MicSwitch.MainWindow.ViewModels
         private bool IsConfiguredHotkey(HotkeyGesture pressed)
         {
             if (pressed == null)
+            {
+                return false;
+            }
+
+            if (pressed.Key == Key.None)
             {
                 return false;
             }
