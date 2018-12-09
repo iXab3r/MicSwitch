@@ -166,7 +166,7 @@ namespace MicSwitch.Updater
 
         private async Task ApplyUpdateCommandExecuted()
         {
-            Log.Debug($"[ApplicationUpdaterViewModel] Applying latest update {LatestVersion}");
+            Log.Debug($"[ApplicationUpdaterViewModel] Applying latest update {LatestVersion} (updated: {UpdatedVersion})");
             if (CheckForUpdatesCommand.IsBusy || ApplyUpdate.IsBusy)
             {
                 Log.Debug("[ApplicationUpdaterViewModel] Already in progress");
@@ -188,7 +188,7 @@ namespace MicSwitch.Updater
             {
                 await updaterModel.ApplyRelease(updaterModel.LatestVersion);
                 IsOpen = true;
-                StatusText = "Success !";
+                StatusText = $"Successfully updated to the version {LatestVersion}";
             }
             catch (Exception ex)
             {
