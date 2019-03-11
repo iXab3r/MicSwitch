@@ -10,6 +10,7 @@
                       xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
                       xmlns:eye="http://coderush.net/poeeye/"
                       xmlns:viewModels="clr-namespace:MicSwitch.MainWindow.ViewModels"
+                      xmlns:fa="http://schemas.fontawesome.io/icons/"
                       mc:Ignorable="d"
                       d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel}"
                       WindowState="{Binding WindowState}"
@@ -127,7 +128,9 @@
             </GroupBox>
 
             <DockPanel Dock="Top" Margin="3,5,3,5">
-
+                <Button DockPanel.Dock="Left" Command="{Binding ResetOverlayPositionCommand}" 
+                        Margin="0,0,10,0"
+                        ToolTip="Reset overlay position to center of the screen"><fa:FontAwesome Icon="Undo"/></Button>
                 <Button DockPanel.Dock="Right" Command="{Binding ToggleOverlayLockCommand}">
                     <Button.Content>
                         <Grid>
@@ -144,8 +147,7 @@
             <Label Padding="0" />
         </DockPanel>
 
-        <materialDesign:DrawerHost x:Name="MainDrawerHost"
-                                   IsBottomDrawerOpen="{Binding ApplicationUpdater.IsOpen}">
+        <materialDesign:DrawerHost IsBottomDrawerOpen="{Binding ApplicationUpdater.IsOpen}">
             <materialDesign:DrawerHost.BottomDrawerContent>
                 <Grid Height="60">
                     <ContentPresenter Content="{Binding ApplicationUpdater}" />

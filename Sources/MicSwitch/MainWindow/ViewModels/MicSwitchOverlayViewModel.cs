@@ -76,7 +76,7 @@ namespace MicSwitch.MainWindow.ViewModels
         {
             base.LockWindowCommandExecuted();
 
-            var config = configProvider.ActualConfig;
+            var config = configProvider.ActualConfig.CloneJson();
             SavePropertiesToConfig(config);
 
             config.IsVisible = IsVisible;

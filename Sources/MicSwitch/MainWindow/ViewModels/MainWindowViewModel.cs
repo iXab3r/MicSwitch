@@ -204,6 +204,8 @@ namespace MicSwitch.MainWindow.ViewModels
 
             OpenAppDataDirectoryCommand = CommandWrapper.Create(OpenAppDataDirectory);
 
+            ResetOverlayPositionCommand = CommandWrapper.Create(() => ResetOverlayPositionCommandExecuted());
+
             var executingAssemblyName = Assembly.GetExecutingAssembly().GetName();
             Title = $"{(AppArguments.Instance.IsDebugMode ? "[D]" : "")} {executingAssemblyName.Name} v{executingAssemblyName.Version}";
 
@@ -226,6 +228,12 @@ namespace MicSwitch.MainWindow.ViewModels
                     configProvider.Save(config);
                 }, Log.HandleException)
                 .AddTo(Anchors);
+        }
+
+        private void ResetOverlayPositionCommandExecuted()
+        {
+            Log.Debug($"Resetting overlay position, current size: {new Rect(Overlay.Left, Overlay.Top, Overlay.Width, Overlay.Height)}");
+            Overlay.ResetToDefault();
         }
 
         private void ShowAppCommandExecuted()
@@ -261,6 +269,8 @@ namespace MicSwitch.MainWindow.ViewModels
         public ReadOnlyObservableCollection<MicrophoneLineData> Microphones { get; }
 
         public ICommand ToggleOverlayLockCommand { get; }
+        
+        public ICommand ResetOverlayPositionCommand { get; }
 
         public ICommand ExitAppCommand { get; }
 
