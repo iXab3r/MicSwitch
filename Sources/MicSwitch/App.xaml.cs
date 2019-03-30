@@ -19,7 +19,7 @@ namespace MicSwitch
     /// </summary>
     public partial class App
     {
-        public readonly TimeSpan StartupTimeout = TimeSpan.FromSeconds(5);
+        public readonly TimeSpan StartupTimeout = TimeSpan.FromSeconds(10);
         
         public App()
         {
