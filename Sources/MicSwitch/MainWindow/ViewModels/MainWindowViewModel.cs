@@ -173,11 +173,11 @@ namespace MicSwitch.MainWindow.ViewModels
                 {
                     if (!mainWindowTracker.IsActive)
                     {
-                        Log.Trace($"Main window is NOT active, processing hotkey {x.Key} (isDown: {x})");
+                        Log.Debug($"Main window is NOT active, processing hotkey {x.Key} (isDown: {x})");
                         return true;
                     }
 
-                    Log.Trace($"Main window is active, skipping hotkey {x.Key} (isDown: {x})");
+                    Log.Debug($"Main window is active, skipping hotkey {x.Key} (isDown: {x})");
                     return false;
                 })
                 .ObserveOnDispatcher()
@@ -258,7 +258,6 @@ namespace MicSwitch.MainWindow.ViewModels
                 Log.Debug("Initializing keyboard & mouse event source");
                 eventSource.InitializeHooks().AddTo(Anchors);
             }).AddTo(Anchors);
-            
         }
 
         private async Task RunAtLoginCommandExecuted(bool runAtLogin)
