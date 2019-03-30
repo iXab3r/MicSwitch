@@ -65,7 +65,7 @@ namespace MicSwitch
             Log.Debug($"Acquiring mutex {mutexId} (retryIfAbandoned: {retryIfAbandoned})...");
             try
             {
-                var mutex = new Mutex(false, mutexId);
+                var mutex = new Mutex(true, mutexId);
                 if (mutex.WaitOne(StartupTimeout))
                 {
                     Log.Debug($"Mutex {mutexId} was successfully acquired");

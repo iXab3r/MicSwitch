@@ -201,7 +201,7 @@ namespace MicSwitch.Updater
             var appName = Assembly.GetExecutingAssembly().GetName().Name;
             var rootDirectory = default(string);
 
-            if (appArguments.IsDebugMode || string.IsNullOrWhiteSpace(GetSquirrelUpdateExeOrThrow()))
+            if (appArguments.IsDebugMode || !GetSquirrelUpdateExe().Exists)
             {
                 rootDirectory = AppDomain.CurrentDomain.BaseDirectory;
             }

@@ -187,11 +187,11 @@
     <controls:MetroWindow.RightWindowCommands>
         <controls:WindowCommands ShowSeparators="True">
             <StackPanel Orientation="Horizontal">
-                <ContentPresenter Content="{Binding ApplicationUpdater.CheckForUpdatesCommand}"
+                <ContentControl Content="{Binding ApplicationUpdater.CheckForUpdatesCommand}"
                                   ToolTip="Check for updates"
                                   Margin="5,0"
                                   eye:CommandWrapperHelper.Text="&#xF0ED;" />
-                <ContentPresenter Content="{Binding ApplicationUpdater.RestartCommand}"
+                <ContentControl Content="{Binding ApplicationUpdater.RestartCommand}"
                                   ToolTip="Restart application"
                                   Margin="5,0"
                                   Visibility="{Binding IsDebugMode, Converter={StaticResource TrueToVisibleFalseToCollapsedConverter}}"
