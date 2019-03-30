@@ -126,6 +126,17 @@
                     </DockPanel>
                 </DockPanel>
             </GroupBox>
+            
+            <DockPanel DockPanel.Dock="Top" Margin="0,3" LastChildFill="True">
+                <TextBlock DockPanel.Dock="Left" MinWidth="100"
+                           TextAlignment="Right"
+                           Text="Run at login: " />
+                <ToggleButton
+                    DockPanel.Dock="Left" HorizontalAlignment="Left"
+                    IsChecked="{Binding RunAtLogin, Mode=OneWay}"
+                    Command="{Binding RunAtLoginToggleCommand}"
+                    CommandParameter="{Binding IsChecked, RelativeSource={RelativeSource Self}}"/>
+            </DockPanel>
 
             <DockPanel Dock="Top" Margin="3,5,3,5">
                 <Button DockPanel.Dock="Left" Command="{Binding ResetOverlayPositionCommand}" 

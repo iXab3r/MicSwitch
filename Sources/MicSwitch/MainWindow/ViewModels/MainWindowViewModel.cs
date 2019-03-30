@@ -9,7 +9,6 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
 using Common.Logging;
-using DynamicData;
 using DynamicData.Binding;
 using JetBrains.Annotations;
 using MicSwitch.MainWindow.Models;
@@ -25,9 +24,12 @@ using PoeShared.Native;
 using PoeShared.Prism;
 using PoeShared.Scaffolding;
 using PoeShared.Scaffolding.WPF;
+using PoeShared.Services;
 using Prism.Commands;
 using ReactiveUI;
 using Unity.Attributes;
+using Application = System.Windows.Application;
+using MessageBox = System.Windows.MessageBox;
 
 namespace MicSwitch.MainWindow.ViewModels
 {
@@ -39,6 +41,7 @@ namespace MicSwitch.MainWindow.ViewModels
         private readonly IConfigProvider<MicSwitchConfig> configProvider;
         private readonly IWindowTracker mainWindowTracker;
 
+        private readonly IStartupManager startupManager;
         private readonly IMicrophoneController microphoneController;
 
         private HotkeyGesture hotkey;
@@ -52,6 +55,7 @@ namespace MicSwitch.MainWindow.ViewModels
 
         public MainWindowViewModel(
             [NotNull] IKeyboardEventsSource eventSource,
+            [NotNull] IFactory<IStartupManager, AppArguments, StartupManagerArgs> startupManagerFactory,
             [NotNull] IMicrophoneController microphoneController,
             [NotNull] IMicSwitchOverlayViewModel overlay,
             [NotNull] IAudioNotificationsManager audioNotificationsManager,
@@ -60,6 +64,18 @@ namespace MicSwitch.MainWindow.ViewModels
             [NotNull] [Dependency(WellKnownWindows.MainWindow)] IWindowTracker mainWindowTracker,
             [NotNull] IConfigProvider<MicSwitchConfig> configProvider)
         {
+
+            var startupManagerArgs = new StartupManagerArgs
+            {
+                UniqueAppName = AppArguments.Instance.AppName,
+            };
+            if (AppArguments.Instance.IsDebugMode)
+            {
+                startupManagerArgs.ExecutablePath = System.Windows.Forms.Application.ExecutablePath;
+                startupManagerArgs.CommandLineArgs = AppArguments.Instance.StartupArgs;
+            }
+            this.startupManager = startupManagerFactory.Create(AppArguments.Instance, startupManagerArgs);
+
             this.microphoneController = microphoneController;
 
             ApplicationUpdater = appUpdater;
@@ -101,6 +117,7 @@ namespace MicSwitch.MainWindow.ViewModels
             
             Overlay = overlay;
 
+            this.BindPropertyTo(x => x.RunAtLogin, startupManager, x => x.IsRegistered).AddTo(Anchors);
             this.BindPropertyTo(x => x.MicrophoneVolume, microphoneController, x => x.VolumePercent).AddTo(Anchors);
             this.BindPropertyTo(x => x.MicrophoneMuted, microphoneController, x => x.Mute).AddTo(Anchors);
 
@@ -205,6 +222,8 @@ namespace MicSwitch.MainWindow.ViewModels
             OpenAppDataDirectoryCommand = CommandWrapper.Create(OpenAppDataDirectory);
 
             ResetOverlayPositionCommand = CommandWrapper.Create(() => ResetOverlayPositionCommandExecuted());
+            
+            RunAtLoginToggleCommand = CommandWrapper.Create<bool>(RunAtLoginCommandExecuted);
 
             var executingAssemblyName = Assembly.GetExecutingAssembly().GetName();
             Title = $"{(AppArguments.Instance.IsDebugMode ? "[D]" : "")} {executingAssemblyName.Name} v{executingAssemblyName.Version}";
@@ -228,6 +247,35 @@ namespace MicSwitch.MainWindow.ViewModels
                     configProvider.Save(config);
                 }, Log.HandleException)
                 .AddTo(Anchors);
+        }
+
+        private async Task RunAtLoginCommandExecuted(bool runAtLogin)
+        {
+            if (runAtLogin)
+            {
+                if (!startupManager.Register())
+                {
+                    Log.Warn("Failed to add application to Auto-start");
+
+                    MessageBox.Show("Failed to change startup parameters");
+                }
+                else
+                {
+                    Log.Info($"Application successfully added to Auto-start");
+                }
+            }
+            else
+            {
+                if (!startupManager.Unregister())
+                {
+                    Log.Warn("Failed to remove application from Auto-start");
+                    MessageBox.Show("Failed to unregister application startup");
+                }
+                else
+                {
+                    Log.Info("Application successfully removed from Auto-start");
+                }
+            }
         }
 
         private void ResetOverlayPositionCommandExecuted()
@@ -277,6 +325,8 @@ namespace MicSwitch.MainWindow.ViewModels
         public ICommand ShowAppCommand { get; }
 
         public CommandWrapper OpenAppDataDirectoryCommand { get; }
+        
+        public CommandWrapper RunAtLoginToggleCommand { get; }
 
         public IMicSwitchOverlayViewModel Overlay { get; }
 
@@ -285,6 +335,8 @@ namespace MicSwitch.MainWindow.ViewModels
         public IAudioNotificationSelectorViewModel AudioSelectorWhenMuted { get; }
 
         public bool IsActive => mainWindowTracker.IsActive;
+
+        public bool RunAtLogin => startupManager.IsRegistered;
 
         public WindowState WindowState
         {

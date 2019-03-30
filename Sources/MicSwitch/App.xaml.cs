@@ -33,16 +33,16 @@ namespace MicSwitch
 
                 InitializeLogging();
 
-                Log.Debug($"[App..ctor] Arguments: {arguments.DumpToText()}");
-                Log.Debug($"[App..ctor] Parsed args: {AppArguments.Instance.DumpToText()}");
-                Log.Debug($"[App..ctor] Culture: {Thread.CurrentThread.CurrentCulture}, UICulture: {Thread.CurrentThread.CurrentUICulture}");
+                Log.Debug($"Arguments: {arguments.DumpToText()}");
+                Log.Debug($"Parsed args: {AppArguments.Instance}");
+                Log.Debug($"Culture: {Thread.CurrentThread.CurrentCulture}, UICulture: {Thread.CurrentThread.CurrentUICulture}");
 
                 RxApp.SupportsRangeNotifications = false; //FIXME DynamicData (as of v4.11) does not support RangeNotifications
-                Log.Debug($"[App..ctor] UI Scheduler: {RxApp.MainThreadScheduler}");
+                Log.Debug($"UI Scheduler: {RxApp.MainThreadScheduler}");
                 RxApp.MainThreadScheduler = DispatcherScheduler.Current;
                 RxApp.TaskpoolScheduler = TaskPoolScheduler.Default;
                 Current.ShutdownMode = ShutdownMode.OnMainWindowClose;
-                Log.Debug($"[App..ctor] New UI Scheduler: {RxApp.MainThreadScheduler}");
+                Log.Debug($"New UI Scheduler: {RxApp.MainThreadScheduler}");
             }
             catch (Exception ex)
             {
