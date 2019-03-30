@@ -55,7 +55,7 @@ namespace MicSwitch.MainWindow.ViewModels
 
         public MainWindowViewModel(
             [NotNull] IKeyboardEventsSource eventSource,
-            [NotNull] IFactory<IStartupManager, AppArguments, StartupManagerArgs> startupManagerFactory,
+            [NotNull] IFactory<IStartupManager, StartupManagerArgs> startupManagerFactory,
             [NotNull] IMicrophoneController microphoneController,
             [NotNull] IMicSwitchOverlayViewModel overlay,
             [NotNull] IAudioNotificationsManager audioNotificationsManager,
@@ -64,7 +64,6 @@ namespace MicSwitch.MainWindow.ViewModels
             [NotNull] [Dependency(WellKnownWindows.MainWindow)] IWindowTracker mainWindowTracker,
             [NotNull] IConfigProvider<MicSwitchConfig> configProvider)
         {
-
             var startupManagerArgs = new StartupManagerArgs
             {
                 UniqueAppName = AppArguments.Instance.AppName,
@@ -74,7 +73,7 @@ namespace MicSwitch.MainWindow.ViewModels
                 startupManagerArgs.ExecutablePath = System.Windows.Forms.Application.ExecutablePath;
                 startupManagerArgs.CommandLineArgs = AppArguments.Instance.StartupArgs;
             }
-            this.startupManager = startupManagerFactory.Create(AppArguments.Instance, startupManagerArgs);
+            this.startupManager = startupManagerFactory.Create(startupManagerArgs);
 
             this.microphoneController = microphoneController;
 
