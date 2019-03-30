@@ -100,7 +100,7 @@ namespace MicSwitch.Updater
         public CommandWrapper RestartCommand { get; }
 
         public CommandWrapper ApplyUpdate { get; }
-
+        
         public string Error
         {
             get => error;
@@ -124,6 +124,11 @@ namespace MicSwitch.Updater
 
         [CanBeNull]
         public Version LatestVersion => updaterModel.LatestVersion?.FutureReleaseEntry?.Version?.Version;
+
+        public (string exePath, string exeArgs) GetRestartApplicationArgs()
+        {
+            return updaterModel.GetRestartApplicationArgs();
+        }
 
         private async Task CheckForUpdatesCommandExecuted()
         {

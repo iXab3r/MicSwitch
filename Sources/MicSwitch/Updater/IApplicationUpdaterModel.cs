@@ -28,6 +28,8 @@ namespace MicSwitch.Updater
 
         Task ApplyRelease([NotNull] UpdateInfo updateInfo);
 
+        (string exePath, string exeArgs) GetRestartApplicationArgs();
+
         void Reset();
     }
 }

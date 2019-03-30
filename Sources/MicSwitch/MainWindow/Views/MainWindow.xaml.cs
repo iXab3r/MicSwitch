@@ -1,4 +1,6 @@
-﻿using MicSwitch.MainWindow.Models;
+﻿using System.Diagnostics;
+using Common.Logging;
+using MicSwitch.MainWindow.Models;
 using MicSwitch.MainWindow.ViewModels;
 using MicSwitch.Modularity;
 using MicSwitch.Updater;
@@ -17,12 +19,18 @@ namespace MicSwitch.MainWindow.Views
     /// </summary>
     public partial class MainWindow
     {
+        private static readonly ILog Log = LogManager.GetLogger(typeof(MainWindow));
+
         private readonly UnityContainer container = new UnityContainer();
 
         public MainWindow()
         {
+            Log.Debug($"Initializing MainWindow for process {AppArguments.Instance.ProcessId}");
+            var sw = Stopwatch.StartNew();
             InitializeComponent();
-
+            Log.Debug($"BAML loaded in {sw.ElapsedMilliseconds:F0}ms");
+            sw.Restart();
+            
             container.RegisterInstance(AppArguments.Instance, new ContainerControlledLifetimeManager());
             if (AppArguments.Instance.IsDebugMode)
             {
@@ -38,8 +46,13 @@ namespace MicSwitch.MainWindow.Views
             container.RegisterSingleton<IMicSwitchOverlayViewModel, MicSwitchOverlayViewModel>();
 
             container.AddExtension(new CommonRegistrations());
+            Log.Debug($"Registrations took {sw.ElapsedMilliseconds:F0}ms");
+            sw.Restart();
+            
             DataContext = container.Resolve<MainWindowViewModel>();
-
+            Log.Debug($"MainWindow resolved in {sw.ElapsedMilliseconds:F0}ms");
+            sw.Restart();
+            
             var micSwitchOverlayDependencyName = "MicSwitchOverlayAllWindows";
             container.RegisterOverlayController(micSwitchOverlayDependencyName, micSwitchOverlayDependencyName);
 
@@ -51,6 +64,7 @@ namespace MicSwitch.MainWindow.Views
                 container.Resolve<IFactory<IMicSwitchOverlayViewModel, IOverlayWindowController>>();
             var overlayViewModel = overlayViewModelFactory.Create(overlayController);
             overlayController.RegisterChild(overlayViewModel);
+            Log.Debug($"Overlays loaded in {sw.ElapsedMilliseconds:F0}ms");
         }
     }
 }

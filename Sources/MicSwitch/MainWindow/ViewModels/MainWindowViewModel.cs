@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Navigation;
 using Common.Logging;
 using DynamicData.Binding;
 using JetBrains.Annotations;
@@ -42,6 +43,7 @@ namespace MicSwitch.MainWindow.ViewModels
         private readonly IWindowTracker mainWindowTracker;
 
         private readonly IStartupManager startupManager;
+        private readonly AppArguments appArguments;
         private readonly IMicrophoneController microphoneController;
 
         private HotkeyGesture hotkey;
@@ -54,6 +56,7 @@ namespace MicSwitch.MainWindow.ViewModels
         private WindowState windowState;
 
         public MainWindowViewModel(
+            [NotNull] AppArguments appArguments,
             [NotNull] IKeyboardEventsSource eventSource,
             [NotNull] IFactory<IStartupManager, StartupManagerArgs> startupManagerFactory,
             [NotNull] IMicrophoneController microphoneController,
@@ -64,17 +67,18 @@ namespace MicSwitch.MainWindow.ViewModels
             [NotNull] [Dependency(WellKnownWindows.MainWindow)] IWindowTracker mainWindowTracker,
             [NotNull] IConfigProvider<MicSwitchConfig> configProvider)
         {
+            var restartArgs = appUpdater.GetRestartApplicationArgs();
             var startupManagerArgs = new StartupManagerArgs
             {
-                UniqueAppName = AppArguments.Instance.AppName,
+                UniqueAppName = $"{appArguments.AppName}{(appArguments.IsDebugMode ? "-debug" : string.Empty)}",
+                ExecutablePath = restartArgs.exePath,
+                CommandLineArgs = restartArgs.exeArgs,
+                AutostartFlag = appArguments.AutostartFlag
             };
-            if (AppArguments.Instance.IsDebugMode)
-            {
-                startupManagerArgs.ExecutablePath = System.Windows.Forms.Application.ExecutablePath;
-                startupManagerArgs.CommandLineArgs = AppArguments.Instance.StartupArgs;
-            }
+           
             this.startupManager = startupManagerFactory.Create(startupManagerArgs);
 
+            this.appArguments = appArguments;
             this.microphoneController = microphoneController;
 
             ApplicationUpdater = appUpdater;
@@ -225,7 +229,7 @@ namespace MicSwitch.MainWindow.ViewModels
             RunAtLoginToggleCommand = CommandWrapper.Create<bool>(RunAtLoginCommandExecuted);
 
             var executingAssemblyName = Assembly.GetExecutingAssembly().GetName();
-            Title = $"{(AppArguments.Instance.IsDebugMode ? "[D]" : "")} {executingAssemblyName.Name} v{executingAssemblyName.Version}";
+            Title = $"{(appArguments.IsDebugMode ? "[D]" : "")} {executingAssemblyName.Name} v{executingAssemblyName.Version}";
 
             // config processing
             Observable.Merge(
@@ -246,6 +250,12 @@ namespace MicSwitch.MainWindow.ViewModels
                     configProvider.Save(config);
                 }, Log.HandleException)
                 .AddTo(Anchors);
+
+            System.Windows.Forms.Application.Idle += delegate
+            {
+                Log.Debug("Initializing keyboard & mouse event source");
+                eventSource.InitializeHooks().AddTo(Anchors);
+            };
         }
 
         private async Task RunAtLoginCommandExecuted(bool runAtLogin)
@@ -409,9 +419,11 @@ namespace MicSwitch.MainWindow.ViewModels
 
         public ApplicationUpdaterViewModel ApplicationUpdater { get; }
 
+        public bool IsDebugMode => appArguments.IsDebugMode;
+
         private async Task OpenAppDataDirectory()
         {
-            await Task.Run(() => Process.Start(ExplorerExecutablePath, AppArguments.Instance.AppDataDirectory));
+            await Task.Run(() => Process.Start(ExplorerExecutablePath, appArguments.AppDataDirectory));
         }
 
         private bool IsConfiguredHotkey(HotkeyGesture pressed)

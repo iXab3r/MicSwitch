@@ -45,7 +45,7 @@
                                 Focusable="False"
                                 IsTabStop="False"
                                 Margin="10"
-                                eye:CommandWrapperHelper.Text="&#xf2d0; Restart application" />
+                                eye:CommandWrapperHelper.Text="&#xf021; Restart application" />
 
                 <ContentControl DockPanel.Dock="Bottom"
                                 Visibility="{Binding LatestVersion, Converter={StaticResource NullToCollapsedConverter}}"

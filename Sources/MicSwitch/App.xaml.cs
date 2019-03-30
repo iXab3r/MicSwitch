@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Reactive.Concurrency;
 using System.Reflection;
 using System.Threading;
@@ -18,6 +19,8 @@ namespace MicSwitch
     /// </summary>
     public partial class App
     {
+        public readonly TimeSpan StartupTimeout = TimeSpan.FromSeconds(5);
+        
         public App()
         {
             try
@@ -34,9 +37,12 @@ namespace MicSwitch
                 InitializeLogging();
 
                 Log.Debug($"Arguments: {arguments.DumpToText()}");
+                Log.Debug($"ProcessID: {Process.GetCurrentProcess().Id}");
                 Log.Debug($"Parsed args: {AppArguments.Instance}");
                 Log.Debug($"Culture: {Thread.CurrentThread.CurrentCulture}, UICulture: {Thread.CurrentThread.CurrentUICulture}");
 
+                SingleInstanceValidationRoutine(true);
+                
                 RxApp.SupportsRangeNotifications = false; //FIXME DynamicData (as of v4.11) does not support RangeNotifications
                 Log.Debug($"UI Scheduler: {RxApp.MainThreadScheduler}");
                 RxApp.MainThreadScheduler = DispatcherScheduler.Current;
@@ -53,26 +59,37 @@ namespace MicSwitch
 
         private static ILog Log => SharedLog.Instance.Log;
 
-        private void SingleInstanceValidationRoutine()
+        private void SingleInstanceValidationRoutine(bool retryIfAbandoned)
         {
             var mutexId = $"MicSwitch{(AppArguments.Instance.IsDebugMode ? "DEBUG" : "RELEASE")}{{567EBFFF-E391-4B38-AC85-469978EB37C4}}";
-            Log.Debug($"[App] Acquiring mutex {mutexId}...");
-            var mutex = new Mutex(true, mutexId);
-            if (mutex.WaitOne(TimeSpan.Zero, true))
+            Log.Debug($"Acquiring mutex {mutexId} (retryIfAbandoned: {retryIfAbandoned})...");
+            try
             {
-                Log.Debug($"[App] Mutex {mutexId} was successfully acquired");
-
-                AppDomain.CurrentDomain.DomainUnload += delegate
+                var mutex = new Mutex(false, mutexId);
+                if (mutex.WaitOne(StartupTimeout))
                 {
-                    Log.Debug($"[App.DomainUnload] Detected DomainUnload, disposing mutex {mutexId}");
-                    mutex.ReleaseMutex();
-                    Log.Debug("[App.DomainUnload] Mutex was successfully disposed");
-                };
+                    Log.Debug($"Mutex {mutexId} was successfully acquired");
+
+                    AppDomain.CurrentDomain.DomainUnload += delegate
+                    {
+                        Log.Debug($"[App.DomainUnload] Detected DomainUnload, disposing mutex {mutexId}");
+                        mutex.ReleaseMutex();
+                        Log.Debug("[App.DomainUnload] Mutex was successfully disposed");
+                    };
+                }
+                else
+                {
+                    Log.Error($"Application is already running, mutex: {mutexId}");
+                    ShowShutdownWarning();
+                }
             }
-            else
+            catch (AbandonedMutexException ex)
             {
-                Log.Warn($"[App] Application is already running, mutex: {mutexId}");
-                ShowShutdownWarning();
+                Log.Debug($"Mutex is abandoned {mutexId} (retryIfAbandoned: {retryIfAbandoned})");
+                if (retryIfAbandoned)
+                {
+                    SingleInstanceValidationRoutine(false);
+                }
             }
         }
 
@@ -121,18 +138,14 @@ namespace MicSwitch
         {
             base.OnStartup(e);
 
-            Log.Debug("Application startup detected");
-
-            SingleInstanceValidationRoutine();
-
-            Log.Info("Initializing bootstrapper...");
+            Log.Info($"Application startup detected, PID: {Process.GetCurrentProcess().Id}");
         }
 
         protected override void OnExit(ExitEventArgs e)
         {
             base.OnExit(e);
 
-            Log.Debug("Application exit detected");
+            Log.Info($"Application exit detected, PID: {Process.GetCurrentProcess().Id}");
         }
 
         private void ShowShutdownWarning()
@@ -141,6 +154,8 @@ namespace MicSwitch
             var window = MainWindow;
             var title = $"{assemblyName.Name} v{assemblyName.Version}";
             var message = "Application is already running !";
+            Log.Warn($"Showing shutdown warning for process {Process.GetCurrentProcess().Id}");
+
             if (window != null)
             {
                 MessageBox.Show(window, message, title, MessageBoxButton.OK, MessageBoxImage.Warning);

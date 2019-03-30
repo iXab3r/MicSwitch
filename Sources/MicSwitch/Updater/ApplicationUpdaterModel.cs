@@ -17,17 +17,21 @@ namespace MicSwitch.Updater
 {
     internal sealed class ApplicationUpdaterModel : DisposableReactiveObject, IApplicationUpdaterModel
     {
+        private readonly AppArguments appArguments;
         private static readonly ILog Log = LogManager.GetLogger(typeof(ApplicationUpdaterModel));
 
-        private static readonly string ApplicationName = Process.GetCurrentProcess().ProcessName + ".exe";
+        private static readonly string UpdaterExecutableName = "update.exe";
 
         private UpdateInfo latestVersion;
         private Version mostRecentVersion;
         private DirectoryInfo mostRecentVersionAppFolder;
         private UpdateSourceInfo updateSource;
 
-        public ApplicationUpdaterModel()
+        public ApplicationUpdaterModel(AppArguments appArguments)
         {
+            Guard.ArgumentNotNull(appArguments, nameof(appArguments));
+            
+            this.appArguments = appArguments;
             SquirrelAwareApp.HandleEvents(
                 OnInitialInstall,
                 OnAppUpdate,
@@ -61,7 +65,7 @@ namespace MicSwitch.Updater
             get => latestVersion;
             private set => this.RaiseAndSetIfChanged(ref latestVersion, value);
         }
-
+        
         public async Task ApplyRelease(UpdateInfo updateInfo)
         {
             Guard.ArgumentNotNull(updateInfo, nameof(updateInfo));
@@ -74,7 +78,7 @@ namespace MicSwitch.Updater
                 await mgr.DownloadReleases(updateInfo.ReleasesToApply, UpdateProgress);
 
                 string newVersionFolder;
-                if (string.IsNullOrWhiteSpace(GetSquirrelUpdateExe()))
+                if (string.IsNullOrWhiteSpace(GetSquirrelUpdateExeOrThrow()))
                 {
                     Log.Warn("[ApplicationUpdaterModel] Not a Squirrel-app or debug mode detected, skipping update");
                     newVersionFolder = AppDomain.CurrentDomain.BaseDirectory;
@@ -136,30 +140,60 @@ namespace MicSwitch.Updater
 
         public async Task RestartApplication()
         {
-            var updatedExecutable = new FileInfo(Path.Combine(mostRecentVersionAppFolder.FullName, ApplicationName));
-            Log.Debug(
-                $"[ApplicationUpdaterModel] Restarting app, folder: {mostRecentVersionAppFolder}, appName: {ApplicationName}, exePath: {updatedExecutable}(exists: {updatedExecutable.Exists})...");
-
-            if (!updatedExecutable.Exists)
+            if (Debugger.IsAttached)
             {
-                throw new FileNotFoundException("Application executable was not found", updatedExecutable.FullName);
+                throw new NotSupportedException("Restart won't work with attached debugger !");
             }
+            var args = GetRestartApplicationArgs();
 
-            var squirrelUpdater = GetSquirrelUpdateExe();
-            var squirrelArgs = $"--processStartAndWait {updatedExecutable.FullName}";
-
-            Log.Debug($"[ApplicationUpdaterModel] Starting Squirrel updater @ '{squirrelUpdater}', args: {squirrelArgs} ...");
-            var updaterProcess = Process.Start(squirrelUpdater, squirrelArgs);
+            Log.Debug($"[ApplicationUpdaterModel] Starting Squirrel updater @ '{args.exePath}', args: {args.exeArgs} ...");
+            var updaterProcess = Process.Start(args.exePath, args.exeArgs);
             if (updaterProcess == null)
             {
-                throw new FileNotFoundException($"Failed to start updater @ '{squirrelUpdater}'");
+                throw new FileNotFoundException($"Failed to start updater @ '{args.exePath}'");
             }
 
             Log.Debug($"[ApplicationUpdaterModel] Process spawned, PID: {updaterProcess.Id}");
             await Task.Delay(2000);
 
-            Log.Debug("[ApplicationUpdaterModel] Terminating application...");
-            Application.Current.Shutdown(0);
+            var app = Application.Current;
+            Log.Debug($"[ApplicationUpdaterModel] Terminating application (shutdownMode: {app.ShutdownMode}, window: {app.MainWindow})...");
+            if (app.MainWindow != null && app.ShutdownMode == ShutdownMode.OnMainWindowClose)
+            {
+                Log.Debug($"[ApplicationUpdaterModel] Closing main window {app.MainWindow}...");
+                app.MainWindow.Close();
+            }
+            else
+            {
+                Log.Debug($"[ApplicationUpdaterModel] Closing app forcefully");
+                Application.Current.Shutdown(0);
+            }
+        }
+
+        public (string exePath, string exeArgs) GetRestartApplicationArgs()
+        {
+            var appExecutable = new FileInfo(Path.Combine(mostRecentVersionAppFolder.FullName, appArguments.ApplicationExecutableName));
+            Log.Debug($"[ApplicationUpdaterModel] Restarting app, folder: {mostRecentVersionAppFolder}, appName: { appArguments.ApplicationExecutableName}, exePath: {appExecutable}(exists: {appExecutable.Exists})...");
+
+            if (!appExecutable.Exists)
+            {
+                throw new FileNotFoundException("Application executable was not found", appExecutable.FullName);
+            }
+
+            var squirrelUpdater = GetSquirrelUpdateExe();
+            
+            if (!squirrelUpdater.Exists)
+            {
+                Log.Warn($"{UpdaterExecutableName} not found(path: {appExecutable.FullName}), not a Squirrel-installed app?");
+            }
+            else
+            {
+                Log.Warn($"{UpdaterExecutableName} is running in DEBUG MODE, restart path will be exactly the same as launch path");
+            }
+            var executableToStart = appExecutable.FullName;
+            var startupArgs = appArguments.StartupArgs ?? string.Empty;
+
+            return (executableToStart, startupArgs);
         }
 
         private async Task<IUpdateManager> CreateManager()
@@ -167,7 +201,7 @@ namespace MicSwitch.Updater
             var appName = Assembly.GetExecutingAssembly().GetName().Name;
             var rootDirectory = default(string);
 
-            if (AppArguments.Instance.IsDebugMode || string.IsNullOrWhiteSpace(GetSquirrelUpdateExe()))
+            if (appArguments.IsDebugMode || string.IsNullOrWhiteSpace(GetSquirrelUpdateExeOrThrow()))
             {
                 rootDirectory = AppDomain.CurrentDomain.BaseDirectory;
             }
@@ -214,7 +248,7 @@ namespace MicSwitch.Updater
 
         private void OnAppUpdate(Version appVersion)
         {
-            Log.Debug($"[ApplicationUpdaterModel.OnAppUpdate] Updateing v{appVersion}...");
+            Log.Debug($"[ApplicationUpdaterModel.OnAppUpdate] Updating v{appVersion}...");
         }
 
         private void OnInitialInstall(Version appVersion)
@@ -227,17 +261,15 @@ namespace MicSwitch.Updater
             Log.Debug("[ApplicationUpdaterModel.OnFirstRun] App started for the first time");
         }
 
-        private static string GetSquirrelUpdateExe()
+        private static FileInfo GetSquirrelUpdateExe()
         {
-            const string updaterExecutableName = "update.exe";
-
             var entryAssembly = Assembly.GetEntryAssembly();
             if (entryAssembly != null &&
-                Path.GetFileName(entryAssembly.Location).Equals(updaterExecutableName, StringComparison.OrdinalIgnoreCase) &&
+                Path.GetFileName(entryAssembly.Location).Equals(UpdaterExecutableName, StringComparison.OrdinalIgnoreCase) &&
                 entryAssembly.Location.IndexOf("app-", StringComparison.OrdinalIgnoreCase) == -1 &&
                 entryAssembly.Location.IndexOf("SquirrelTemp", StringComparison.OrdinalIgnoreCase) == -1)
             {
-                return Path.GetFullPath(entryAssembly.Location);
+                return new FileInfo(Path.GetFullPath(entryAssembly.Location));
             }
 
             var squirrelAssembly = typeof(UpdateManager).Assembly;
@@ -247,10 +279,16 @@ namespace MicSwitch.Updater
                 throw new ApplicationException($"Failed to get directory assembly {squirrelAssembly}");
             }
 
-            var fileInfo = new FileInfo(Path.Combine(executingAssembly, "..", updaterExecutableName));
+            var fileInfo = new FileInfo(Path.Combine(executingAssembly, "..", UpdaterExecutableName));
+            return fileInfo;
+        }
+
+        private static string GetSquirrelUpdateExeOrThrow()
+        {
+            var fileInfo = GetSquirrelUpdateExe();
             if (!fileInfo.Exists)
             {
-                throw new FileNotFoundException($"{updaterExecutableName} not found(path: {fileInfo.FullName}), not a Squirrel-installed app?",
+                throw new FileNotFoundException($"{UpdaterExecutableName} not found(path: {fileInfo.FullName}), not a Squirrel-installed app?",
                     fileInfo.FullName);
             }
 
