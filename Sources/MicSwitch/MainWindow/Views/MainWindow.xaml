@@ -18,6 +18,8 @@
                       ResizeMode="CanMinimize"
                       WindowStyle="SingleBorderWindow"
                       ShowInTaskbar="{Binding ShowInTaskbar, Mode=TwoWay}"
+                      Loaded="OnLoaded"
+                      Unloaded="OnUnloaded"
                       Title="{Binding Title}" Width="400" SizeToContent="Height">
 
     <Grid>

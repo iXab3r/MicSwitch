@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Windows;
 using Common.Logging;
 using MicSwitch.MainWindow.Models;
 using MicSwitch.MainWindow.ViewModels;
@@ -9,8 +10,11 @@ using PoeShared.Modularity;
 using PoeShared.Native;
 using PoeShared.Prism;
 using PoeShared.Scaffolding;
+using PoeShared.UI.Models;
 using Unity;
+using Unity.Injection;
 using Unity.Lifetime;
+using Unity.Resolution;
 
 namespace MicSwitch.MainWindow.Views
 {
@@ -26,9 +30,11 @@ namespace MicSwitch.MainWindow.Views
         public MainWindow()
         {
             Log.Debug($"Initializing MainWindow for process {AppArguments.Instance.ProcessId}");
+            
             var sw = Stopwatch.StartNew();
             InitializeComponent();
             Log.Debug($"BAML loaded in {sw.ElapsedMilliseconds:F0}ms");
+            var viewController = new ViewController(this);
             sw.Restart();
             
             container.RegisterInstance(AppArguments.Instance, new ContainerControlledLifetimeManager());
@@ -49,7 +55,7 @@ namespace MicSwitch.MainWindow.Views
             Log.Debug($"Registrations took {sw.ElapsedMilliseconds:F0}ms");
             sw.Restart();
             
-            DataContext = container.Resolve<MainWindowViewModel>();
+            DataContext = container.Resolve<MainWindowViewModel>(new DependencyOverride<IViewController>(viewController));
             Log.Debug($"MainWindow resolved in {sw.ElapsedMilliseconds:F0}ms");
             sw.Restart();
             
@@ -65,6 +71,16 @@ namespace MicSwitch.MainWindow.Views
             var overlayViewModel = overlayViewModelFactory.Create(overlayController);
             overlayController.RegisterChild(overlayViewModel);
             Log.Debug($"Overlays loaded in {sw.ElapsedMilliseconds:F0}ms");
+        }
+
+        private void OnUnloaded(object sender, RoutedEventArgs e)
+        {
+            Log.Debug($"MainWindow unloaded");
+        }
+
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            Log.Debug($"MainWindow loaded");
         }
     }
 }

@@ -26,6 +26,7 @@ using PoeShared.Prism;
 using PoeShared.Scaffolding;
 using PoeShared.Scaffolding.WPF;
 using PoeShared.Services;
+using PoeShared.UI.Models;
 using Prism.Commands;
 using ReactiveUI;
 using Unity.Attributes;
@@ -56,6 +57,7 @@ namespace MicSwitch.MainWindow.ViewModels
         private WindowState windowState;
 
         public MainWindowViewModel(
+            [NotNull] IViewController viewController,
             [NotNull] AppArguments appArguments,
             [NotNull] IKeyboardEventsSource eventSource,
             [NotNull] IFactory<IStartupManager, StartupManagerArgs> startupManagerFactory,
@@ -251,11 +253,12 @@ namespace MicSwitch.MainWindow.ViewModels
                 }, Log.HandleException)
                 .AddTo(Anchors);
 
-            System.Windows.Forms.Application.Idle += delegate
+            viewController.Loaded.Take(1).Subscribe(() =>
             {
                 Log.Debug("Initializing keyboard & mouse event source");
                 eventSource.InitializeHooks().AddTo(Anchors);
-            };
+            }).AddTo(Anchors);
+            
         }
 
         private async Task RunAtLoginCommandExecuted(bool runAtLogin)
