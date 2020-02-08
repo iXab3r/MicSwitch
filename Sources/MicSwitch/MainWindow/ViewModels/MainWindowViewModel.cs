@@ -165,7 +165,6 @@ namespace MicSwitch.MainWindow.ViewModels
                 }, Log.HandleException)
                 .AddTo(Anchors);
 
-            /*
             BuildHotkeySubscription(eventSource)
                 .Where(x =>
                 {
@@ -195,7 +194,7 @@ namespace MicSwitch.MainWindow.ViewModels
                         MicrophoneMuted = !keyInfo.KeyDown;
                     }
                 }, Log.HandleException)
-                .AddTo(Anchors);*/
+                .AddTo(Anchors);
 
             ToggleOverlayLockCommand = CommandWrapper.Create(
                 () =>
@@ -252,12 +251,6 @@ namespace MicSwitch.MainWindow.ViewModels
                     configProvider.Save(config);
                 }, Log.HandleException)
                 .AddTo(Anchors);
-
-           // viewController.Loaded.Take(1).Subscribe(() =>
-          //  {
-           //     Log.Debug("Initializing keyboard & mouse event source");
-          //      eventSource.InitializeHooks().AddTo(Anchors);
-          //  }).AddTo(Anchors);
         }
 
         private async Task RunAtLoginCommandExecuted(bool runAtLogin)
