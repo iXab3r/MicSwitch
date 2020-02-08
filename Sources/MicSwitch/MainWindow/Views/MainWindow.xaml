@@ -120,9 +120,9 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <hotkeys:HotKeyBox Grid.Column="0" HotKey="{Binding Hotkey}"  />
+                            <hotkeys:HotKeyBox Grid.Column="0" HotKey="{Binding Hotkey}" AcceptsMouseKeys="True"  />
                             <TextBlock Grid.Column="1" Margin="10,0" DockPanel.Dock="Left" Text="or" FontWeight="Bold" />
-                            <hotkeys:HotKeyBox Grid.Column="2" HotKey="{Binding HotkeyAlt}"  />
+                            <hotkeys:HotKeyBox Grid.Column="2" HotKey="{Binding HotkeyAlt}" AcceptsMouseKeys="True"  />
                         </Grid>
                     </DockPanel>
                 </DockPanel>
