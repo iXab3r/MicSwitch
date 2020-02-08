@@ -2,3 +2,6 @@
 	path = Submodules/PoeEye
 	url = https://github.com/iXab3r/PoeEye.git
 	branch = MicSwitch
+[submodule "Submodules/DeploymentTools"]
+	path = Submodules/DeploymentTools
+	url = https://github.com/iXab3r/DeploymentTools.git
