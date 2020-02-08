@@ -19,8 +19,6 @@
     <PackageReference Include="Moq" Version="4.10.0" />
     <PackageReference Include="NUnit" Version="3.5.0" />
     <PackageReference Include="Shouldly" Version="3.0.1" />
-    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.3.0" />
-    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MicSwitch\MicSwitch.csproj" />

@@ -324,6 +324,8 @@ namespace MicSwitch.MainWindow.ViewModels
                 UnsafeNative.SetForegroundWindow(mainWindowHandle);
             }
         }
+        
+        public bool IsElevated => appArguments.IsElevated;
 
         public ReadOnlyObservableCollection<MicrophoneLineData> Microphones { get; }
 

@@ -186,6 +186,11 @@
 
     <mah:MetroWindow.RightWindowCommands>
         <mah:WindowCommands ShowSeparators="True">
+            <StackPanel Orientation="Horizontal" ToolTip="Application is running without Administrator privileges, not all features may work correctly, e.g. global hotkeys"
+                        Visibility="{Binding IsElevated, Converter={StaticResource TrueToCollapsedFalseToVisibleConverter}}">
+                <materialDesign:PackIcon VerticalAlignment="Center" Kind="ShieldWarning" />
+                <TextBlock Margin="2.5,0,0,0" Text="USER-MODE" />
+            </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <ContentControl Content="{Binding ApplicationUpdater.CheckForUpdatesCommand}"
                                 ContentTemplate="{StaticResource CommandWrapperIcon}"

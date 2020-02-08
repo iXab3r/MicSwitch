@@ -2,30 +2,18 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <LangVersion>7</LangVersion>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <AssemblyTitle>MicSwitch</AssemblyTitle>
-    <Product>MicSwitch</Product>
-    <Copyright>Copyright ©  2018</Copyright>
+    <AssemblyName>MicSwitch</AssemblyName>
     <OutputPath>..\bin</OutputPath>
     <UseWPF>true</UseWPF>
     <WarningsAsErrors />
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <GenerateDependencyFile>false</GenerateDependencyFile>
     <StartupObject>MicSwitch.App</StartupObject>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <IsPackable>false</IsPackable>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugType>full</DebugType>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-  </PropertyGroup>
-  <PropertyGroup>
+    <ApplicationManifest>MicSwitch.exe.manifest</ApplicationManifest>
     <ApplicationIcon>Resources\microphoneEnabled.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
