@@ -1,14 +1,18 @@
 ﻿using System.Diagnostics;
+using System.Linq;
 using System.Windows;
 using log4net;
 using MicSwitch.MainWindow.Models;
 using MicSwitch.MainWindow.ViewModels;
+using MicSwitch.Prism;
 using PoeShared;
 using PoeShared.Modularity;
 using PoeShared.Native;
 using PoeShared.Native.Scaffolding;
 using PoeShared.Prism;
+using PoeShared.Scaffolding;
 using PoeShared.Squirrel.Prism;
+using PoeShared.Squirrel.Updater;
 using PoeShared.Wpf.Scaffolding;
 using Unity;
 
@@ -49,9 +53,10 @@ namespace MicSwitch.MainWindow.Views
             container.RegisterType<IMicrophoneController, MicrophoneController>();
             container.RegisterSingleton<IMicSwitchOverlayViewModel, MicSwitchOverlayViewModel>();
 
+            InitializeUpdateSettings();
+
             Log.Debug($"Registrations took {sw.ElapsedMilliseconds:F0}ms");
             sw.Restart();
-            
             DataContext = container.Resolve<MainWindowViewModel>();
             Log.Debug($"MainWindow resolved in {sw.ElapsedMilliseconds:F0}ms");
             sw.Restart();
@@ -78,6 +83,24 @@ namespace MicSwitch.MainWindow.Views
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
             Log.Debug($"MainWindow loaded");
+        }
+
+        private void InitializeUpdateSettings()
+        {
+            var updateSourceProvider = container.Resolve<IUpdateSourceProvider>();
+            Log.Debug($"Reconfiguring {nameof(UpdateSettingsConfig)}, current update source: {updateSourceProvider.UpdateSource}");
+            UpdateSettings.WellKnownUpdateSources.ForEach(x => updateSourceProvider.KnownSources.Add(x));
+
+            if (!updateSourceProvider.UpdateSource.IsValid || !UpdateSettings.WellKnownUpdateSources.Contains(updateSourceProvider.UpdateSource))
+            {
+                var plusUpdateSource = UpdateSettings.WellKnownUpdateSources.First();
+                Log.Info($"Future updates will be provided by {plusUpdateSource} instead of {updateSourceProvider.UpdateSource} (isValid: {updateSourceProvider.UpdateSource.IsValid})");
+                updateSourceProvider.UpdateSource = plusUpdateSource;
+            }
+            else
+            {
+                Log.Info($"Updates are provided by {updateSourceProvider.UpdateSource}");
+            }
         }
     }
 }
