@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Reactive.Concurrency;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
-using Common.Logging;
-using PoeEye;
+using log4net;
 using PoeShared;
 using PoeShared.Scaffolding;
+using PoeShared.Wpf.Scaffolding;
 using ReactiveUI;
 
 namespace MicSwitch
@@ -43,7 +44,6 @@ namespace MicSwitch
 
                 SingleInstanceValidationRoutine(true);
                 
-                RxApp.SupportsRangeNotifications = false; //FIXME DynamicData (as of v4.11) does not support RangeNotifications
                 Log.Debug($"UI Scheduler: {RxApp.MainThreadScheduler}");
                 RxApp.MainThreadScheduler = DispatcherScheduler.Current;
                 RxApp.TaskpoolScheduler = TaskPoolScheduler.Default;
@@ -120,9 +120,8 @@ namespace MicSwitch
         private void InitializeLogging()
         {
             AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
-            Current.Dispatcher.UnhandledException += DispatcherOnUnhandledException;
+            Dispatcher.CurrentDispatcher.UnhandledException += DispatcherOnUnhandledException;
             TaskScheduler.UnobservedTaskException += TaskSchedulerOnUnobservedTaskException;
-
             RxApp.DefaultExceptionHandler = SharedLog.Instance.Errors;
             if (AppArguments.Instance.IsDebugMode)
             {
@@ -132,6 +131,9 @@ namespace MicSwitch
             {
                 SharedLog.Instance.InitializeLogging("Release", AppArguments.Instance.AppName);
             }
+
+            var logFileConfigPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "log4net.config");
+            SharedLog.Instance.LoadLogConfiguration(new FileInfo(logFileConfigPath));
         }
 
         protected override void OnStartup(StartupEventArgs e)

@@ -1,16 +1,15 @@
-﻿<controls:MetroWindow x:Class="MicSwitch.MainWindow.Views.MainWindow"
+﻿<mah:MetroWindow x:Class="MicSwitch.MainWindow.Views.MainWindow"
                       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                       xmlns:tb="http://www.hardcodet.net/taskbar"
+                      xmlns:hotkeys="clr-namespace:PoeShared.UI.Hotkeys;assembly=PoeShared.Wpf"
                       xmlns:blue="http://www.nuget.org/Blue.MVVM"
-                      xmlns:hotkeys="clr-namespace:MicSwitch.WPF.Hotkeys"
-                      xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
+                      xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
                       xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
                       xmlns:eye="http://coderush.net/poeeye/"
                       xmlns:viewModels="clr-namespace:MicSwitch.MainWindow.ViewModels"
-                      xmlns:fa="http://schemas.fontawesome.io/icons/"
                       mc:Ignorable="d"
                       d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel}"
                       WindowState="{Binding WindowState}"
@@ -40,13 +39,15 @@
                 </tb:TaskbarIcon.ContextMenu>
             </tb:TaskbarIcon>
 
-            <DockPanel DockPanel.Dock="Top" Margin="3" LastChildFill="True">
-                <ComboBox DockPanel.Dock="Top"
+            <DockPanel DockPanel.Dock="Top" LastChildFill="True">
+                <ComboBox DockPanel.Dock="Top" MinHeight="30" Margin="5,5,5,0"
+                          materialDesign:HintAssist.Hint="Microphone line"
+                          Style="{StaticResource MaterialDesignFloatingHintComboBox}"
                           ItemsSource="{Binding Microphones}"
                           SelectedItem="{Binding MicrophoneLine}"
                           DisplayMemberPath="Name" />
-                <Separator DockPanel.Dock="Top" />
-                <DockPanel DockPanel.Dock="Top" Margin="0,3" LastChildFill="True">
+                
+                <DockPanel DockPanel.Dock="Top" Margin="0,5,0,0" LastChildFill="True">
                     <TextBlock DockPanel.Dock="Left" MinWidth="100"
                                TextAlignment="Right"
                                Text="Volume: " />
@@ -73,7 +74,7 @@
                             TickFrequency="0.1" />
                 </DockPanel>
 
-                <DockPanel DockPanel.Dock="Top" Margin="0,3" LastChildFill="True">
+                <DockPanel DockPanel.Dock="Top" Margin="0,5,0,0" LastChildFill="True">
                     <TextBlock DockPanel.Dock="Left" MinWidth="100"
                                TextAlignment="Right"
                                Text="Mute: " />
@@ -82,85 +83,83 @@
                         IsChecked="{Binding MicrophoneMuted}" />
                 </DockPanel>
 
-                <DockPanel DockPanel.Dock="Top" Margin="0,3" LastChildFill="False">
-                    <TextBlock DockPanel.Dock="Left" MinWidth="100"
-                               TextAlignment="Right"
-                               Text="Notification: " />
-                    <TextBlock DockPanel.Dock="Left" MinWidth="100"
-                               TextAlignment="Right"
-                               Text="when muted " />
-                    <ContentPresenter
-                        DockPanel.Dock="Left" HorizontalAlignment="Left"
-                        Content="{Binding AudioSelectorWhenMuted}" />
-                    <TextBlock DockPanel.Dock="Left"
-                               TextAlignment="Right"
-                               Text="when un-muted " />
-                    <ContentPresenter
-                        DockPanel.Dock="Left" HorizontalAlignment="Left"
-                        Content="{Binding AudioSelectorWhenUnmuted}" />
+                <DockPanel DockPanel.Dock="Top" Margin="0,5,0,0" LastChildFill="False">
+                    <TextBlock DockPanel.Dock="Left" MinWidth="100" TextAlignment="Right" Text="Notification: " />
+                    <TextBlock DockPanel.Dock="Left" Margin="5,0,0,0" Text="when muted" />
+                    <ContentPresenter DockPanel.Dock="Left" Margin="5,0,0,0" Width="22" Height="22" Content="{Binding AudioSelectorWhenMuted}" />
+                    <TextBlock DockPanel.Dock="Left" Margin="5,0,0,0" Text="when un-muted " />
+                    <ContentPresenter Margin="5,0,0,0" DockPanel.Dock="Left" Width="22" Height="22" Content="{Binding AudioSelectorWhenUnmuted}" />
                 </DockPanel>
             </DockPanel>
 
             <GroupBox DockPanel.Dock="Top"
+                      Margin="3,5,3,5"
                       Header="Hotkey settings"
                       Style="{DynamicResource MaterialDesignGroupBox}"
-                      Margin="3"
+                      Padding="6"
                       materialDesign:ColorZoneAssist.Mode="Accent"
                       materialDesign:ShadowAssist.ShadowDepth="Depth1"
                       BorderThickness="1">
-                <DockPanel>
-                    <DockPanel DockPanel.Dock="Top" Margin="0,3" LastChildFill="True">
+                <DockPanel Margin="-12,0,-12,0">
+                    <DockPanel DockPanel.Dock="Top" Margin="0,5,0,0" LastChildFill="True">
                         <TextBlock DockPanel.Dock="Left" MinWidth="100"
                                    TextAlignment="Right"
-                                   Text="Push-to-talk: " />
+                                   Text="Push-to-talk:" />
                         <ToggleButton
-                            DockPanel.Dock="Left" HorizontalAlignment="Left"
+                            DockPanel.Dock="Left" Margin="5,0,0,0" HorizontalAlignment="Left"
                             IsChecked="{Binding IsPushToTalkMode}" />
                     </DockPanel>
 
-                    <DockPanel DockPanel.Dock="Top" Margin="0,3" LastChildFill="True">
+                    <DockPanel DockPanel.Dock="Top" Margin="0,5,0,0" LastChildFill="True">
                         <TextBlock DockPanel.Dock="Left" MinWidth="100"
                                    TextAlignment="Right"
-                                   Text="Hotkey: " />
-                        <hotkeys:HotKeyBox HotKey="{Binding Hotkey}" MinWidth="120" />
-                        <TextBlock DockPanel.Dock="Left" Text=" or " />
-                        <hotkeys:HotKeyBox HotKey="{Binding HotkeyAlt}" MinWidth="120" />
+                                   Text="Hotkey:" />
+                        <Grid Margin="5,0,10,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <hotkeys:HotKeyBox Grid.Column="0" HotKey="{Binding Hotkey}"  />
+                            <TextBlock Grid.Column="1" Margin="10,0" DockPanel.Dock="Left" Text="or" FontWeight="Bold" />
+                            <hotkeys:HotKeyBox Grid.Column="2" HotKey="{Binding HotkeyAlt}"  />
+                        </Grid>
                     </DockPanel>
                 </DockPanel>
             </GroupBox>
             
-            <DockPanel DockPanel.Dock="Top" Margin="0,3" LastChildFill="True">
+            <DockPanel DockPanel.Dock="Top" Margin="0,5,0,0" LastChildFill="True">
                 <TextBlock DockPanel.Dock="Left" MinWidth="100"
                            TextAlignment="Right"
                            Text="Run at login: " />
                 <ToggleButton
-                    DockPanel.Dock="Left" HorizontalAlignment="Left"
+                    DockPanel.Dock="Left" Margin="5,0,0,0" HorizontalAlignment="Left"
                     IsChecked="{Binding RunAtLogin, Mode=OneWay}"
                     Command="{Binding RunAtLoginToggleCommand}"
                     CommandParameter="{Binding IsChecked, RelativeSource={RelativeSource Self}}"/>
             </DockPanel>
 
             <DockPanel Dock="Top" Margin="3,5,3,5">
-                <Button DockPanel.Dock="Left" Command="{Binding ResetOverlayPositionCommand}" 
-                        Margin="0,0,10,0"
-                        ToolTip="Reset overlay position to center of the screen"><fa:FontAwesome Icon="Undo"/></Button>
-                <Button DockPanel.Dock="Right" Command="{Binding ToggleOverlayLockCommand}">
-                    <Button.Content>
-                        <Grid>
-                            <TextBlock Text="&#xf09c; Unlock overlay"
-                                       Visibility="{Binding Overlay.IsLocked, Converter={StaticResource TrueToVisibleFalseToCollapsedConverter}}" />
-                            <TextBlock Text="&#xf023; Lock overlay"
-                                       Visibility="{Binding Overlay.IsLocked, Converter={StaticResource TrueToCollapsedFalseToVisibleConverter}}" />
-                        </Grid>
-                    </Button.Content>
-                </Button>
+                <ContentControl  Content="{Binding ResetOverlayPositionCommand}"
+                                 eye:CommandWrapperHelper.Icon="&#xf0e2;"
+                                 eye:CommandWrapperHelper.Text="Reset"/>
+                <Grid DockPanel.Dock="Right" Margin="5,0,0,0">
+                    <ContentControl Content="{Binding ToggleOverlayLockCommand}"
+                                    eye:CommandWrapperHelper.Icon="&#xf09c;"
+                                    Visibility="{Binding Overlay.IsLocked, Converter={StaticResource TrueToVisibleFalseToCollapsedConverter}}"
+                                    eye:CommandWrapperHelper.Text="Unlock overlay"/>
+                    <ContentControl Content="{Binding ToggleOverlayLockCommand}"
+                                    eye:CommandWrapperHelper.Icon="&#xf023;"
+                                    Visibility="{Binding Overlay.IsLocked, Converter={StaticResource TrueToCollapsedFalseToVisibleConverter}}"
+                                    eye:CommandWrapperHelper.Text="Lock overlay"/>
+                </Grid>
             </DockPanel>
 
 
             <Label Padding="0" />
         </DockPanel>
 
-        <materialDesign:DrawerHost IsBottomDrawerOpen="{Binding ApplicationUpdater.IsOpen}">
+        <materialDesign:DrawerHost IsBottomDrawerOpen="{Binding ApplicationUpdater.IsOpen}" BottomDrawerBackground="{StaticResource MaterialDesignBody}">
             <materialDesign:DrawerHost.BottomDrawerContent>
                 <Grid Height="60">
                     <ContentPresenter Content="{Binding ApplicationUpdater}" />
@@ -173,8 +172,8 @@
         <Binding Path="MicrophoneMuted" Converter="{StaticResource MicrophoneMuteStateToIcoConverter}" />
     </Window.Icon>
 
-    <controls:MetroWindow.LeftWindowCommands>
-        <controls:WindowCommands ShowSeparators="True">
+    <mah:MetroWindow.LeftWindowCommands>
+        <mah:WindowCommands ShowSeparators="True">
             <Button
                 FontFamily="{StaticResource FontAwesome}"
                 Margin="5,0"
@@ -182,23 +181,24 @@
                 ToolTip="Open PoeEye folder"
                 Content="&#xF07C;"
                 Command="{Binding OpenAppDataDirectoryCommand}" />
-        </controls:WindowCommands>
-    </controls:MetroWindow.LeftWindowCommands>
+        </mah:WindowCommands>
+    </mah:MetroWindow.LeftWindowCommands>
 
-
-    <controls:MetroWindow.RightWindowCommands>
-        <controls:WindowCommands ShowSeparators="True">
+    <mah:MetroWindow.RightWindowCommands>
+        <mah:WindowCommands ShowSeparators="True">
             <StackPanel Orientation="Horizontal">
                 <ContentControl Content="{Binding ApplicationUpdater.CheckForUpdatesCommand}"
-                                  ToolTip="Check for updates"
-                                  Margin="5,0"
-                                  eye:CommandWrapperHelper.Text="&#xF0ED;" />
+                                ContentTemplate="{StaticResource CommandWrapperIcon}"
+                                ToolTip="Check for updates"
+                                Margin="5,0"
+                                eye:CommandWrapperHelper.Icon="&#xF0ED;" />
                 <ContentControl Content="{Binding ApplicationUpdater.RestartCommand}"
-                                  ToolTip="Restart application"
-                                  Margin="5,0"
-                                  Visibility="{Binding IsDebugMode, Converter={StaticResource TrueToVisibleFalseToCollapsedConverter}}"
-                                  eye:CommandWrapperHelper.Text="&#xf021;" />
+                                ContentTemplate="{StaticResource CommandWrapperIcon}"
+                                ToolTip="Restart application"
+                                Margin="5,0"
+                                Visibility="{Binding IsDebugMode, Converter={StaticResource TrueToVisibleFalseToCollapsedConverter}}"
+                                eye:CommandWrapperHelper.Icon="&#xf021;" />
             </StackPanel>
-        </controls:WindowCommands>
-    </controls:MetroWindow.RightWindowCommands>
-</controls:MetroWindow>
+        </mah:WindowCommands>
+    </mah:MetroWindow.RightWindowCommands>
+</mah:MetroWindow>

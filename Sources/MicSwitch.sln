@@ -2,9 +2,17 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicSwitch", "MicSwitch\MicSwitch.csproj", "{57AC087F-12A9-49F1-B1FD-08E545FDFF20}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoeShared", "PoeShared\PoeShared.csproj", "{12DF53DD-7144-4D2D-B7A1-B4BC5BBDFB69}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicSwitch.Tests", "MicSwitch.Tests\MicSwitch.Tests.csproj", "{310144FC-DB75-4DBD-BE58-BDE9FBC22F41}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoeShared.Wpf", "PoeShared.Wpf\PoeShared.Wpf.csproj", "{38C9EBE2-2AC9-465F-8A2A-49DFB1CB9383}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoeShared.Native", "PoeShared.Native\PoeShared.Native.csproj", "{9AAA9005-0177-4F4C-B6DE-EB09037DB155}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoeShared", "PoeShared\PoeShared.csproj", "{D304A5F9-62BB-4F5C-BC2C-5DD5DEE1C8AF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoeShared.Tests", "PoeShared.Tests\PoeShared.Tests.csproj", "{4DFAC175-EE57-4540-86E2-6E96904D7221}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoeShared.Squirrel", "PoeShared.Squirrel\PoeShared.Squirrel.csproj", "{727A7F09-1047-4A8B-9114-09C715EAF2ED}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -16,13 +24,29 @@ Global
 		{57AC087F-12A9-49F1-B1FD-08E545FDFF20}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{57AC087F-12A9-49F1-B1FD-08E545FDFF20}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{57AC087F-12A9-49F1-B1FD-08E545FDFF20}.Release|Any CPU.Build.0 = Release|Any CPU
-		{12DF53DD-7144-4D2D-B7A1-B4BC5BBDFB69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{12DF53DD-7144-4D2D-B7A1-B4BC5BBDFB69}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{12DF53DD-7144-4D2D-B7A1-B4BC5BBDFB69}.Release|Any CPU.ActiveCfg = Debug|Any CPU
-		{12DF53DD-7144-4D2D-B7A1-B4BC5BBDFB69}.Release|Any CPU.Build.0 = Debug|Any CPU
 		{310144FC-DB75-4DBD-BE58-BDE9FBC22F41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{310144FC-DB75-4DBD-BE58-BDE9FBC22F41}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{310144FC-DB75-4DBD-BE58-BDE9FBC22F41}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{310144FC-DB75-4DBD-BE58-BDE9FBC22F41}.Release|Any CPU.Build.0 = Release|Any CPU
+		{38C9EBE2-2AC9-465F-8A2A-49DFB1CB9383}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{38C9EBE2-2AC9-465F-8A2A-49DFB1CB9383}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{38C9EBE2-2AC9-465F-8A2A-49DFB1CB9383}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{38C9EBE2-2AC9-465F-8A2A-49DFB1CB9383}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9AAA9005-0177-4F4C-B6DE-EB09037DB155}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9AAA9005-0177-4F4C-B6DE-EB09037DB155}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9AAA9005-0177-4F4C-B6DE-EB09037DB155}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9AAA9005-0177-4F4C-B6DE-EB09037DB155}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D304A5F9-62BB-4F5C-BC2C-5DD5DEE1C8AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D304A5F9-62BB-4F5C-BC2C-5DD5DEE1C8AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D304A5F9-62BB-4F5C-BC2C-5DD5DEE1C8AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D304A5F9-62BB-4F5C-BC2C-5DD5DEE1C8AF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4DFAC175-EE57-4540-86E2-6E96904D7221}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4DFAC175-EE57-4540-86E2-6E96904D7221}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4DFAC175-EE57-4540-86E2-6E96904D7221}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4DFAC175-EE57-4540-86E2-6E96904D7221}.Release|Any CPU.Build.0 = Release|Any CPU
+		{727A7F09-1047-4A8B-9114-09C715EAF2ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{727A7F09-1047-4A8B-9114-09C715EAF2ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{727A7F09-1047-4A8B-9114-09C715EAF2ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{727A7F09-1047-4A8B-9114-09C715EAF2ED}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

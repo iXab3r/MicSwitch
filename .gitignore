@@ -219,3 +219,6 @@ ModelManifest.xml
 *.iml
 *.nuspec.bak
 Sources/PoeShared
+
+/Sources/PoeShared
+/Sources/PoeShared*

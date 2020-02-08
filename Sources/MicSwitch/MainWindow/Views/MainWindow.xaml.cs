@@ -1,20 +1,16 @@
 ﻿using System.Diagnostics;
 using System.Windows;
-using Common.Logging;
+using log4net;
 using MicSwitch.MainWindow.Models;
 using MicSwitch.MainWindow.ViewModels;
-using MicSwitch.Modularity;
-using MicSwitch.Updater;
-using PoeEye;
+using PoeShared;
 using PoeShared.Modularity;
 using PoeShared.Native;
+using PoeShared.Native.Scaffolding;
 using PoeShared.Prism;
-using PoeShared.Scaffolding;
-using PoeShared.UI.Models;
+using PoeShared.Squirrel.Prism;
+using PoeShared.Wpf.Scaffolding;
 using Unity;
-using Unity.Injection;
-using Unity.Lifetime;
-using Unity.Resolution;
 
 namespace MicSwitch.MainWindow.Views
 {
@@ -34,10 +30,8 @@ namespace MicSwitch.MainWindow.Views
             var sw = Stopwatch.StartNew();
             InitializeComponent();
             Log.Debug($"BAML loaded in {sw.ElapsedMilliseconds:F0}ms");
-            var viewController = new ViewController(this);
             sw.Restart();
             
-            container.RegisterInstance(AppArguments.Instance, new ContainerControlledLifetimeManager());
             if (AppArguments.Instance.IsDebugMode)
             {
                 container.RegisterType<IConfigProvider, PoeEyeConfigProviderInMemory>();
@@ -47,15 +41,18 @@ namespace MicSwitch.MainWindow.Views
                 container.RegisterType<IConfigProvider, ConfigProviderFromFile>();
             }
 
+            container.AddNewExtension<CommonRegistrations>();
+            container.AddNewExtension<NativeRegistrations>();
+            container.AddNewExtension<WpfCommonRegistrations>();
+            container.AddNewExtension<UpdaterRegistrations>();
+            
             container.RegisterType<IMicrophoneController, MicrophoneController>();
-            container.RegisterType<IApplicationUpdaterModel, ApplicationUpdaterModel>();
             container.RegisterSingleton<IMicSwitchOverlayViewModel, MicSwitchOverlayViewModel>();
 
-            container.AddExtension(new CommonRegistrations());
             Log.Debug($"Registrations took {sw.ElapsedMilliseconds:F0}ms");
             sw.Restart();
             
-            DataContext = container.Resolve<MainWindowViewModel>(new DependencyOverride<IViewController>(viewController));
+            DataContext = container.Resolve<MainWindowViewModel>();
             Log.Debug($"MainWindow resolved in {sw.ElapsedMilliseconds:F0}ms");
             sw.Restart();
             

@@ -1,7 +1,7 @@
 using System;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using Common.Logging;
+using log4net;
 using NAudio.CoreAudioApi;
 using NAudio.Wave;
 using PoeShared;
@@ -57,9 +57,9 @@ namespace MicSwitch.MainWindow.Models
                 .Where(x => x != null)
                 .Do(evt =>
                 {
-                    if (Log.IsTraceEnabled)
+                    if (Log.IsDebugEnabled)
                     {
-                        Log.Trace($"[#{LineId}] Volume notification: {evt.DumpToTextRaw()}");
+                        Log.Debug($"[#{LineId}] Volume notification: {evt.DumpToTextRaw()}");
                     }
                 })
                 .Subscribe(Update, Log.HandleException)

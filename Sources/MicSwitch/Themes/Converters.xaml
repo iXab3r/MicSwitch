@@ -3,9 +3,8 @@
                     xmlns:converters="http://schemas.kent.boogaart.com/converters">
 
     <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="pack://application:,,,/PoeShared;component/Themes/Generic.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/PoeShared.Wpf;component/Themes/Converters.xaml" />
     </ResourceDictionary.MergedDictionaries>
-
 
     <converters:MapConverter x:Key="MicrophoneMuteStateToIcoConverter" FallbackBehavior="ReturnUnsetValue">
         <converters:Mapping From="{StaticResource FalseValue}">

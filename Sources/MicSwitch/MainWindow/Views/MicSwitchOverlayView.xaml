@@ -9,7 +9,7 @@
                 <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <Grid Grid.Row="0" Width="64" Height="64" HorizontalAlignment="Left"
+            <Grid Grid.Row="0" Width="64" Height="64" HorizontalAlignment="Left" VerticalAlignment="Top"
                   Opacity="{Binding Opacity}">
                 <Grid.LayoutTransform>
                     <ScaleTransform ScaleX="{Binding ListScaleFactor}" ScaleY="{Binding ListScaleFactor}" />
@@ -17,6 +17,15 @@
                 <Image
                     RenderOptions.BitmapScalingMode="HighQuality"
                     Source="{Binding Mute, Converter={StaticResource MicrophoneMuteStateToImageConverter}}" />
+                
+            </Grid>
+            <Grid Grid.Row="0" Grid.RowSpan="2" x:Name="OverlayMainPanel"
+                  Background="{StaticResource OverlayBackgroundBrushKey}" Opacity="0.01"
+                  Visibility="{Binding IsLocked, Converter={StaticResource TrueToCollapsedFalseToVisibleConverter}}"
+                  eye:EnableDragHelper.EnableDrag="{Binding IsLocked, Converter={StaticResource NotConverter}}">
+                <Grid.InputBindings>
+                    <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding ToggleLockStateCommand}"/> 
+                </Grid.InputBindings>
             </Grid>
             <Grid Grid.Row="1" DockPanel.Dock="Bottom"
                   Visibility="{Binding IsLocked, Converter={StaticResource TrueToCollapsedFalseToVisibleConverter}}">

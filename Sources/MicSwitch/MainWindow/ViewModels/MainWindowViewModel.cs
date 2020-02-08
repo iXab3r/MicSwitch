@@ -8,15 +8,12 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
-using System.Windows.Navigation;
-using Common.Logging;
+
 using DynamicData.Binding;
 using JetBrains.Annotations;
+using log4net;
 using MicSwitch.MainWindow.Models;
 using MicSwitch.Modularity;
-using MicSwitch.Updater;
-using MicSwitch.WPF.Hotkeys;
-using PoeEye;
 using PoeShared;
 using PoeShared.Audio.Services;
 using PoeShared.Audio.ViewModels;
@@ -26,10 +23,11 @@ using PoeShared.Prism;
 using PoeShared.Scaffolding;
 using PoeShared.Scaffolding.WPF;
 using PoeShared.Services;
-using PoeShared.UI.Models;
+using PoeShared.Squirrel.Updater;
+using PoeShared.UI.Hotkeys;
 using Prism.Commands;
 using ReactiveUI;
-using Unity.Attributes;
+using Unity;
 using Application = System.Windows.Application;
 using MessageBox = System.Windows.MessageBox;
 
@@ -44,7 +42,7 @@ namespace MicSwitch.MainWindow.ViewModels
         private readonly IWindowTracker mainWindowTracker;
 
         private readonly IStartupManager startupManager;
-        private readonly AppArguments appArguments;
+        private readonly IAppArguments appArguments;
         private readonly IMicrophoneController microphoneController;
 
         private HotkeyGesture hotkey;
@@ -57,15 +55,14 @@ namespace MicSwitch.MainWindow.ViewModels
         private WindowState windowState;
 
         public MainWindowViewModel(
-            [NotNull] IViewController viewController,
-            [NotNull] AppArguments appArguments,
+            [NotNull] IAppArguments appArguments,
             [NotNull] IKeyboardEventsSource eventSource,
             [NotNull] IFactory<IStartupManager, StartupManagerArgs> startupManagerFactory,
             [NotNull] IMicrophoneController microphoneController,
             [NotNull] IMicSwitchOverlayViewModel overlay,
             [NotNull] IAudioNotificationsManager audioNotificationsManager,
             [NotNull] IFactory<IAudioNotificationSelectorViewModel> audioSelectorFactory,
-            [NotNull] ApplicationUpdaterViewModel appUpdater,
+            [NotNull] IApplicationUpdaterViewModel appUpdater,
             [NotNull] [Dependency(WellKnownWindows.MainWindow)] IWindowTracker mainWindowTracker,
             [NotNull] IConfigProvider<MicSwitchConfig> configProvider)
         {
@@ -168,6 +165,7 @@ namespace MicSwitch.MainWindow.ViewModels
                 }, Log.HandleException)
                 .AddTo(Anchors);
 
+            /*
             BuildHotkeySubscription(eventSource)
                 .Where(x =>
                 {
@@ -197,32 +195,34 @@ namespace MicSwitch.MainWindow.ViewModels
                         MicrophoneMuted = !keyInfo.KeyDown;
                     }
                 }, Log.HandleException)
-                .AddTo(Anchors);
+                .AddTo(Anchors);*/
 
-            ToggleOverlayLockCommand = new DelegateCommand(() =>
-            {
-                if (overlay.IsLocked && overlay.UnlockWindowCommand.CanExecute(null))
+            ToggleOverlayLockCommand = CommandWrapper.Create(
+                () =>
                 {
-                    overlay.UnlockWindowCommand.Execute(null);
-                }
-                else if (!overlay.IsLocked && overlay.LockWindowCommand.CanExecute(null))
-                {
-                    overlay.LockWindowCommand.Execute(null);
-                }
-            });
+                    if (overlay.IsLocked && overlay.UnlockWindowCommand.CanExecute(null))
+                    {
+                        overlay.UnlockWindowCommand.Execute(null);
+                    }
+                    else if (!overlay.IsLocked && overlay.LockWindowCommand.CanExecute(null))
+                    {
+                        overlay.LockWindowCommand.Execute(null);
+                    }
+                });
 
-            ExitAppCommand = new DelegateCommand(() =>
-            {
-                Log.Debug("Closing application");
-                configProvider.Save(configProvider.ActualConfig);
-                Application.Current.Shutdown();
-            });
+            ExitAppCommand = CommandWrapper.Create(
+                () =>
+                {
+                    Log.Debug("Closing application");
+                    configProvider.Save(configProvider.ActualConfig);
+                    Application.Current.Shutdown();
+                });
 
             this.WhenAnyValue(x => x.WindowState)
                 .Subscribe(x => ShowInTaskbar = x != WindowState.Minimized, Log.HandleException)
                 .AddTo(Anchors);
 
-            ShowAppCommand = new DelegateCommand(ShowAppCommandExecuted);
+            ShowAppCommand = CommandWrapper.Create(() => ShowAppCommandExecuted());
 
             OpenAppDataDirectoryCommand = CommandWrapper.Create(OpenAppDataDirectory);
 
@@ -253,11 +253,11 @@ namespace MicSwitch.MainWindow.ViewModels
                 }, Log.HandleException)
                 .AddTo(Anchors);
 
-            viewController.Loaded.Take(1).Subscribe(() =>
-            {
-                Log.Debug("Initializing keyboard & mouse event source");
-                eventSource.InitializeHooks().AddTo(Anchors);
-            }).AddTo(Anchors);
+           // viewController.Loaded.Take(1).Subscribe(() =>
+          //  {
+           //     Log.Debug("Initializing keyboard & mouse event source");
+          //      eventSource.InitializeHooks().AddTo(Anchors);
+          //  }).AddTo(Anchors);
         }
 
         private async Task RunAtLoginCommandExecuted(bool runAtLogin)
@@ -419,7 +419,7 @@ namespace MicSwitch.MainWindow.ViewModels
             }
         }
 
-        public ApplicationUpdaterViewModel ApplicationUpdater { get; }
+        public IApplicationUpdaterViewModel ApplicationUpdater { get; }
 
         public bool IsDebugMode => appArguments.IsDebugMode;
 
