@@ -21,16 +21,10 @@ Also MicSwitch supports configurable mute/unmute sounds (hi, Discord!) and a con
 - Auto-updates via Github
 
 ## Media
-![](https://i.imgur.com/SAfqruj.png)
-
-Overlay with configurable size/opacity
-![](https://i.imgur.com/1Jf1RrH.gif)
-
-Configurable Audio notification when microphone is muted/unmuted
-![](https://i.imgur.com/Kj57Gsk.png)
-
-Auto-update via Github
-![](https://i.imgur.com/O4SIuDy.gif)
+![UI](https://i.imgur.com/SAfqruj.png)
+![Overlay with configurable size/opacity](https://i.imgur.com/1Jf1RrH.gif)
+![Configurable Audio notification when microphone is muted/unmuted](https://i.imgur.com/Kj57Gsk.png)
+![Auto-update via Github](https://i.imgur.com/O4SIuDy.gif)
 
 ## Contacts
 - [Discord chat](https://discord.gg/BExRm22 "Discord chat")
