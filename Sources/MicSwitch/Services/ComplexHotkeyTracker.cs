@@ -39,10 +39,13 @@ namespace MicSwitch.Services
                     })
                 .AddTo(Anchors);
 
-            hotkey
-                .WhenAnyValue(x => x.IsActive)
-                .Subscribe(x => IsActive = trackers.Any(y => y.IsActive))
-                .AddTo(Anchors);
+            foreach (var tracker in trackers)
+            {
+                tracker
+                    .WhenAnyValue(x => x.IsActive)
+                    .Subscribe(x => IsActive = !IsActive)
+                    .AddTo(Anchors);
+            }
         }
 
         public bool IsActive
