@@ -10,6 +10,7 @@
                  xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
                  xmlns:eye="http://coderush.net/poeeye/"
                  xmlns:viewModels="clr-namespace:MicSwitch.MainWindow.ViewModels"
+                 xmlns:fa="http://schemas.fontawesome.io/icons/"
                  mc:Ignorable="d"
                  d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel}"
                  WindowState="{Binding WindowState}"
@@ -50,7 +51,7 @@
             </tb:TaskbarIcon>
             
             <DockPanel Margin="0,5,0,0" Style="{StaticResource SettingsRowDockPanelStyle}">
-                <TextBlock DockPanel.Dock="Left" MinWidth="100"
+                <TextBlock DockPanel.Dock="Left" MinWidth="120"
                            TextAlignment="Right"
                            Text="Microphone:" />
                 <ComboBox DockPanel.Dock="Top" Margin="5,0,5,0" 
@@ -60,7 +61,7 @@
             </DockPanel>
 
             <DockPanel Margin="0,5,0,0" Style="{StaticResource SettingsRowDockPanelStyle}">
-                <TextBlock DockPanel.Dock="Left" MinWidth="100"
+                <TextBlock DockPanel.Dock="Left" MinWidth="120"
                            TextAlignment="Right"
                            Text="Volume:" />
 
@@ -87,16 +88,16 @@
             </DockPanel>
 
             <DockPanel Margin="0,5,0,0" Style="{StaticResource SettingsRowDockPanelStyle}">
-                <TextBlock DockPanel.Dock="Left" MinWidth="100"
+                <TextBlock DockPanel.Dock="Left" MinWidth="120"
                            TextAlignment="Right"
                            Text="Mute:" />
-                <ToggleButton
-                    DockPanel.Dock="Left" HorizontalAlignment="Left"
+                <ToggleButton 
+                    DockPanel.Dock="Left" Margin="5,0,0,0" HorizontalAlignment="Left"
                     IsChecked="{Binding MicrophoneMuted}" />
             </DockPanel>
 
             <DockPanel Margin="0,5,0,0"  Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="False">
-                <TextBlock DockPanel.Dock="Left" MinWidth="100" TextAlignment="Right" Text="Notification:" />
+                <TextBlock DockPanel.Dock="Left" MinWidth="120" TextAlignment="Right" Text="Notification:" />
                 <TextBlock DockPanel.Dock="Left" Margin="5,0,0,0" Text="when muted" />
                 <ContentPresenter DockPanel.Dock="Left" Margin="5,0,0,0" Width="22" Height="22" Content="{Binding AudioSelectorWhenMuted}" />
                 <TextBlock DockPanel.Dock="Left" Margin="5,0,0,0" Text="when un-muted " />
@@ -104,7 +105,7 @@
             </DockPanel>
 
             <DockPanel Margin="0,5,0,0"  Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="True">
-                <TextBlock DockPanel.Dock="Left" MinWidth="100"
+                <TextBlock DockPanel.Dock="Left" MinWidth="120"
                            TextAlignment="Right"
                            Text="Push-to-talk:" />
                 <ToggleButton
@@ -113,7 +114,7 @@
             </DockPanel>
 
             <DockPanel Margin="0,5,0,0"  Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="True">
-                <TextBlock DockPanel.Dock="Left" MinWidth="100"
+                <TextBlock DockPanel.Dock="Left" MinWidth="120"
                            TextAlignment="Right"
                            Text="Hotkey:" />
                 <Grid Margin="5,0,10,0">
@@ -129,17 +130,24 @@
             </DockPanel>
             
             <DockPanel Margin="0,5,0,0"  Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="True">
-                <TextBlock DockPanel.Dock="Left" MinWidth="100"
+                <TextBlock MinWidth="120"
                            TextAlignment="Right"
                            Text="Suppress Hotkey:" />
                 <ToggleButton
-                    DockPanel.Dock="Left" Margin="5,0,0,0" HorizontalAlignment="Left"
+                    Margin="5,0,0,0" HorizontalAlignment="Left"
                     IsChecked="{Binding SuppressHotkey}" />
+                <fa:FontAwesome Margin="5,0" Icon="ExclamationCircle"
+                                Foreground="{StaticResource WarningBrush}"
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Left"
+                                Visibility="{Binding SuppressHotkey, Converter={StaticResource TrueToVisibleFalseToCollapsedConverter}}"
+                                ToolTip="Not supported for Mouse hotkeys yet"
+                                FontSize="16" />
             </DockPanel>
 
 
             <DockPanel Margin="0,5,0,0"  Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="True">
-                <TextBlock DockPanel.Dock="Left" MinWidth="100"
+                <TextBlock DockPanel.Dock="Left" MinWidth="120"
                            TextAlignment="Right"
                            Text="Run at start:" />
                 <ToggleButton
@@ -151,7 +159,7 @@
 
             <DockPanel Margin="5,5" Style="{StaticResource SettingsRowDockPanelStyle}">
                 <ContentControl Content="{Binding ResetOverlayPositionCommand}"
-                                MinWidth="100"
+                                MinWidth="120"
                                 eye:CommandWrapperHelper.Icon="&#xf0e2;"
                                 eye:CommandWrapperHelper.Text="Reset overlay" />
                 <Grid DockPanel.Dock="Right" Margin="5,0,0,0">

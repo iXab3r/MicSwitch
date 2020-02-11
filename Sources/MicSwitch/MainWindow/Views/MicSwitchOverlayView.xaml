@@ -11,6 +11,7 @@
             </Grid.RowDefinitions>
             <Grid Grid.Row="0" Grid.RowSpan="2" x:Name="OverlayMainPanel"
                   Background="{StaticResource OverlayBackgroundBrushKey}" Opacity="0.01"
+                  ToolTip="Double-click to lock overlay" Cursor="SizeAll"
                   Visibility="{Binding IsLocked, Converter={StaticResource TrueToCollapsedFalseToVisibleConverter}}"
                   eye:EnableDragHelper.EnableDrag="{Binding IsLocked, Converter={StaticResource NotConverter}}">
                 <Grid.InputBindings>

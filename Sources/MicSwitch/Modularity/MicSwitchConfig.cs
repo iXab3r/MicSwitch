@@ -12,7 +12,7 @@ namespace MicSwitch.Modularity
 
         public MicrophoneLineData MicrophoneLineId { get; set; }
 
-        public bool SuppressHotkey { get; set; } = true;
+        public bool SuppressHotkey { get; set; }
         
         public string MicrophoneHotkey { get; set; }
 
