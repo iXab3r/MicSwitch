@@ -1,11 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>net461</TargetFramework>
     <LangVersion>7</LangVersion>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AssemblyName>MicSwitch</AssemblyName>
     <OutputPath>..\bin</OutputPath>
+    <Copyright>Copyright © Xab3r 2020</Copyright>
     <UseWPF>true</UseWPF>
     <WarningsAsErrors />
     <PlatformTarget>AnyCPU</PlatformTarget>
