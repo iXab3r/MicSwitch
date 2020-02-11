@@ -26,8 +26,6 @@ namespace MicSwitch.Modularity
 
         public bool IsVisible { get; set; } = true;
 
-        public double ScaleFactor { get; set; } = 1;
-
         public Point OverlayLocation { get; set; }
 
         public Size OverlaySize { get; set; }

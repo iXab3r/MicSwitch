@@ -17,16 +17,15 @@
                     <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding ToggleLockStateCommand}"/> 
                 </Grid.InputBindings>
             </Grid>
-            <Grid Grid.Row="0" Width="64" Height="64" HorizontalAlignment="Left" VerticalAlignment="Top" IsHitTestVisible="False"
+            <Grid Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Top" IsHitTestVisible="False"
                   Opacity="{Binding Opacity}">
-                <Grid.LayoutTransform>
-                    <ScaleTransform ScaleX="{Binding ListScaleFactor}" ScaleY="{Binding ListScaleFactor}" />
-                </Grid.LayoutTransform>
-                <Image
-                    Source="{Binding Mute, Converter={StaticResource MicrophoneMuteStateToImageConverter}}" />
+                <Viewbox>
+                    <Image
+                        Source="{Binding Mute, Converter={StaticResource MicrophoneMuteStateToImageConverter}}" />
+                </Viewbox>
             </Grid>
             <Grid Grid.Row="1" DockPanel.Dock="Bottom"
-                  Visibility="{Binding IsLocked, Converter={StaticResource TrueToCollapsedFalseToVisibleConverter}}">
+                  Visibility="{Binding IsLocked, Converter={StaticResource TrueToHiddenFalseToVisibleConverter}}">
                 <Border Background="{StaticResource OverlayTitleBackgroundBrushKey}"
                         BorderBrush="{StaticResource OverlayBorderBrushKey}"
                         eye:EnableDragHelper.EnableDrag="True" />
@@ -37,33 +36,16 @@
                         <DockPanel Margin="0,3" LastChildFill="True">
                             <TextBlock DockPanel.Dock="Left" MinWidth="50"
                                        TextAlignment="Right"
-                                       Text="Opacity: " />
+                                       Text="Opacity:" />
 
                             <Slider DockPanel.Dock="Left"
                                     Value="{Binding Opacity}"
                                     Minimum="0.1"
                                     TickFrequency="0.1"
                                     IsSnapToTickEnabled="True"
-                                    Margin="10,0"
-                                    Width="70"
+                                    Margin="5,0"
                                     Maximum="1" />
                         </DockPanel>
-
-                        <DockPanel Margin="0,3" LastChildFill="True">
-                            <TextBlock DockPanel.Dock="Left" MinWidth="50"
-                                       TextAlignment="Right"
-                                       Text="Scale: " />
-
-                            <Slider DockPanel.Dock="Left"
-                                    Value="{Binding ListScaleFactor}"
-                                    Minimum="0.5"
-                                    TickFrequency="0.1"
-                                    IsSnapToTickEnabled="True"
-                                    Margin="10,0"
-                                    Width="70"
-                                    Maximum="2" />
-                        </DockPanel>
-
                     </StackPanel>
                 </Border>
 

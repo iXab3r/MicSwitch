@@ -28,7 +28,6 @@ namespace MicSwitch.MainWindow.ViewModels
         private readonly IMicrophoneController microphoneController;
 
         private bool isVisible;
-        private double listScaleFactor;
 
         public MicSwitchOverlayViewModel(
             [NotNull] IMicrophoneController microphoneController,
@@ -38,9 +37,10 @@ namespace MicSwitch.MainWindow.ViewModels
             this.microphoneController = microphoneController;
             this.configProvider = configProvider;
             OverlayMode = OverlayMode.Transparent;
-            MinSize = new Size(150, 150);
+            MinSize = new Size(120, 120);
             MaxSize = new Size(300, 300);
-            SizeToContent = SizeToContent.Height;
+            SizeToContent = SizeToContent.Manual;
+            TargetAspectRatio = MinSize.Width / MinSize.Height;
             IsUnlockable = true;
             Title = "MicSwitch";
             WhenLoaded
@@ -84,7 +84,6 @@ namespace MicSwitch.MainWindow.ViewModels
                     this.ObservableForProperty(x => x.Top, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.Width, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.Height, skipInitial: true).ToUnit(),
-                    this.ObservableForProperty(x => x.ListScaleFactor, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.IsVisible, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.IsLocked, skipInitial: true).ToUnit())
                 .SkipUntil(WhenLoaded)
@@ -104,18 +103,11 @@ namespace MicSwitch.MainWindow.ViewModels
 
         public ICommand ToggleLockStateCommand { get; }
         
-        public double ListScaleFactor
-        {
-            get => listScaleFactor;
-            set => this.RaiseAndSetIfChanged(ref listScaleFactor, value);
-        }
-
         private void ApplyConfig(MicSwitchConfig config)
         {
             base.ApplyConfig(config);
 
             IsVisible = config.IsVisible;
-            ListScaleFactor = config.ScaleFactor;
         }
 
         private void SaveConfig()
@@ -124,7 +116,6 @@ namespace MicSwitch.MainWindow.ViewModels
             SavePropertiesToConfig(config);
 
             config.IsVisible = IsVisible;
-            config.ScaleFactor = ListScaleFactor;
 
             configProvider.Save(config);
         }
