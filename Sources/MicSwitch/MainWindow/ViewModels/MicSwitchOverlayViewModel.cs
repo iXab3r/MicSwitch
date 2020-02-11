@@ -4,8 +4,10 @@ using System.Reactive.Linq;
 using System.Windows;
 using System.Windows.Input;
 using JetBrains.Annotations;
+using log4net;
 using MicSwitch.MainWindow.Models;
 using MicSwitch.Modularity;
+using PoeShared;
 using PoeShared.Modularity;
 using PoeShared.Native;
 using PoeShared.Prism;
@@ -18,6 +20,9 @@ namespace MicSwitch.MainWindow.ViewModels
 {
     internal sealed class MicSwitchOverlayViewModel : OverlayViewModelBase, IMicSwitchOverlayViewModel
     {
+        private static readonly ILog Log = LogManager.GetLogger(typeof(MicSwitchOverlayViewModel));
+
+        private static readonly TimeSpan ConfigThrottlingTimeout = TimeSpan.FromMilliseconds(250);
         private readonly IConfigProvider<MicSwitchConfig> configProvider;
         private readonly IMicrophoneController microphoneController;
 
@@ -72,6 +77,18 @@ namespace MicSwitch.MainWindow.ViewModels
                         throw new ApplicationException($"Something went wrong - invalid Overlay Lock state: {new {IsLocked, IsUnlockable, CanUnlock = UnlockWindowCommand.CanExecute(null), CanLock = LockWindowCommand.CanExecute(null)  }}");
                     }
                 });
+            
+            Observable.Merge(
+                    this.ObservableForProperty(x => x.Left, skipInitial: true).ToUnit(),
+                    this.ObservableForProperty(x => x.Top, skipInitial: true).ToUnit(),
+                    this.ObservableForProperty(x => x.Width, skipInitial: true).ToUnit(),
+                    this.ObservableForProperty(x => x.Height, skipInitial: true).ToUnit(),
+                    this.ObservableForProperty(x => x.ListScaleFactor, skipInitial: true).ToUnit(),
+                    this.ObservableForProperty(x => x.IsVisible, skipInitial: true).ToUnit(),
+                    this.ObservableForProperty(x => x.IsLocked, skipInitial: true).ToUnit())
+                .Throttle(ConfigThrottlingTimeout)
+                .Subscribe(SaveConfig, Log.HandleUiException)
+                .AddTo(Anchors);
         }
 
         public bool IsVisible
@@ -98,10 +115,8 @@ namespace MicSwitch.MainWindow.ViewModels
             ListScaleFactor = config.ScaleFactor;
         }
 
-        protected override void LockWindowCommandExecuted()
+        private void SaveConfig()
         {
-            base.LockWindowCommandExecuted();
-
             var config = configProvider.ActualConfig.CloneJson();
             SavePropertiesToConfig(config);
 

@@ -17,6 +17,9 @@
                  ResizeMode="CanMinimize"
                  WindowStyle="SingleBorderWindow"
                  ShowInTaskbar="{Binding ShowInTaskbar, Mode=TwoWay}"
+                 TextElement.FontWeight="Regular"
+                 TextOptions.TextFormattingMode="Ideal"
+                 TextOptions.TextRenderingMode="Auto"
                  Loaded="OnLoaded"
                  Unloaded="OnUnloaded"
                  Title="{Binding Title}" Width="400" SizeToContent="Height">
@@ -140,7 +143,7 @@
                 <ContentControl Content="{Binding ResetOverlayPositionCommand}"
                                 MinWidth="100"
                                 eye:CommandWrapperHelper.Icon="&#xf0e2;"
-                                eye:CommandWrapperHelper.Text="Reset" />
+                                eye:CommandWrapperHelper.Text="Reset overlay" />
                 <Grid DockPanel.Dock="Right" Margin="5,0,0,0">
                     <ContentControl Content="{Binding ToggleOverlayLockCommand}"
                                     eye:CommandWrapperHelper.Icon="&#xf09c;"

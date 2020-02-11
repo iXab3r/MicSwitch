@@ -35,7 +35,7 @@ namespace MicSwitch.MainWindow.ViewModels
 {
     internal class MainWindowViewModel : DisposableReactiveObject
     {
-        private static readonly TimeSpan ConfigThrottlingTimeout = TimeSpan.FromSeconds(1);
+        private static readonly TimeSpan ConfigThrottlingTimeout = TimeSpan.FromMilliseconds(250);
         private static readonly ILog Log = LogManager.GetLogger(typeof(MainWindowViewModel));
         private static readonly string ExplorerExecutablePath = Environment.ExpandEnvironmentVariables(@"%WINDIR%\explorer.exe");
         private readonly IConfigProvider<MicSwitchConfig> configProvider;
