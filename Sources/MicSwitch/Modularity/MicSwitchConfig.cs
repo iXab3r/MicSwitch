@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using MicSwitch.MainWindow.Models;
+using MicSwitch.Services;
 using PoeShared.Modularity;
 using PoeShared.Native;
 
@@ -11,6 +12,8 @@ namespace MicSwitch.Modularity
 
         public MicrophoneLineData MicrophoneLineId { get; set; }
 
+        public bool SuppressHotkey { get; set; } = true;
+        
         public string MicrophoneHotkey { get; set; }
 
         public string MicrophoneHotkeyAlt { get; set; }

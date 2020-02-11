@@ -8,7 +8,7 @@ using PoeShared;
 using PoeShared.Scaffolding;
 using ReactiveUI;
 
-namespace MicSwitch.MainWindow.Models
+namespace MicSwitch.Services
 {
     internal sealed class MicrophoneController : DisposableReactiveObject, IMicrophoneController
     {

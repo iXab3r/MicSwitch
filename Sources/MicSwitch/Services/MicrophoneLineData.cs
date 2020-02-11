@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace MicSwitch.MainWindow.Models
+namespace MicSwitch.Services
 {
     internal struct MicrophoneLineData
     {

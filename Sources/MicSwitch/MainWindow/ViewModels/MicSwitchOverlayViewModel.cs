@@ -7,6 +7,7 @@ using JetBrains.Annotations;
 using log4net;
 using MicSwitch.MainWindow.Models;
 using MicSwitch.Modularity;
+using MicSwitch.Services;
 using PoeShared;
 using PoeShared.Modularity;
 using PoeShared.Native;
@@ -86,7 +87,9 @@ namespace MicSwitch.MainWindow.ViewModels
                     this.ObservableForProperty(x => x.ListScaleFactor, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.IsVisible, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.IsLocked, skipInitial: true).ToUnit())
+                .SkipUntil(WhenLoaded)
                 .Throttle(ConfigThrottlingTimeout)
+                .ObserveOn(uiScheduler)
                 .Subscribe(SaveConfig, Log.HandleUiException)
                 .AddTo(Anchors);
         }

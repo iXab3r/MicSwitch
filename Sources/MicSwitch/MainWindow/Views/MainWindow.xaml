@@ -122,11 +122,21 @@
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    <hotkeys:HotKeyBox Grid.Column="0" HotKey="{Binding Hotkey}" AcceptsMouseKeys="True" />
+                    <hotkeys:HotKeyBox Grid.Column="0" HotKey="{Binding Hotkey}" AcceptsTab="False" AcceptsReturn="False" AcceptsMouseKeys="True" />
                     <TextBlock Grid.Column="1" Margin="10,0" DockPanel.Dock="Left" Text="or" FontWeight="Bold" />
-                    <hotkeys:HotKeyBox Grid.Column="2" HotKey="{Binding HotkeyAlt}" AcceptsMouseKeys="True" />
+                    <hotkeys:HotKeyBox Grid.Column="2" HotKey="{Binding HotkeyAlt}" AcceptsTab="False" AcceptsReturn="False" AcceptsMouseKeys="True" />
                 </Grid>
             </DockPanel>
+            
+            <DockPanel Margin="0,5,0,0"  Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="True">
+                <TextBlock DockPanel.Dock="Left" MinWidth="100"
+                           TextAlignment="Right"
+                           Text="Suppress Hotkey:" />
+                <ToggleButton
+                    DockPanel.Dock="Left" Margin="5,0,0,0" HorizontalAlignment="Left"
+                    IsChecked="{Binding SuppressHotkey}" />
+            </DockPanel>
+
 
             <DockPanel Margin="0,5,0,0"  Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="True">
                 <TextBlock DockPanel.Dock="Left" MinWidth="100"

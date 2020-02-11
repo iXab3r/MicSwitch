@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NAudio.CoreAudioApi;
 
-namespace MicSwitch.MainWindow.Models
+namespace MicSwitch.Services
 {
     internal sealed class MicrophoneProvider
     {

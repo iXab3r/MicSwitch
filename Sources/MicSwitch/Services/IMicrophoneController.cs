@@ -1,6 +1,6 @@
 using PoeShared.Scaffolding;
 
-namespace MicSwitch.MainWindow.Models
+namespace MicSwitch.Services
 {
     internal interface IMicrophoneController : IDisposableReactiveObject
     {

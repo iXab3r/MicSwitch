@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -14,6 +15,7 @@ using JetBrains.Annotations;
 using log4net;
 using MicSwitch.MainWindow.Models;
 using MicSwitch.Modularity;
+using MicSwitch.Services;
 using PoeShared;
 using PoeShared.Audio.Services;
 using PoeShared.Audio.ViewModels;
@@ -48,7 +50,7 @@ namespace MicSwitch.MainWindow.ViewModels
         private HotkeyGesture hotkey;
         private HotkeyGesture hotkeyAlt;
         private bool isPushToTalkMode;
-
+        private bool suppressHotkey;
         private MicrophoneLineData microphoneLine;
         private bool showInTaskbar;
         private Visibility trayIconVisibility;
@@ -56,7 +58,6 @@ namespace MicSwitch.MainWindow.ViewModels
 
         public MainWindowViewModel(
             [NotNull] IAppArguments appArguments,
-            [NotNull] IKeyboardEventsSource eventSource,
             [NotNull] IFactory<IStartupManager, StartupManagerArgs> startupManagerFactory,
             [NotNull] IMicrophoneController microphoneController,
             [NotNull] IMicSwitchOverlayViewModel overlay,
@@ -64,7 +65,9 @@ namespace MicSwitch.MainWindow.ViewModels
             [NotNull] IFactory<IAudioNotificationSelectorViewModel> audioSelectorFactory,
             [NotNull] IApplicationUpdaterViewModel appUpdater,
             [NotNull] [Dependency(WellKnownWindows.MainWindow)] IWindowTracker mainWindowTracker,
-            [NotNull] IConfigProvider<MicSwitchConfig> configProvider)
+            [NotNull] IConfigProvider<MicSwitchConfig> configProvider,
+            [NotNull] ComplexHotkeyTracker hotkeyTracker,
+            [NotNull] [Dependency(WellKnownSchedulers.UI)] IScheduler uiScheduler)
         {
             var restartArgs = appUpdater.GetRestartApplicationArgs();
             var startupManagerArgs = new StartupManagerArgs
@@ -95,11 +98,22 @@ namespace MicSwitch.MainWindow.ViewModels
                 .AddTo(Anchors);
 
             configProvider.ListenTo(x => x.Notification)
+                .ObserveOn(uiScheduler)
                 .Subscribe(cfg =>
                 {
                     Log.Debug($"Applying new notification configuration: {cfg.DumpToTextRaw()} (current: {AudioNotification.DumpToTextRaw()})");
                     AudioNotification = cfg;
                 }, Log.HandleException)
+                .AddTo(Anchors);
+            
+            configProvider.ListenTo(x => x.IsPushToTalkMode)
+                .ObserveOn(uiScheduler)
+                .Subscribe(x => IsPushToTalkMode = x, Log.HandleException)
+                .AddTo(Anchors);
+            
+            configProvider.ListenTo(x => x.SuppressHotkey)
+                .ObserveOn(uiScheduler)
+                .Subscribe(x => SuppressHotkey = x, Log.HandleException)
                 .AddTo(Anchors);
 
             Observable.Merge(configProvider.ListenTo(x => x.MicrophoneHotkey), configProvider.ListenTo(x => x.MicrophoneHotkeyAlt))
@@ -108,7 +122,7 @@ namespace MicSwitch.MainWindow.ViewModels
                     Hotkey = (HotkeyGesture)new HotkeyConverter().ConvertFrom(configProvider.ActualConfig.MicrophoneHotkey ?? string.Empty), 
                     HotkeyAlt = (HotkeyGesture)new HotkeyConverter().ConvertFrom(configProvider.ActualConfig.MicrophoneHotkeyAlt ?? string.Empty), 
                 })
-                .ObserveOnDispatcher()
+                .ObserveOn(uiScheduler)
                 .Subscribe(cfg =>
                 {
                     Log.Debug($"Setting new hotkeys configuration: {cfg.DumpToTextRaw()} (current: {hotkey}, alt: {hotkeyAlt})");
@@ -119,9 +133,9 @@ namespace MicSwitch.MainWindow.ViewModels
             
             Overlay = overlay;
 
-            this.BindPropertyTo(x => x.RunAtLogin, startupManager, x => x.IsRegistered).AddTo(Anchors);
-            this.BindPropertyTo(x => x.MicrophoneVolume, microphoneController, x => x.VolumePercent).AddTo(Anchors);
-            this.BindPropertyTo(x => x.MicrophoneMuted, microphoneController, x => x.Mute).AddTo(Anchors);
+            this.RaiseWhenSourceValue(x => x.RunAtLogin, startupManager, x => x.IsRegistered).AddTo(Anchors);
+            this.RaiseWhenSourceValue(x => x.MicrophoneVolume, microphoneController, x => x.VolumePercent).AddTo(Anchors);
+            this.RaiseWhenSourceValue(x => x.MicrophoneMuted, microphoneController, x => x.Mute).AddTo(Anchors);
 
             Microphones = new ReadOnlyObservableCollection<MicrophoneLineData>(
                 new ObservableCollection<MicrophoneLineData>(new MicrophoneProvider().EnumerateLines())
@@ -150,6 +164,7 @@ namespace MicSwitch.MainWindow.ViewModels
                     configProvider.ListenTo(x => x.MicrophoneLineId).ToUnit(),
                     Microphones.ToObservableChangeSet().ToUnit())
                 .Select(_ => configProvider.ActualConfig.MicrophoneLineId)
+                .ObserveOn(uiScheduler)
                 .Subscribe(configLineId =>
                 {
                     Log.Debug($"Microphone line configuration changed: {configLineId}, known lines: {Microphones.DumpToTextRaw()}");
@@ -165,34 +180,12 @@ namespace MicSwitch.MainWindow.ViewModels
                 }, Log.HandleException)
                 .AddTo(Anchors);
 
-            BuildHotkeySubscription(eventSource)
-                .Where(x =>
+            hotkeyTracker
+                .WhenAnyValue(x => x.IsActive)
+                .ObserveOn(uiScheduler)
+                .Subscribe(isActive =>
                 {
-                    if (!mainWindowTracker.IsActive)
-                    {
-                        Log.Debug($"Main window is NOT active, processing hotkey {x.Key} (isDown: {x})");
-                        return true;
-                    }
-
-                    Log.Debug($"Main window is active, skipping hotkey {x.Key} (isDown: {x})");
-                    return false;
-                })
-                .ObserveOnDispatcher()
-                .Subscribe(keyInfo =>
-                {
-                    Log.Debug($"Hotkey pressed, state: {(keyInfo.KeyDown ? "down" : "up")}");
-
-                    if (!isPushToTalkMode)
-                    {
-                        if (keyInfo.KeyDown)
-                        {
-                            MicrophoneMuted = !MicrophoneMuted;
-                        }
-                    }
-                    else
-                    {
-                        MicrophoneMuted = !keyInfo.KeyDown;
-                    }
+                    MicrophoneMuted = isActive;
                 }, Log.HandleException)
                 .AddTo(Anchors);
 
@@ -238,8 +231,10 @@ namespace MicSwitch.MainWindow.ViewModels
                     this.ObservableForProperty(x => x.IsPushToTalkMode, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.AudioNotification, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.HotkeyAlt, skipInitial: true).ToUnit(),
-                    this.ObservableForProperty(x => x.Hotkey, skipInitial: true).ToUnit())
+                    this.ObservableForProperty(x => x.Hotkey, skipInitial: true).ToUnit(),
+                    this.ObservableForProperty(x => x.SuppressHotkey, skipInitial: true).ToUnit())
                 .Throttle(ConfigThrottlingTimeout)
+                .ObserveOn(uiScheduler)
                 .Subscribe(() =>
                 {
                     var config = configProvider.ActualConfig.CloneJson();
@@ -248,6 +243,7 @@ namespace MicSwitch.MainWindow.ViewModels
                     config.MicrophoneHotkeyAlt = (HotkeyAlt ?? new HotkeyGesture()).ToString();
                     config.MicrophoneLineId = MicrophoneLine;
                     config.Notification = AudioNotification;
+                    config.SuppressHotkey = SuppressHotkey;
                     configProvider.Save(config);
                 }, Log.HandleException)
                 .AddTo(Anchors);
@@ -400,6 +396,12 @@ namespace MicSwitch.MainWindow.ViewModels
             set => microphoneController.Mute = value;
         }
 
+        public bool SuppressHotkey
+        {
+            get => suppressHotkey;
+            set => this.RaiseAndSetIfChanged(ref suppressHotkey, value);
+        }
+
         public TwoStateNotification AudioNotification
         {
             get => new TwoStateNotification
@@ -421,43 +423,6 @@ namespace MicSwitch.MainWindow.ViewModels
         private async Task OpenAppDataDirectory()
         {
             await Task.Run(() => Process.Start(ExplorerExecutablePath, appArguments.AppDataDirectory));
-        }
-
-        private bool IsConfiguredHotkey(HotkeyGesture pressed)
-        {
-            if (pressed == null)
-            {
-                return false;
-            }
-
-            if (pressed.Key == Key.None && pressed.MouseButton == null)
-            {
-                return false;
-            }
-
-            var pressedHotkey = pressed.ToString();
-
-            return pressedHotkey.Equals(configProvider.ActualConfig.MicrophoneHotkey) || 
-                   pressedHotkey.Equals(configProvider.ActualConfig.MicrophoneHotkeyAlt);
-        }
-
-        private IObservable<(bool KeyDown, HotkeyGesture Key)> BuildHotkeySubscription(
-            IKeyboardEventsSource eventSource)
-        {
-            var hotkeyDown =
-                Observable.Merge(
-                        eventSource.WhenMouseDown.Select(x => new HotkeyGesture(x.Button)),
-                        eventSource.WhenKeyDown.Select(x => new HotkeyGesture(x.KeyCode.ToInputKey(), x.Modifiers.ToModifiers())))
-                    .Where(IsConfiguredHotkey)
-                    .Select(x => (KeyDown: true, Key: x));
-            var hotkeyUp =
-                Observable.Merge(
-                        eventSource.WhenMouseUp.Select(x => new HotkeyGesture(x.Button)),
-                        eventSource.WhenKeyUp.Select(x => new HotkeyGesture(x.KeyCode.ToInputKey(), x.Modifiers.ToModifiers())))
-                    .Where(IsConfiguredHotkey)
-                    .Select(x => (KeyDown: false, Key: x));
-
-            return Observable.Merge(hotkeyDown, hotkeyUp);
         }
     }
 }

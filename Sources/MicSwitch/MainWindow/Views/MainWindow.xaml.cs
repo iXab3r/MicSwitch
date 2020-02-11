@@ -5,6 +5,7 @@ using log4net;
 using MicSwitch.MainWindow.Models;
 using MicSwitch.MainWindow.ViewModels;
 using MicSwitch.Prism;
+using MicSwitch.Services;
 using PoeShared;
 using PoeShared.Modularity;
 using PoeShared.Native;
@@ -52,6 +53,7 @@ namespace MicSwitch.MainWindow.Views
             
             container.RegisterType<IMicrophoneController, MicrophoneController>();
             container.RegisterSingleton<IMicSwitchOverlayViewModel, MicSwitchOverlayViewModel>();
+            container.RegisterSingleton<IComplexHotkeyTracker, ComplexHotkeyTracker>();
 
             InitializeUpdateSettings();
 
