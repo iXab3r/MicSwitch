@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "MicSwitch": {
+      "commandName": "Project",
+      "commandLineArgs": "-d"
+    }
+  }
+}
