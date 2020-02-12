@@ -1,28 +1,60 @@
 using System;
 using System.Linq;
+using System.Reactive.Concurrency;
+using System.Threading;
+using System.Windows.Forms;
 using JetBrains.Annotations;
+using log4net;
 using MicSwitch.Modularity;
+using Mono.Collections.Generic;
 using PoeShared.Modularity;
 using PoeShared.Prism;
 using PoeShared.Scaffolding;
 using PoeShared.UI.Hotkeys;
 using ReactiveUI;
+using Unity;
 
 namespace MicSwitch.Services
 {
     internal sealed class ComplexHotkeyTracker : DisposableReactiveObject, IComplexHotkeyTracker
     {
-        private readonly IHotkeyTracker[] trackers;
+        private static readonly ILog Log = LogManager.GetLogger(typeof(ComplexHotkeyTracker));
+
+        private readonly IHotkeyConverter hotkeyConverter;
+        private readonly IConfigProvider<MicSwitchConfig> configProvider;
+        private readonly IFactory<IHotkeyTracker> hotkeyTrackerFactory;
+        private readonly Collection<IHotkeyTracker> trackers = new Collection<IHotkeyTracker>();
         private bool isActive;
+        private HookForm hookForm;
 
         public ComplexHotkeyTracker(
             [NotNull] IHotkeyConverter hotkeyConverter,
             [NotNull] IConfigProvider<MicSwitchConfig> configProvider,
             [NotNull] IFactory<IHotkeyTracker> hotkeyTrackerFactory)
         {
+            this.hotkeyConverter = hotkeyConverter;
+            this.configProvider = configProvider;
+            this.hotkeyTrackerFactory = hotkeyTrackerFactory;
+            Log.Debug($"Scheduling HotkeyTracker initialization using background scheduler");
+            
+            var bgThread = new Thread(x => Initialize()){IsBackground = true, ApartmentState = ApartmentState.MTA, Name = "HotkeyTracker"};
+            bgThread.Start();
+        }
+
+        public bool IsActive
+        {
+            get => isActive;
+            private set => this.RaiseAndSetIfChanged(ref isActive, value);
+        }
+
+        private void Initialize()
+        {
+            Log.Debug($"Initializing HotkeyTracker");
+
             var hotkey = hotkeyTrackerFactory.Create();
             var hotkeyAlt = hotkeyTrackerFactory.Create();
-            trackers = new[] { hotkey, hotkeyAlt };
+            trackers.Add(hotkey);
+            trackers.Add(hotkeyAlt);
 
             configProvider.WhenChanged
                 .Subscribe(
@@ -46,12 +78,32 @@ namespace MicSwitch.Services
                     .Subscribe(x => IsActive = !IsActive)
                     .AddTo(Anchors);
             }
+
+            try
+            {
+                Log.Debug($"Running message loop");
+                hookForm = new HookForm();
+                Application.Run(hookForm);
+            }
+            catch (Exception e)
+            {
+                Log.Error("Exception occurred in Complex Hotkey message loop", e);
+            }
+            finally
+            {
+                Log.Debug($"Message loop terminated");
+            }
         }
 
-        public bool IsActive
+        private class HookForm : Form
         {
-            get => isActive;
-            private set => this.RaiseAndSetIfChanged(ref isActive, value);
+            public HookForm()
+            {
+                Visible = false;
+                ShowInTaskbar = false;
+                FormBorderStyle = FormBorderStyle.None;
+                WindowState = FormWindowState.Minimized;
+            }
         }
     }
 }
