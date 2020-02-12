@@ -136,15 +136,7 @@
                 <ToggleButton
                     Margin="5,0,0,0" HorizontalAlignment="Left"
                     IsChecked="{Binding SuppressHotkey}" />
-                <fa:FontAwesome Margin="5,0" Icon="ExclamationCircle"
-                                Foreground="{StaticResource WarningBrush}"
-                                VerticalAlignment="Center"
-                                HorizontalAlignment="Left"
-                                Visibility="{Binding SuppressHotkey, Converter={StaticResource TrueToVisibleFalseToCollapsedConverter}}"
-                                ToolTip="Not supported for Mouse hotkeys yet"
-                                FontSize="16" />
             </DockPanel>
-
 
             <DockPanel Margin="0,5,0,0"  Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="True">
                 <TextBlock DockPanel.Dock="Left" MinWidth="120"
