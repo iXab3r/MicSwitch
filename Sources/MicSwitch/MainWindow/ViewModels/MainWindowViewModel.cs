@@ -67,7 +67,7 @@ namespace MicSwitch.MainWindow.ViewModels
             [NotNull] IApplicationUpdaterViewModel appUpdater,
             [NotNull] [Dependency(WellKnownWindows.MainWindow)] IWindowTracker mainWindowTracker,
             [NotNull] IConfigProvider<MicSwitchConfig> configProvider,
-            [NotNull] ComplexHotkeyTracker hotkeyTracker,
+            [NotNull] IComplexHotkeyTracker hotkeyTracker,
             [NotNull] [Dependency(WellKnownSchedulers.UI)] IScheduler uiScheduler)
         {
             var restartArgs = appUpdater.GetRestartApplicationArgs();
