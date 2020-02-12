@@ -148,6 +148,15 @@
                     Command="{Binding RunAtLoginToggleCommand}"
                     CommandParameter="{Binding IsChecked, RelativeSource={RelativeSource Self}}" />
             </DockPanel>
+            
+            <DockPanel Margin="0,5,0,0"  Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="True">
+                <TextBlock DockPanel.Dock="Left" MinWidth="120"
+                           TextAlignment="Right"
+                           Text="Start Minimized:" />
+                <ToggleButton
+                    DockPanel.Dock="Left" Margin="5,0,0,0" HorizontalAlignment="Left"
+                    IsChecked="{Binding StartMinimized}" />
+            </DockPanel>
 
             <DockPanel Margin="5,5" Style="{StaticResource SettingsRowDockPanelStyle}">
                 <ContentControl Content="{Binding ResetOverlayPositionCommand}"

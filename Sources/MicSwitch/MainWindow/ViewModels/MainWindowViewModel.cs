@@ -55,6 +55,7 @@ namespace MicSwitch.MainWindow.ViewModels
         private bool showInTaskbar;
         private Visibility trayIconVisibility;
         private WindowState windowState;
+        private bool startMinimized;
 
         public MainWindowViewModel(
             [NotNull] IAppArguments appArguments,
@@ -225,6 +226,19 @@ namespace MicSwitch.MainWindow.ViewModels
             var executingAssemblyName = Assembly.GetExecutingAssembly().GetName();
             Title = $"{(appArguments.IsDebugMode ? "[D]" : "")} {executingAssemblyName.Name} v{executingAssemblyName.Version}";
 
+            configProvider.ListenTo(x => x.StartMinimized)
+                .Take(1)
+                .Where(x => x)
+                .ObserveOn(uiScheduler)
+                .Subscribe(
+                    x =>
+                    {
+                        Log.Debug($"StartMinimized option is active - minimizing window, current state: {WindowState}");
+                        StartMinimized = true;
+                        WindowState = WindowState.Minimized;
+                    })
+                .AddTo(Anchors);
+
             // config processing
             Observable.Merge(
                     this.ObservableForProperty(x => x.MicrophoneLine, skipInitial: true).ToUnit(),
@@ -232,7 +246,8 @@ namespace MicSwitch.MainWindow.ViewModels
                     this.ObservableForProperty(x => x.AudioNotification, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.HotkeyAlt, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.Hotkey, skipInitial: true).ToUnit(),
-                    this.ObservableForProperty(x => x.SuppressHotkey, skipInitial: true).ToUnit())
+                    this.ObservableForProperty(x => x.SuppressHotkey, skipInitial: true).ToUnit(),
+                    this.ObservableForProperty(x => x.StartMinimized, skipInitial: true).ToUnit())
                 .Throttle(ConfigThrottlingTimeout)
                 .ObserveOn(uiScheduler)
                 .Subscribe(() =>
@@ -244,6 +259,7 @@ namespace MicSwitch.MainWindow.ViewModels
                     config.MicrophoneLineId = MicrophoneLine;
                     config.Notification = AudioNotification;
                     config.SuppressHotkey = SuppressHotkey;
+                    config.StartMinimized = StartMinimized;
                     configProvider.Save(config);
                 }, Log.HandleException)
                 .AddTo(Anchors);
@@ -344,6 +360,12 @@ namespace MicSwitch.MainWindow.ViewModels
         {
             get => windowState;
             set => this.RaiseAndSetIfChanged(ref windowState, value);
+        }
+
+        public bool StartMinimized
+        {
+            get => startMinimized;
+            set => this.RaiseAndSetIfChanged(ref startMinimized, value);
         }
 
         public Visibility TrayIconVisibility

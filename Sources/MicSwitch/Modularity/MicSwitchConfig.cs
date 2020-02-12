@@ -9,6 +9,8 @@ namespace MicSwitch.Modularity
     internal sealed class MicSwitchConfig : IPoeEyeConfigVersioned, IOverlayConfig
     {
         public bool IsPushToTalkMode { get; set; }
+        
+        public bool StartMinimized { get; set; }
 
         public MicrophoneLineData MicrophoneLineId { get; set; }
 
