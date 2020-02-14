@@ -1,17 +1,22 @@
 using System;
+using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using JetBrains.Annotations;
 using log4net;
 using NAudio.CoreAudioApi;
 using NAudio.Wave;
 using PoeShared;
+using PoeShared.Prism;
 using PoeShared.Scaffolding;
 using ReactiveUI;
+using Unity;
 
 namespace MicSwitch.Services
 {
     internal sealed class MicrophoneController : DisposableReactiveObject, IMicrophoneController
     {
+        private readonly IMicrophoneProvider microphoneProvider;
         private static readonly ILog Log = LogManager.GetLogger(typeof(MicrophoneController));
         private static readonly TimeSpan SamplingInterval = TimeSpan.FromMilliseconds(50);
 
@@ -19,8 +24,10 @@ namespace MicSwitch.Services
 
         private MMDevice mixerControl;
 
-        public MicrophoneController()
+        public MicrophoneController(
+            IMicrophoneProvider microphoneProvider)
         {
+            this.microphoneProvider = microphoneProvider;
             this.WhenAnyValue(x => x.LineId)
                 .Subscribe(InitializeLine)
                 .AddTo(Anchors);
@@ -151,7 +158,7 @@ namespace MicSwitch.Services
             Log.Info($"Binding to line ({lineId})...");
             VolumePercent = null;
             Mute = null;
-            MixerControl = lineId.IsEmpty ? null : new MicrophoneProvider().GetMixerControl(lineId.LineId);
+            MixerControl = lineId.IsEmpty ? null : microphoneProvider.GetMixerControl(lineId.LineId);
         }
     }
 }

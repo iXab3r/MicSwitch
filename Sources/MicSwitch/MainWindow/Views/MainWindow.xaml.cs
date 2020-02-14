@@ -52,6 +52,7 @@ namespace MicSwitch.MainWindow.Views
             container.AddNewExtension<UpdaterRegistrations>();
             
             container.RegisterType<IMicrophoneController, MicrophoneController>();
+            container.RegisterSingleton<IMicrophoneProvider, MicrophoneProvider>();
             container.RegisterSingleton<IMicSwitchOverlayViewModel, MicSwitchOverlayViewModel>();
             container.RegisterSingleton<IComplexHotkeyTracker, ComplexHotkeyTracker>();
 

@@ -93,7 +93,17 @@
                            Text="Mute:" />
                 <ToggleButton 
                     DockPanel.Dock="Left" Margin="5,0,0,0" HorizontalAlignment="Left"
-                    IsChecked="{Binding MicrophoneMuted}" />
+                    Command="{Binding MuteMicrophoneCommand}"
+                    CommandParameter="{Binding IsChecked, RelativeSource={RelativeSource Self}}"
+                    IsChecked="{Binding MicrophoneMuted, Mode=OneWay}" />
+                <fa:FontAwesome Icon="Warning"
+                                Margin="5,0"
+                                Visibility="{Binding MuteMicrophoneCommand.Error, Converter={StaticResource NullToCollapsedConverter}}"
+                                Foreground="{StaticResource NegativeBrush}"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                ToolTip="{Binding MuteMicrophoneCommand.Error}"
+                                FontSize="18" />
             </DockPanel>
 
             <DockPanel Margin="0,5,0,0"  Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="False">

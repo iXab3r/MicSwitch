@@ -4,11 +4,15 @@ namespace MicSwitch.Services
 {
     internal struct MicrophoneLineData
     {
-        public static readonly MicrophoneLineData Empty = new MicrophoneLineData {Name = "No name"};
+        public MicrophoneLineData(string lineId, string name)
+        {
+            LineId = lineId;
+            Name = name;
+        }
 
-        public string LineId { get; set; }
+        public string LineId { get; }
 
-        public string Name { get; set; }
+        public string Name { get; }
 
         [JsonIgnore]
         public bool IsEmpty => string.IsNullOrEmpty(LineId);

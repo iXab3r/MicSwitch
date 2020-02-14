@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
-
+using DynamicData;
 using DynamicData.Binding;
 using JetBrains.Annotations;
 using log4net;
@@ -37,8 +37,8 @@ namespace MicSwitch.MainWindow.ViewModels
 {
     internal class MainWindowViewModel : DisposableReactiveObject
     {
-        private static readonly TimeSpan ConfigThrottlingTimeout = TimeSpan.FromMilliseconds(250);
         private static readonly ILog Log = LogManager.GetLogger(typeof(MainWindowViewModel));
+        private static readonly TimeSpan ConfigThrottlingTimeout = TimeSpan.FromMilliseconds(250);
         private static readonly string ExplorerExecutablePath = Environment.ExpandEnvironmentVariables(@"%WINDIR%\explorer.exe");
         private readonly IConfigProvider<MicSwitchConfig> configProvider;
         private readonly IWindowTracker mainWindowTracker;
@@ -68,6 +68,7 @@ namespace MicSwitch.MainWindow.ViewModels
             [NotNull] [Dependency(WellKnownWindows.MainWindow)] IWindowTracker mainWindowTracker,
             [NotNull] IConfigProvider<MicSwitchConfig> configProvider,
             [NotNull] IComplexHotkeyTracker hotkeyTracker,
+            [NotNull] IMicrophoneProvider microphoneProvider,
             [NotNull] [Dependency(WellKnownSchedulers.UI)] IScheduler uiScheduler)
         {
             var restartArgs = appUpdater.GetRestartApplicationArgs();
@@ -87,7 +88,7 @@ namespace MicSwitch.MainWindow.ViewModels
             ApplicationUpdater = appUpdater;
             this.mainWindowTracker = mainWindowTracker;
             this.configProvider = configProvider;
-            this.BindPropertyTo(x => x.IsActive, mainWindowTracker, x => x.IsActive).AddTo(Anchors);
+            this.RaiseWhenSourceValue(x => x.IsActive, mainWindowTracker, x => x.IsActive).AddTo(Anchors);
 
             AudioSelectorWhenMuted = audioSelectorFactory.Create();
             AudioSelectorWhenUnmuted = audioSelectorFactory.Create();
@@ -138,9 +139,13 @@ namespace MicSwitch.MainWindow.ViewModels
             this.RaiseWhenSourceValue(x => x.MicrophoneVolume, microphoneController, x => x.VolumePercent).AddTo(Anchors);
             this.RaiseWhenSourceValue(x => x.MicrophoneMuted, microphoneController, x => x.Mute).AddTo(Anchors);
 
-            Microphones = new ReadOnlyObservableCollection<MicrophoneLineData>(
-                new ObservableCollection<MicrophoneLineData>(new MicrophoneProvider().EnumerateLines())
-            );
+            microphoneProvider.Microphones
+                .ToObservableChangeSet()
+                .ObserveOn(uiScheduler)
+                .Bind(out var microphones)
+                .Subscribe()
+                .AddTo(Anchors);
+            Microphones = microphones;
 
             this.ObservableForProperty(x => x.MicrophoneMuted, skipInitial: true)
                 .DistinctUntilChanged()
@@ -157,8 +162,7 @@ namespace MicSwitch.MainWindow.ViewModels
 
             this.WhenAnyValue(x => x.MicrophoneLine)
                 .DistinctUntilChanged()
-                .Where(x => !MicrophoneLine.IsEmpty)
-                .Subscribe(x => microphoneController.LineId = x, Log.HandleException)
+                .Subscribe(x => microphoneController.LineId = x, Log.HandleUiException)
                 .AddTo(Anchors);
 
             Observable.Merge(
@@ -168,7 +172,7 @@ namespace MicSwitch.MainWindow.ViewModels
                 .ObserveOn(uiScheduler)
                 .Subscribe(configLineId =>
                 {
-                    Log.Debug($"Microphone line configuration changed: {configLineId}, known lines: {Microphones.DumpToTextRaw()}");
+                    Log.Debug($"Microphone line configuration changed, lineId: {configLineId}, known lines: {Microphones.DumpToTextRaw()}");
 
                     var micLine = Microphones.FirstOrDefault(line => line.Equals(configLineId));
                     if (micLine.IsEmpty)
@@ -176,18 +180,18 @@ namespace MicSwitch.MainWindow.ViewModels
                         Log.Debug($"Selecting first one of available microphone lines, known lines: {Microphones.DumpToTextRaw()}");
                         micLine = Microphones.FirstOrDefault();
                     }
-
                     MicrophoneLine = micLine;
-                }, Log.HandleException)
+                    MuteMicrophoneCommand.ResetError();
+                }, Log.HandleUiException)
                 .AddTo(Anchors);
 
             hotkeyTracker
                 .WhenAnyValue(x => x.IsActive)
                 .ObserveOn(uiScheduler)
-                .Subscribe(isActive =>
+                .Subscribe(async isActive =>
                 {
-                    MicrophoneMuted = isActive;
-                }, Log.HandleException)
+                    MuteMicrophoneCommand.Execute(isActive);
+                }, Log.HandleUiException)
                 .AddTo(Anchors);
 
             ToggleOverlayLockCommand = CommandWrapper.Create(
@@ -212,7 +216,7 @@ namespace MicSwitch.MainWindow.ViewModels
                 });
 
             this.WhenAnyValue(x => x.WindowState)
-                .Subscribe(x => ShowInTaskbar = x != WindowState.Minimized, Log.HandleException)
+                .Subscribe(x => ShowInTaskbar = x != WindowState.Minimized, Log.HandleUiException)
                 .AddTo(Anchors);
 
             ShowAppCommand = CommandWrapper.Create(() => ShowAppCommandExecuted());
@@ -222,6 +226,7 @@ namespace MicSwitch.MainWindow.ViewModels
             ResetOverlayPositionCommand = CommandWrapper.Create(() => ResetOverlayPositionCommandExecuted());
             
             RunAtLoginToggleCommand = CommandWrapper.Create<bool>(RunAtLoginCommandExecuted);
+            MuteMicrophoneCommand = CommandWrapper.Create<bool>(MuteMicrophoneCommandExecuted);
 
             var executingAssemblyName = Assembly.GetExecutingAssembly().GetName();
             Title = $"{(appArguments.IsDebugMode ? "[D]" : "")} {executingAssemblyName.Name} v{executingAssemblyName.Version}";
@@ -236,7 +241,7 @@ namespace MicSwitch.MainWindow.ViewModels
                         Log.Debug($"StartMinimized option is active - minimizing window, current state: {WindowState}");
                         StartMinimized = true;
                         WindowState = WindowState.Minimized;
-                    })
+                    }, Log.HandleUiException)
                 .AddTo(Anchors);
 
             // config processing
@@ -261,8 +266,14 @@ namespace MicSwitch.MainWindow.ViewModels
                     config.SuppressHotkey = SuppressHotkey;
                     config.StartMinimized = StartMinimized;
                     configProvider.Save(config);
-                }, Log.HandleException)
+                }, Log.HandleUiException)
                 .AddTo(Anchors);
+        }
+
+        private async Task MuteMicrophoneCommandExecuted(bool mute)
+        {
+            Log.Debug($"{(mute ? "Muting" : "Un-muting")} microphone {microphoneController.LineId}");
+            microphoneController.Mute = mute;
         }
 
         private async Task RunAtLoginCommandExecuted(bool runAtLogin)
@@ -346,6 +357,8 @@ namespace MicSwitch.MainWindow.ViewModels
         
         public CommandWrapper RunAtLoginToggleCommand { get; }
 
+        public CommandWrapper MuteMicrophoneCommand { get; }
+
         public IMicSwitchOverlayViewModel Overlay { get; }
 
         public IAudioNotificationSelectorViewModel AudioSelectorWhenUnmuted { get; }
@@ -415,7 +428,6 @@ namespace MicSwitch.MainWindow.ViewModels
         public bool MicrophoneMuted
         {
             get => microphoneController.Mute ?? false;
-            set => microphoneController.Mute = value;
         }
 
         public bool SuppressHotkey
