@@ -16,6 +16,10 @@
     <IsPackable>false</IsPackable>
     <ApplicationManifest>MicSwitch.exe.manifest</ApplicationManifest>
     <ApplicationIcon>Resources\microphoneEnabled.ico</ApplicationIcon>
+    <Authors>Xab3r</Authors>
+    <PackageProjectUrl>https://github.com/iXab3r/MicSwitch</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/iXab3r/MicSwitch</RepositoryUrl>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="CsQuery" Version="1.3.4" />
