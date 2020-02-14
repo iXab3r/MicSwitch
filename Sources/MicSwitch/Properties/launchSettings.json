@@ -5,7 +5,8 @@
       "commandLineArgs": "-d"
     },
     "MicSwitchRelease": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "commandLineArgs": ""
     }
   }
 }

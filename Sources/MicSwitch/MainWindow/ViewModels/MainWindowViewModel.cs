@@ -40,7 +40,6 @@ namespace MicSwitch.MainWindow.ViewModels
         private static readonly ILog Log = LogManager.GetLogger(typeof(MainWindowViewModel));
         private static readonly TimeSpan ConfigThrottlingTimeout = TimeSpan.FromMilliseconds(250);
         private static readonly string ExplorerExecutablePath = Environment.ExpandEnvironmentVariables(@"%WINDIR%\explorer.exe");
-        private readonly IConfigProvider<MicSwitchConfig> configProvider;
         private readonly IWindowTracker mainWindowTracker;
 
         private readonly IStartupManager startupManager;
@@ -87,7 +86,6 @@ namespace MicSwitch.MainWindow.ViewModels
 
             ApplicationUpdater = appUpdater;
             this.mainWindowTracker = mainWindowTracker;
-            this.configProvider = configProvider;
             this.RaiseWhenSourceValue(x => x.IsActive, mainWindowTracker, x => x.IsActive).AddTo(Anchors);
 
             AudioSelectorWhenMuted = audioSelectorFactory.Create();
@@ -243,6 +241,8 @@ namespace MicSwitch.MainWindow.ViewModels
                         WindowState = WindowState.Minimized;
                     }, Log.HandleUiException)
                 .AddTo(Anchors);
+
+            
 
             // config processing
             Observable.Merge(
