@@ -104,6 +104,12 @@ namespace MicSwitch.Services
                 FormBorderStyle = FormBorderStyle.None;
                 WindowState = FormWindowState.Minimized;
             }
+
+            protected override void OnVisibleChanged(EventArgs e)
+            {
+                base.OnVisibleChanged(e);
+                Hide();
+            }
         }
     }
 }

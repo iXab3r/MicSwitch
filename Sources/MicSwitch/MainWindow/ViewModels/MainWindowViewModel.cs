@@ -55,6 +55,7 @@ namespace MicSwitch.MainWindow.ViewModels
         private Visibility trayIconVisibility;
         private WindowState windowState;
         private bool startMinimized;
+        private Visibility visibility;
 
         public MainWindowViewModel(
             [NotNull] IAppArguments appArguments,
@@ -243,13 +244,13 @@ namespace MicSwitch.MainWindow.ViewModels
                         {
                             Log.Debug($"StartMinimized option is active - minimizing window, current state: {WindowState}");
                             StartMinimized = true;
-                            UnsafeNative.HideWindow(Application.Current.MainWindow);
+                            HideWindow();
                         }
                         else
                         {
                             Log.Debug($"StartMinimized option is not active - showing window as Normal, current state: {WindowState}");
                             StartMinimized = false;
-                            ShowAppCommandExecuted();
+                            ShowWindow();
                         }
                         
                     }, Log.HandleUiException)
@@ -324,6 +325,23 @@ namespace MicSwitch.MainWindow.ViewModels
 
         private void ShowAppCommandExecuted()
         {
+            if (Visibility != Visibility.Visible)
+            {
+                ShowWindow();
+            }
+            else
+            {
+                HideWindow();
+            }
+        }
+
+        private void HideWindow()
+        {
+            UnsafeNative.HideWindow(Application.Current.MainWindow);
+        }
+
+        private void ShowWindow()
+        {
             UnsafeNative.ShowWindow(Application.Current.MainWindow);
         }
 
@@ -359,6 +377,12 @@ namespace MicSwitch.MainWindow.ViewModels
         {
             get => windowState;
             set => this.RaiseAndSetIfChanged(ref windowState, value);
+        }
+
+        public Visibility Visibility
+        {
+            get => visibility;
+            set => this.RaiseAndSetIfChanged(ref visibility, value);
         }
 
         public bool StartMinimized
