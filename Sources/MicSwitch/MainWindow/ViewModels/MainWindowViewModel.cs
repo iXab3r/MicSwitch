@@ -68,6 +68,7 @@ namespace MicSwitch.MainWindow.ViewModels
             [NotNull] IConfigProvider<MicSwitchConfig> configProvider,
             [NotNull] IComplexHotkeyTracker hotkeyTracker,
             [NotNull] IMicrophoneProvider microphoneProvider,
+            [NotNull] IViewController viewController,
             [NotNull] [Dependency(WellKnownSchedulers.UI)] IScheduler uiScheduler)
         {
             var restartArgs = appUpdater.GetRestartApplicationArgs();
@@ -229,20 +230,32 @@ namespace MicSwitch.MainWindow.ViewModels
             var executingAssemblyName = Assembly.GetExecutingAssembly().GetName();
             Title = $"{(appArguments.IsDebugMode ? "[D]" : "")} {executingAssemblyName.Name} v{executingAssemblyName.Version}";
 
-            configProvider.ListenTo(x => x.StartMinimized)
+            WindowState = WindowState.Minimized;
+            viewController
+                .WhenLoaded
                 .Take(1)
-                .Where(x => x)
+                .Select(() => configProvider.ListenTo(y => y.StartMinimized))
+                .Switch()
+                .Take(1)
                 .ObserveOn(uiScheduler)
                 .Subscribe(
                     x =>
                     {
-                        Log.Debug($"StartMinimized option is active - minimizing window, current state: {WindowState}");
-                        StartMinimized = true;
-                        WindowState = WindowState.Minimized;
+                        if (x)
+                        {
+                            Log.Debug($"StartMinimized option is active - minimizing window, current state: {WindowState}");
+                            StartMinimized = true;
+                            UnsafeNative.HideWindow(Application.Current.MainWindow);
+                        }
+                        else
+                        {
+                            Log.Debug($"StartMinimized option is not active - showing window as Normal, current state: {WindowState}");
+                            StartMinimized = false;
+                            ShowAppCommandExecuted();
+                        }
+                        
                     }, Log.HandleUiException)
                 .AddTo(Anchors);
-
-            
 
             // config processing
             Observable.Merge(
@@ -313,34 +326,9 @@ namespace MicSwitch.MainWindow.ViewModels
 
         private void ShowAppCommandExecuted()
         {
-            Log.Debug($"ShowApp command activated, windowState: {WindowState}");
-            var mainWindow = Application.Current.MainWindow;
-            if (mainWindow == null)
-            {
-                Log.Warn($"Main window is not assigned yet");
-                return;
-            }
-            
-            Log.Debug($"Activating main window, title: '{mainWindow.Title}' {new Point(mainWindow.Left, mainWindow.Top)}, isActive: {mainWindow.IsActive}, state: {mainWindow.WindowState}, topmost: {mainWindow.Topmost}, style:{mainWindow.WindowStyle}");
-            if (mainWindow.WindowState == WindowState.Minimized)
-            {
-                mainWindow.WindowState = WindowState.Normal;
-            }
-
-            mainWindow.Activate();
-
-            var initialTopmost = mainWindow.Topmost;
-            mainWindow.Topmost = !initialTopmost;
-            mainWindow.Topmost = initialTopmost;
-            
-            var mainWindowHandle = new WindowInteropHelper(mainWindow).Handle;
-            if (mainWindowHandle != IntPtr.Zero && UnsafeNative.GetForegroundWindow() != mainWindowHandle)
-            {
-                Log.Debug($"Setting foreground window, hWnd: 0x{mainWindowHandle.ToInt64():x8}, windowState: {WindowState}");
-                UnsafeNative.SetForegroundWindow(mainWindowHandle);
-            }
+            UnsafeNative.ShowWindow(Application.Current.MainWindow);
         }
-        
+
         public bool IsElevated => appArguments.IsElevated;
 
         public ReadOnlyObservableCollection<MicrophoneLineData> Microphones { get; }

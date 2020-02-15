@@ -1,5 +1,8 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Linq;
+using System.Reactive;
+using System.Reactive.Subjects;
 using System.Windows;
 using log4net;
 using MicSwitch.MainWindow.Models;
@@ -16,13 +19,14 @@ using PoeShared.Squirrel.Prism;
 using PoeShared.Squirrel.Updater;
 using PoeShared.Wpf.Scaffolding;
 using Unity;
+using Unity.Resolution;
 
 namespace MicSwitch.MainWindow.Views
 {
     /// <summary>
     ///     Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow
+    public partial class MainWindow 
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(MainWindow));
 
@@ -59,8 +63,10 @@ namespace MicSwitch.MainWindow.Views
             InitializeUpdateSettings();
 
             Log.Debug($"Registrations took {sw.ElapsedMilliseconds:F0}ms");
+
+            var viewController = new ViewController(this);
             sw.Restart();
-            DataContext = container.Resolve<MainWindowViewModel>();
+            DataContext = container.Resolve<MainWindowViewModel>(new DependencyOverride<IViewController>(viewController));
             Log.Debug($"MainWindow resolved in {sw.ElapsedMilliseconds:F0}ms");
             sw.Restart();
             
@@ -103,6 +109,32 @@ namespace MicSwitch.MainWindow.Views
             else
             {
                 Log.Info($"Updates are provided by {updateSourceProvider.UpdateSource}");
+            }
+        }
+
+        private sealed class ViewController : IViewController
+        {
+            private readonly Window owner;
+            private readonly ISubject<Unit> whenLoaded = new Subject<Unit>();
+
+            public ViewController(Window owner)
+            {
+                this.owner = owner;
+                owner.Loaded += OnLoaded;
+                owner.Unloaded += OnUnloaded;
+            }
+
+            public IObservable<Unit> WhenLoaded => whenLoaded;
+
+            private void OnUnloaded(object sender, RoutedEventArgs e)
+            {
+                Log.Debug($"MainWindow unloaded");
+            }
+
+            private void OnLoaded(object sender, RoutedEventArgs e)
+            {
+                Log.Debug($"MainWindow loaded");
+                whenLoaded.OnNext(Unit.Default);
             }
         }
     }

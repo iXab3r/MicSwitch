@@ -18,12 +18,13 @@
                  ResizeMode="CanMinimize"
                  WindowStyle="SingleBorderWindow"
                  ShowInTaskbar="{Binding ShowInTaskbar, Mode=TwoWay}"
+                 ShowActivated="False"
                  TextElement.FontWeight="Regular"
                  TextOptions.TextFormattingMode="Ideal"
                  TextOptions.TextRenderingMode="Auto"
                  Loaded="OnLoaded"
                  Unloaded="OnUnloaded"
-                 Title="{Binding Title}" Width="400" SizeToContent="Height">
+                 Title="{Binding Title}" Width="450" SizeToContent="Height">
 
     <Window.Resources>
         <Style TargetType="{x:Type DockPanel}" x:Key="SettingsRowDockPanelStyle">
