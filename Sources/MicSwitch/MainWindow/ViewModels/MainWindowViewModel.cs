@@ -71,15 +71,13 @@ namespace MicSwitch.MainWindow.ViewModels
             [NotNull] IViewController viewController,
             [NotNull] [Dependency(WellKnownSchedulers.UI)] IScheduler uiScheduler)
         {
-            var restartArgs = appUpdater.GetRestartApplicationArgs();
             var startupManagerArgs = new StartupManagerArgs
             {
                 UniqueAppName = $"{appArguments.AppName}{(appArguments.IsDebugMode ? "-debug" : string.Empty)}",
-                ExecutablePath = restartArgs.exePath,
-                CommandLineArgs = restartArgs.exeArgs,
+                ExecutablePath = appUpdater.GetLatestExecutable().FullName,
+                CommandLineArgs = appArguments.StartupArgs,
                 AutostartFlag = appArguments.AutostartFlag
             };
-           
             this.startupManager = startupManagerFactory.Create(startupManagerArgs);
 
             this.appArguments = appArguments;
