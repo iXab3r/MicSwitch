@@ -12,10 +12,8 @@ There are dozens of different audio chat apps like Discord, TeamSpeak, Ventrilo,
 | Ventrilo  | ![Not supported](https://i.imgur.com/AxsV1yJ.png "Not supported")  |   ![Supported](https://i.imgur.com/GOuQvrh.png "Supported")  |  [Has a bug dating 2012](http://forum.ventrilo.com/showthread.php?t=61203 "Has a bug dating 2012")  |   ![Supported](https://i.imgur.com/GOuQvrh.png "Supported")  |
 | Skype  | ![Not supported](https://i.imgur.com/AxsV1yJ.png "Not supported")  |  Hard-coded Ctrl+M  |  ![Not supported](https://i.imgur.com/AxsV1yJ.png "Not supported")  |  ![Not supported](https://i.imgur.com/AxsV1yJ.png "Not supported") |
 
-
-MicSwitch is a tool which allows you to mute/unmute your microphone using a predefined system-wide hotkey which will affect any program that uses microphone (no more heavy breathing during Skype conferences, hooray!)
-Also it supports configurable mute/unmute sounds (hi, Discord!) and a configurable overlay with scaling/transparency support.
-All these features allow you to seamlessly switch between all other chat apps and use THE SAME input system with overlay and notifications support with TeamSpeak, Discord or any other application.
+MicSwitch allows you to mute/unmute your system microphone using a predefined system-wide hotkey which will affect any program that uses microphone (no more heavy breathing during Skype conferences, hooray!)
+Also it supports configurable mute/unmute sounds(similar to TeamSpeak/Ventrilo) and a configurable overlay with scaling/transparency support. All these features allow you to seamlessly switch between chat apps and use THE SAME input system with overlay and notifications support.
 
 # Prerequisites
 - Microsoft .NET Framework 4.6.1 - [download](https://www.microsoft.com/ru-ru/download/details.aspx?id=49982)
