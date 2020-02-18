@@ -56,6 +56,6 @@ All these features allow you to seamlessly switch between all other chat apps an
 That's it. Working version will be in **Sources/bin** folder
 
 ## Contacts
-- Feel free to contact me via PM in Discord *Xab3r#3780*
+- Feel free to contact me via PM in Discord *Xab3r#3780* or [Reddit](https://www.reddit.com/user/Xab3r) 
 - [Discord chat](https://discord.gg/BExRm22 "Discord chat")
 - [Issues tracker](https://github.com/iXab3r/MicSwitch/issues)
