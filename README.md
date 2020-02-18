@@ -1,14 +1,6 @@
 ![](https://img.shields.io/github/release-date/iXab3r/MicSwitch.svg) ![](https://img.shields.io/github/downloads/iXab3r/MicSwitch/total.svg) ![](https://img.shields.io/github/last-commit/iXab3r/MicSwitch.svg)
 ![Discord](https://img.shields.io/discord/:513749321162686471.svg)
 
-MicSwitch is a tool which allows you to mute/unmute your microphone using a predefined hotkey. 
-This is system-wide thus it will affect any program which uses microphone (no more heavy breathing during Skype conferences, hooray!)
-Also MicSwitch supports configurable mute/unmute sounds (hi, Discord!) and a configurable overlay with scaling/opacity support.
-
-# Prerequisites
-- Microsoft .NET Framework 4.6.1 - [download](https://www.microsoft.com/ru-ru/download/details.aspx?id=49982)
-Hi guys, I want to present utility app which solves a single problem - muting/unmuting microphone. There are dozens of different audio chat apps like Discord, TeamSpeak, Ventrilo, Skype, in-game audio chats, etc. And all of them have DIFFERENT ways of handling push-to-talk and always-on microphone functionality. I will try to explain it using a feature matrix. 
-
 # Intro
 There are dozens of different audio chat apps like Discord, TeamSpeak, Ventrilo, Skype, in-game audio chats, etc. And all of them have DIFFERENT ways of handling push-to-talk and always-on microphone functionality. I will try to explain what I mean using a feature matrix.
 
@@ -20,7 +12,14 @@ There are dozens of different audio chat apps like Discord, TeamSpeak, Ventrilo,
 | Ventrilo  | ![Not supported](https://i.imgur.com/AxsV1yJ.png "Not supported")  |   ![Supported](https://i.imgur.com/GOuQvrh.png "Supported")  |  [Has a bug dating 2012](http://forum.ventrilo.com/showthread.php?t=61203 "Has a bug dating 2012")  |   ![Supported](https://i.imgur.com/GOuQvrh.png "Supported")  |
 | Skype  | ![Not supported](https://i.imgur.com/AxsV1yJ.png "Not supported")  |  Hard-coded Ctrl+M  |  ![Not supported](https://i.imgur.com/AxsV1yJ.png "Not supported")  |  ![Not supported](https://i.imgur.com/AxsV1yJ.png "Not supported") |
 
-MicSwitch allows you to seamlessly switch between all other chat apps and use THE SAME input system with overlay and notifications support with TeamSpeak, Discord or any other application.
+
+MicSwitch is a tool which allows you to mute/unmute your microphone using a predefined hotkey. 
+This is system-wide thus it will affect any program which uses microphone (no more heavy breathing during Skype conferences, hooray!)
+Also MicSwitch supports configurable mute/unmute sounds (hi, Discord!) and a configurable overlay with scaling/opacity support.
+All these features allow you to seamlessly switch between all other chat apps and use THE SAME input system with overlay and notifications support with TeamSpeak, Discord or any other application.
+
+# Prerequisites
+- Microsoft .NET Framework 4.6.1 - [download](https://www.microsoft.com/ru-ru/download/details.aspx?id=49982)
 
 # Installation
 - You can download the latest version of installer here - [download](https://github.com/iXab3r/MicSwitch/releases/latest).
