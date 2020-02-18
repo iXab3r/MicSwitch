@@ -50,8 +50,9 @@ All these features allow you to seamlessly switch between all other chat apps an
 1. git clone https://github.com/iXab3r/MicSwitch.git
 2. cd MicSwitch
 3. git submodule init
-4. InitSymlinks.cmd
-5. dotnet build
+5. git submodule update --checkout
+5. InitSymlinks.cmd
+6. dotnet build
 
 That's it. Working version will be in **Sources/bin** folder
 
