@@ -2,7 +2,7 @@
 [![Discord Chat](https://img.shields.io/discord/513749321162686471.svg)](https://discord.gg/pFHHebM)  
 
 # Intro
-There are dozens of different audio chat apps like Discord, TeamSpeak, Ventrilo, Skype, in-game audio chats, etc. And all of them have DIFFERENT ways of handling push-to-talk and always-on microphone functionality. I will try to explain what I mean using a feature matrix.
+There are dozens of different audio chat apps like Discord, TeamSpeak, Ventrilo, Skype, in-game audio chats, etc. And all of them have DIFFERENT ways of handling push-to-talk and always-on microphone functionality. I bet many of you know how distracting it could be when someone forgets to turn off a microphone. I will try to explain what I mean using a feature matrix.
 
 | App  | Microphone status overlay | Keyboard support | Mouse buttons support | Audio notification |
 | -------------: | :-------------: | :-------------: | :-------------: | :-------------: |
@@ -13,9 +13,8 @@ There are dozens of different audio chat apps like Discord, TeamSpeak, Ventrilo,
 | Skype  | ![Not supported](https://i.imgur.com/AxsV1yJ.png "Not supported")  |  Hard-coded Ctrl+M  |  ![Not supported](https://i.imgur.com/AxsV1yJ.png "Not supported")  |  ![Not supported](https://i.imgur.com/AxsV1yJ.png "Not supported") |
 
 
-MicSwitch is a tool which allows you to mute/unmute your microphone using a predefined hotkey. 
-This is system-wide thus it will affect any program which uses microphone (no more heavy breathing during Skype conferences, hooray!)
-Also MicSwitch supports configurable mute/unmute sounds (hi, Discord!) and a configurable overlay with scaling/opacity support.
+MicSwitch is a tool which allows you to mute/unmute your microphone using a predefined system-wide hotkey which will affect any program that uses microphone (no more heavy breathing during Skype conferences, hooray!)
+Also it supports configurable mute/unmute sounds (hi, Discord!) and a configurable overlay with scaling/transparency support.
 All these features allow you to seamlessly switch between all other chat apps and use THE SAME input system with overlay and notifications support with TeamSpeak, Discord or any other application.
 
 # Prerequisites
