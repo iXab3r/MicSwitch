@@ -52,6 +52,7 @@ All these features allow you to seamlessly switch between all other chat apps an
 3. git submodule init
 4. InitSymlinks.cmd
 5. dotnet build
+
 That's it. Working version will be in **Sources/bin** folder
 
 ## Contacts
