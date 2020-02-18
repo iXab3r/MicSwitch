@@ -1,5 +1,5 @@
 ![](https://img.shields.io/github/release-date/iXab3r/MicSwitch.svg) ![](https://img.shields.io/github/downloads/iXab3r/MicSwitch/total.svg) ![](https://img.shields.io/github/last-commit/iXab3r/MicSwitch.svg)
-![Discord](https://img.shields.io/discord/:513749321162686471.svg)
+[![Discord Chat](https://img.shields.io/discord/513749321162686471.svg)](https://discord.gg/pFHHebM)  
 
 # Intro
 There are dozens of different audio chat apps like Discord, TeamSpeak, Ventrilo, Skype, in-game audio chats, etc. And all of them have DIFFERENT ways of handling push-to-talk and always-on microphone functionality. I will try to explain what I mean using a feature matrix.
@@ -42,5 +42,6 @@ All these features allow you to seamlessly switch between all other chat apps an
 ![Auto-update via Github](https://i.imgur.com/O4SIuDy.gif)
 
 ## Contacts
+- Feel free to contact me via PM in Discord *Xab3r#3780*
 - [Discord chat](https://discord.gg/BExRm22 "Discord chat")
 - [Issues tracker](https://github.com/iXab3r/MicSwitch/issues)
