@@ -7,6 +7,20 @@ Also MicSwitch supports configurable mute/unmute sounds (hi, Discord!) and a con
 
 # Prerequisites
 - Microsoft .NET Framework 4.6.1 - [download](https://www.microsoft.com/ru-ru/download/details.aspx?id=49982)
+Hi guys, I want to present utility app which solves a single problem - muting/unmuting microphone. There are dozens of different audio chat apps like Discord, TeamSpeak, Ventrilo, Skype, in-game audio chats, etc. And all of them have DIFFERENT ways of handling push-to-talk and always-on microphone functionality. I will try to explain it using a feature matrix. 
+
+# Intro
+There are dozens of different audio chat apps like Discord, TeamSpeak, Ventrilo, Skype, in-game audio chats, etc. And all of them have DIFFERENT ways of handling push-to-talk and always-on microphone functionality. I will try to explain what I mean using a feature matrix.
+
+| App  | Microphone status overlay | Keyboard support | Mouse buttons support | Audio notification |
+| -------------: | :-------------: | :-------------: | :-------------: | :-------------: |
+| MicSwitch |  ![Supported](https://i.imgur.com/GOuQvrh.png "Supported") |  ![Supported](https://i.imgur.com/GOuQvrh.png "Supported") |  ![Supported](https://i.imgur.com/GOuQvrh.png "Supported") |  ![Supported](https://i.imgur.com/GOuQvrh.png "Supported")
+| Discord  |  In-game only  |   ![Supported](https://i.imgur.com/GOuQvrh.png "Supported")  |  ![Supported](https://i.imgur.com/GOuQvrh.png "Supported")   |  ![Not supported](https://i.imgur.com/AxsV1yJ.png "Not supported") |
+| TeamSpeak  |  ![Supported](https://i.imgur.com/GOuQvrh.png "Supported")  |  ![Supported](https://i.imgur.com/GOuQvrh.png "Supported")   |  ![Supported](https://i.imgur.com/GOuQvrh.png "Supported")  |   ![Supported](https://i.imgur.com/GOuQvrh.png "Supported")  |
+| Ventrilo  | ![Not supported](https://i.imgur.com/AxsV1yJ.png "Not supported")  |   ![Supported](https://i.imgur.com/GOuQvrh.png "Supported")  |  [Has a bug dating 2012](http://forum.ventrilo.com/showthread.php?t=61203 "Has a bug dating 2012")  |   ![Supported](https://i.imgur.com/GOuQvrh.png "Supported")  |
+| Skype  | ![Not supported](https://i.imgur.com/AxsV1yJ.png "Not supported")  |  Hard-coded Ctrl+M  |  ![Not supported](https://i.imgur.com/AxsV1yJ.png "Not supported")  |  ![Not supported](https://i.imgur.com/AxsV1yJ.png "Not supported") |
+
+MicSwitch allows you to seamlessly switch between all other chat apps and use THE SAME input system with overlay and notifications support with TeamSpeak, Discord or any other application.
 
 # Installation
 - You can download the latest version of installer here - [download](https://github.com/iXab3r/MicSwitch/releases/latest).
@@ -15,9 +29,11 @@ Also MicSwitch supports configurable mute/unmute sounds (hi, Discord!) and a con
 ## Features
 - Multiple microphones support (useful for streamers)
 - System-wide hotkeys (supports mouse XButtons)
-- Overlay
-- Mute/unmute audio notification
-- Two Hotkey modes: Push-to-talk and Toggle
+- Always-on-top configurable (scale, transparency) Overlay
+- Mute/unmute audio notification (with custom audio files support)
+- Multiple hotkeys support
+- Auto-startup (could be Minimized by default)
+- Two Audio modes: Push-to-talk and Toggle
 - Auto-updates via Github
 
 ## Media
