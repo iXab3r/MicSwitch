@@ -2,12 +2,14 @@ using System;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Threading;
-using System.Windows.Forms;
+using System.Windows;
 using JetBrains.Annotations;
 using log4net;
 using MicSwitch.Modularity;
 using Mono.Collections.Generic;
+using PoeShared;
 using PoeShared.Modularity;
+using PoeShared.Native;
 using PoeShared.Prism;
 using PoeShared.Scaffolding;
 using PoeShared.UI.Hotkeys;
@@ -37,7 +39,12 @@ namespace MicSwitch.Services
             this.hotkeyTrackerFactory = hotkeyTrackerFactory;
             Log.Debug($"Scheduling HotkeyTracker initialization using background scheduler");
             
-            var bgThread = new Thread(x => Initialize()){IsBackground = true, ApartmentState = ApartmentState.MTA, Name = "HotkeyTracker"};
+            var bgThread = new Thread(x => Initialize())
+            {
+                IsBackground = true, 
+                ApartmentState = ApartmentState.STA, 
+                Name = "HotkeyTracker"
+            };
             bgThread.Start();
         }
 
@@ -83,11 +90,11 @@ namespace MicSwitch.Services
             {
                 Log.Debug($"Running message loop");
                 hookForm = new HookForm();
-                Application.Run(hookForm);
+                hookForm.ShowDialog();
             }
             catch (Exception e)
             {
-                Log.Error("Exception occurred in Complex Hotkey message loop", e);
+                Log.HandleUiException(new ApplicationException("Exception occurred in Complex Hotkey message loop", e));
             }
             finally
             {
@@ -95,20 +102,16 @@ namespace MicSwitch.Services
             }
         }
 
-        private class HookForm : Form
+        private class HookForm : TransparentWindow
         {
             public HookForm()
             {
-                Visible = false;
                 ShowInTaskbar = false;
-                FormBorderStyle = FormBorderStyle.None;
-                WindowState = FormWindowState.Minimized;
-            }
-
-            protected override void OnVisibleChanged(EventArgs e)
-            {
-                base.OnVisibleChanged(e);
-                Hide();
+                WindowStyle = WindowStyle.None;
+                Width = 0;
+                Height = 0;
+                Visibility = Visibility.Collapsed;
+                MakeTransparent();
             }
         }
     }
