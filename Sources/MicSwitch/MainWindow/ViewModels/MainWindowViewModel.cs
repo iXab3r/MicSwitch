@@ -35,7 +35,7 @@ using MessageBox = System.Windows.MessageBox;
 
 namespace MicSwitch.MainWindow.ViewModels
 {
-    internal class MainWindowViewModel : DisposableReactiveObject
+    internal class MainWindowViewModel : DisposableReactiveObject, IMainWindowViewModel
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(MainWindowViewModel));
         private static readonly TimeSpan ConfigThrottlingTimeout = TimeSpan.FromMilliseconds(250);
@@ -52,7 +52,7 @@ namespace MicSwitch.MainWindow.ViewModels
         private bool suppressHotkey;
         private MicrophoneLineData microphoneLine;
         private bool showInTaskbar;
-        private Visibility trayIconVisibility;
+        private Visibility trayIconVisibility = Visibility.Visible;
         private WindowState windowState;
         private bool startMinimized;
         private Visibility visibility;

@@ -1,17 +1,32 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reactive.Concurrency;
+using System.Reactive.Disposables;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 using log4net;
+using MicSwitch.MainWindow.Models;
+using MicSwitch.MainWindow.ViewModels;
+using MicSwitch.Prism;
+using MicSwitch.Services;
 using PoeShared;
+using PoeShared.Modularity;
+using PoeShared.Native;
+using PoeShared.Native.Scaffolding;
+using PoeShared.Prism;
 using PoeShared.Scaffolding;
+using PoeShared.Squirrel.Prism;
+using PoeShared.Squirrel.Updater;
 using PoeShared.Wpf.Scaffolding;
+using PoeShared.Wpf.UI.ExceptionViewer;
 using ReactiveUI;
+using Unity;
+using Unity.Resolution;
 
 namespace MicSwitch
 {
@@ -21,7 +36,8 @@ namespace MicSwitch
     public partial class App
     {
         public readonly TimeSpan StartupTimeout = TimeSpan.FromSeconds(10);
-        
+        private readonly UnityContainer container = new UnityContainer();
+
         public App()
         {
             try
@@ -34,7 +50,7 @@ namespace MicSwitch
                     SharedLog.Instance.InitializeLogging("Startup", AppArguments.Instance.AppName);
                     throw new ApplicationException($"Failed to parse command line args: {string.Join(" ", arguments)}");
                 }
-
+                InitializeContainer();
                 InitializeLogging();
 
                 Log.Debug($"Arguments: {arguments.DumpToText()}");
@@ -49,6 +65,8 @@ namespace MicSwitch
                 RxApp.TaskpoolScheduler = TaskPoolScheduler.Default;
                 Current.ShutdownMode = ShutdownMode.OnMainWindowClose;
                 Log.Debug($"New UI Scheduler: {RxApp.MainThreadScheduler}");
+
+                InitializeUpdateSettings();       
             }
             catch (Exception ex)
             {
@@ -58,6 +76,50 @@ namespace MicSwitch
         }
 
         private static ILog Log => SharedLog.Instance.Log;
+
+        public CompositeDisposable Anchors { get; } = new CompositeDisposable();
+        
+        private void InitializeContainer()
+        {
+            if (AppArguments.Instance.IsDebugMode)
+            {
+                container.RegisterType<IConfigProvider, PoeEyeConfigProviderInMemory>();
+            }
+            else
+            {
+                container.RegisterType<IConfigProvider, ConfigProviderFromFile>();
+            }
+
+            container.AddNewExtension<CommonRegistrations>();
+            container.AddNewExtension<NativeRegistrations>();
+            container.AddNewExtension<WpfCommonRegistrations>();
+            container.AddNewExtension<UpdaterRegistrations>();
+            
+            container.RegisterType<IMicrophoneController, MicrophoneController>();
+            container.RegisterSingleton<IMicrophoneProvider, MicrophoneProvider>();
+            container.RegisterSingleton<IMicSwitchOverlayViewModel, MicSwitchOverlayViewModel>();
+            container.RegisterSingleton<IComplexHotkeyTracker, ComplexHotkeyTracker>();
+            container.RegisterSingleton<IMainWindowViewModel, MainWindowViewModel>();
+        }
+        
+        private void InitializeUpdateSettings()
+        {
+            var updateSourceProvider = container.Resolve<IUpdateSourceProvider>();
+            Log.Debug($"Reconfiguring {nameof(UpdateSettingsConfig)}, current update source: {updateSourceProvider.UpdateSource}");
+            UpdateSettings.WellKnownUpdateSources.ForEach(x => updateSourceProvider.KnownSources.Add(x));
+
+            if (!updateSourceProvider.UpdateSource.IsValid || !UpdateSettings.WellKnownUpdateSources.Contains(updateSourceProvider.UpdateSource))
+            {
+                var plusUpdateSource = UpdateSettings.WellKnownUpdateSources.First();
+                Log.Info($"Future updates will be provided by {plusUpdateSource} instead of {updateSourceProvider.UpdateSource} (isValid: {updateSourceProvider.UpdateSource.IsValid})");
+                updateSourceProvider.UpdateSource = plusUpdateSource;
+            }
+            else
+            {
+                Log.Info($"Updates are provided by {updateSourceProvider.UpdateSource}");
+            }
+        }
+
 
         private void SingleInstanceValidationRoutine(bool retryIfAbandoned)
         {
@@ -113,8 +175,11 @@ namespace MicSwitch
             Log.Error($"Unhandled application exception({developerMessage})", exception);
 
             AppDomain.CurrentDomain.UnhandledException -= CurrentDomainOnUnhandledException;
-            Current.Dispatcher.UnhandledException -= DispatcherOnUnhandledException;
             TaskScheduler.UnobservedTaskException -= TaskSchedulerOnUnobservedTaskException;
+            Dispatcher.CurrentDispatcher.UnhandledException -= DispatcherOnUnhandledException;
+
+            var reporter = container.Resolve<IExceptionDialogDisplayer>();
+            reporter.ShowDialogAndTerminate(exception);
         }
 
         private void InitializeLogging()
@@ -134,13 +199,36 @@ namespace MicSwitch
 
             var logFileConfigPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "log4net.config");
             SharedLog.Instance.LoadLogConfiguration(new FileInfo(logFileConfigPath));
+            SharedLog.Instance.Errors.Subscribe(x => ReportCrash(x)).AddTo(Anchors);
         }
 
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
 
+            using var sw = new BenchmarkTimer("MainWindow initialization routine", Log);
             Log.Info($"Application startup detected, PID: {Process.GetCurrentProcess().Id}");
+            var mainWindow = container.Resolve<MainWindow.Views.MainWindow>();
+            sw.Step($"Main window view initialized");
+            var viewController = new WindowViewController(mainWindow);
+            var mainWindowViewModel = container.Resolve<IMainWindowViewModel>(new DependencyOverride<IViewController>(viewController)).AddTo(Anchors);
+            sw.Step($"Main window view model resolved");
+            mainWindow.DataContext = mainWindowViewModel;
+            sw.Step($"Main window view model assigned");
+            mainWindow.Show();
+            sw.Step($"Main window shown");
+
+            var micSwitchOverlayDependencyName = "MicSwitchOverlayAllWindows";
+            container.RegisterOverlayController(micSwitchOverlayDependencyName, micSwitchOverlayDependencyName);
+
+            var matcher = new RegexStringMatcher().AddToWhitelist(".*");
+            container.RegisterWindowTracker(micSwitchOverlayDependencyName, matcher);
+
+            var overlayController = container.Resolve<IOverlayWindowController>(micSwitchOverlayDependencyName);
+            var overlayViewModelFactory =
+                container.Resolve<IFactory<IMicSwitchOverlayViewModel, IOverlayWindowController>>();
+            var overlayViewModel = overlayViewModelFactory.Create(overlayController).AddTo(Anchors);
+            overlayController.RegisterChild(overlayViewModel);
         }
 
         protected override void OnExit(ExitEventArgs e)

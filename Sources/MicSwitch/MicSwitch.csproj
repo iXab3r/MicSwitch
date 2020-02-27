@@ -2,7 +2,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net461</TargetFramework>
-    <LangVersion>7</LangVersion>
+    <LangVersion>8</LangVersion>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AssemblyName>MicSwitch</AssemblyName>
     <OutputPath>..\bin</OutputPath>
