@@ -217,7 +217,18 @@ namespace MicSwitch.MainWindow.ViewModels
                 .Subscribe(x => ShowInTaskbar = x != WindowState.Minimized, Log.HandleUiException)
                 .AddTo(Anchors);
 
-            ShowAppCommand = CommandWrapper.Create(() => ShowAppCommandExecuted());
+            ShowAppCommand = CommandWrapper.Create(
+                () =>
+                {
+                    if (Visibility != Visibility.Visible)
+                    {
+                        viewController.Show();
+                    }
+                    else
+                    {
+                        viewController.Hide();
+                    }
+                });
 
             OpenAppDataDirectoryCommand = CommandWrapper.Create(OpenAppDataDirectory);
 
@@ -244,13 +255,13 @@ namespace MicSwitch.MainWindow.ViewModels
                         {
                             Log.Debug($"StartMinimized option is active - minimizing window, current state: {WindowState}");
                             StartMinimized = true;
-                            HideWindow();
+                            viewController.Hide();
                         }
                         else
                         {
                             Log.Debug($"StartMinimized option is not active - showing window as Normal, current state: {WindowState}");
                             StartMinimized = false;
-                            ShowWindow();
+                            viewController.Show();
                         }
                         
                     }, Log.HandleUiException)
@@ -295,8 +306,6 @@ namespace MicSwitch.MainWindow.ViewModels
                 if (!startupManager.Register())
                 {
                     Log.Warn("Failed to add application to Auto-start");
-
-                    MessageBox.Show("Failed to change startup parameters");
                 }
                 else
                 {
@@ -308,7 +317,6 @@ namespace MicSwitch.MainWindow.ViewModels
                 if (!startupManager.Unregister())
                 {
                     Log.Warn("Failed to remove application from Auto-start");
-                    MessageBox.Show("Failed to unregister application startup");
                 }
                 else
                 {
@@ -321,28 +329,6 @@ namespace MicSwitch.MainWindow.ViewModels
         {
             Log.Debug($"Resetting overlay position, current size: {new Rect(Overlay.Left, Overlay.Top, Overlay.Width, Overlay.Height)}");
             Overlay.ResetToDefault();
-        }
-
-        private void ShowAppCommandExecuted()
-        {
-            if (Visibility != Visibility.Visible)
-            {
-                ShowWindow();
-            }
-            else
-            {
-                HideWindow();
-            }
-        }
-
-        private void HideWindow()
-        {
-            UnsafeNative.HideWindow(Application.Current.MainWindow);
-        }
-
-        private void ShowWindow()
-        {
-            UnsafeNative.ShowWindow(Application.Current.MainWindow);
         }
 
         public bool IsElevated => appArguments.IsElevated;
