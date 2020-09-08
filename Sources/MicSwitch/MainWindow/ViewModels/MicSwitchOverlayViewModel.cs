@@ -3,6 +3,7 @@ using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
 using JetBrains.Annotations;
 using log4net;
 using MicSwitch.MainWindow.Models;
@@ -25,6 +26,7 @@ namespace MicSwitch.MainWindow.ViewModels
 
         private static readonly TimeSpan ConfigThrottlingTimeout = TimeSpan.FromMilliseconds(250);
         private readonly IConfigProvider<MicSwitchConfig> configProvider;
+        private readonly IImageProvider imageProvider;
         private readonly IMicrophoneController microphoneController;
 
         private bool isVisible;
@@ -32,10 +34,12 @@ namespace MicSwitch.MainWindow.ViewModels
         public MicSwitchOverlayViewModel(
             [NotNull] IMicrophoneController microphoneController,
             [NotNull] IConfigProvider<MicSwitchConfig> configProvider,
+            [NotNull] IImageProvider imageProvider,
             [NotNull] [Dependency(WellKnownSchedulers.UI)] IScheduler uiScheduler)
         {
             this.microphoneController = microphoneController;
             this.configProvider = configProvider;
+            this.imageProvider = imageProvider;
             OverlayMode = OverlayMode.Transparent;
             MinSize = new Size(120, 120);
             MaxSize = new Size(300, 300);
@@ -61,6 +65,7 @@ namespace MicSwitch.MainWindow.ViewModels
                 .AddTo(Anchors);
 
             this.RaiseWhenSourceValue(x => x.Mute, microphoneController, x => x.Mute).AddTo(Anchors);
+            this.RaiseWhenSourceValue(x => x.MicrophoneImage, imageProvider, x => x.ActiveMicrophoneImage).AddTo(Anchors);
             
             ToggleLockStateCommand = CommandWrapper.Create(
                 () =>
@@ -100,6 +105,8 @@ namespace MicSwitch.MainWindow.ViewModels
         }
 
         public bool Mute => microphoneController.Mute ?? false;
+
+        public ImageSource MicrophoneImage => imageProvider.ActiveMicrophoneImage;
 
         public ICommand ToggleLockStateCommand { get; }
         

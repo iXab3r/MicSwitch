@@ -22,7 +22,7 @@
                   Opacity="{Binding Opacity}">
                 <Viewbox>
                     <Image
-                        Source="{Binding Mute, Converter={StaticResource MicrophoneMuteStateToImageConverter}}" />
+                        Source="{Binding MicrophoneImage}" />
                 </Viewbox>
             </Grid>
             <Grid Grid.Row="1" DockPanel.Dock="Bottom"

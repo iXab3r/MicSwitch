@@ -100,6 +100,7 @@ namespace MicSwitch
             container.RegisterSingleton<IMicSwitchOverlayViewModel, MicSwitchOverlayViewModel>();
             container.RegisterSingleton<IComplexHotkeyTracker, ComplexHotkeyTracker>();
             container.RegisterSingleton<IMainWindowViewModel, MainWindowViewModel>();
+            container.RegisterSingleton<IImageProvider, ImageProvider>();
         }
         
         private void InitializeUpdateSettings()

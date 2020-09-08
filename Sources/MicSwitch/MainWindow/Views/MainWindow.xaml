@@ -11,6 +11,8 @@
                  xmlns:eye="http://coderush.net/poeeye/"
                  xmlns:viewModels="clr-namespace:MicSwitch.MainWindow.ViewModels"
                  xmlns:fa="http://schemas.fontawesome.io/icons/"
+                 xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+                 xmlns:models="clr-namespace:MicSwitch.MainWindow.Models"
                  mc:Ignorable="d"
                  d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel}"
                  WindowState="{Binding WindowState, Mode=TwoWay}"
@@ -40,9 +42,6 @@
                             ToolTipText="{Binding Title}"
                             LeftClickCommand="{Binding ShowAppCommand}"
                             DoubleClickCommand="{Binding ShowAppCommand}">
-                <tb:TaskbarIcon.IconSource>
-                    <Binding Path="MicrophoneMuted" Converter="{StaticResource MicrophoneMuteStateToIcoConverter}" />
-                </tb:TaskbarIcon.IconSource>
                 <tb:TaskbarIcon.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="Show main window" Command="{Binding ShowAppCommand}" />
@@ -50,6 +49,10 @@
                         <MenuItem Header="Exit app" Command="{Binding ExitAppCommand}" />
                     </ContextMenu>
                 </tb:TaskbarIcon.ContextMenu>
+                
+                <i:Interaction.Behaviors>
+                    <models:TaskBarBitmapImageBehavior  Image="{Binding ImageProvider.ActiveMicrophoneImage}" />
+                </i:Interaction.Behaviors>
             </tb:TaskbarIcon>
             
             <DockPanel Margin="0,5,0,0" Style="{StaticResource SettingsRowDockPanelStyle}">
@@ -114,6 +117,34 @@
                 <ContentPresenter DockPanel.Dock="Left" Margin="5,0,0,0" Width="22" Height="22" Content="{Binding AudioSelectorWhenMuted}" />
                 <TextBlock DockPanel.Dock="Left" Margin="5,0,0,0" Text="when un-muted " />
                 <ContentPresenter Margin="5,0,0,0" DockPanel.Dock="Left" Width="22" Height="22" Content="{Binding AudioSelectorWhenUnmuted}" />
+            </DockPanel>
+            
+            <DockPanel Margin="0,5,0,0"  Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="False">
+                <TextBlock DockPanel.Dock="Left" MinWidth="120" TextAlignment="Right" Text="Icon:" />
+                <TextBlock DockPanel.Dock="Left" Margin="5,0,0,0" Text="when muted" />
+                <Border DockPanel.Dock="Left" Margin="5,0,0,0" Width="22" Height="22" BorderBrush="{StaticResource SecondaryAccentBrush}" BorderThickness="1" Background="Transparent"
+                        ToolTip="Click to select an icon">
+                    <Image  Source="{Binding ImageProvider.MutedMicrophoneImage}"></Image>
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+                            <i:InvokeCommandAction Command="{Binding SelectMutedMicrophoneIconCommand}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </Border>
+                <TextBlock DockPanel.Dock="Left" Margin="5,0,0,0" Text="when un-muted " />
+                <Border DockPanel.Dock="Left" Margin="5,0,0,0" Width="22" Height="22" BorderBrush="{StaticResource SecondaryAccentBrush}" BorderThickness="1" Background="Transparent"
+                        ToolTip="Click to select an icon">
+                    <Image  Source="{Binding ImageProvider.MicrophoneImage}"></Image>
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+                            <i:InvokeCommandAction Command="{Binding SelectMicrophoneIconCommand}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </Border>
+                <ContentControl Content="{Binding ResetMicrophoneIconsCommand}"
+                                MinWidth="120"
+                                eye:CommandWrapperHelper.Icon="&#xf0e2;"
+                                eye:CommandWrapperHelper.Text="Reset icons" />
             </DockPanel>
 
             <DockPanel Margin="0,5,0,0"  Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="True">
@@ -216,7 +247,7 @@
     </Grid>
 
     <Window.Icon>
-        <Binding Path="MicrophoneMuted" Converter="{StaticResource MicrophoneMuteStateToIcoConverter}" />
+        <Binding Path="ImageProvider.ActiveMicrophoneImage" />
     </Window.Icon>
 
     <mah:MetroWindow.LeftWindowCommands>

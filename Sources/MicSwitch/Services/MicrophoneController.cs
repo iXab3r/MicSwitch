@@ -125,28 +125,6 @@ namespace MicSwitch.Services
             }
         }
 
-        private static IObservable<WaveInAudioExEventArgs> ToAudioStream(MMDevice mixer)
-        {
-            Log.Debug($"[AudioStream #{mixer.ID}] Initializing recording...");
-
-            var waveIn = new WasapiCapture(mixer);
-            var waveFormat = waveIn.WaveFormat;
-            Disposable.Create(() =>
-            {
-                Log.Debug($"[AudioStream #{mixer.ID}] Stopping recording...");
-                waveIn.StopRecording();
-            });
-            var result = Observable.FromEventPattern<WaveInEventArgs>(
-                    h => waveIn.DataAvailable += h, h => waveIn.DataAvailable -= h)
-                .Select(x => x.EventArgs)
-                .Select(x => new WaveInAudioExEventArgs(x.Buffer, x.BytesRecorded, waveFormat));
-            Log.Debug($"[AudioStream #{mixer.ID}] Starting recording...");
-            waveIn.StartRecording();
-            Log.Debug($"[AudioStream #{mixer.ID}] Streaming data...");
-
-            return result;
-        }
-
         private void Update()
         {
             this.RaisePropertyChanged(nameof(VolumePercent));

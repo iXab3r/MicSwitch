@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
@@ -9,10 +11,12 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Media.Imaging;
 using DynamicData;
 using DynamicData.Binding;
 using JetBrains.Annotations;
 using log4net;
+using Microsoft.Win32;
 using MicSwitch.MainWindow.Models;
 using MicSwitch.Modularity;
 using MicSwitch.Services;
@@ -27,11 +31,9 @@ using PoeShared.Scaffolding.WPF;
 using PoeShared.Services;
 using PoeShared.Squirrel.Updater;
 using PoeShared.UI.Hotkeys;
-using Prism.Commands;
 using ReactiveUI;
 using Unity;
 using Application = System.Windows.Application;
-using MessageBox = System.Windows.MessageBox;
 
 namespace MicSwitch.MainWindow.ViewModels
 {
@@ -41,6 +43,8 @@ namespace MicSwitch.MainWindow.ViewModels
         private static readonly TimeSpan ConfigThrottlingTimeout = TimeSpan.FromMilliseconds(250);
         private static readonly string ExplorerExecutablePath = Environment.ExpandEnvironmentVariables(@"%WINDIR%\explorer.exe");
         private readonly IWindowTracker mainWindowTracker;
+        private readonly IConfigProvider<MicSwitchConfig> configProvider;
+        private readonly IImageProvider imageProvider;
 
         private readonly IStartupManager startupManager;
         private readonly IAppArguments appArguments;
@@ -69,6 +73,7 @@ namespace MicSwitch.MainWindow.ViewModels
             [NotNull] IConfigProvider<MicSwitchConfig> configProvider,
             [NotNull] IComplexHotkeyTracker hotkeyTracker,
             [NotNull] IMicrophoneProvider microphoneProvider,
+            [NotNull] IImageProvider imageProvider,
             [NotNull] IViewController viewController,
             [NotNull] [Dependency(WellKnownSchedulers.UI)] IScheduler uiScheduler)
         {
@@ -86,6 +91,8 @@ namespace MicSwitch.MainWindow.ViewModels
 
             ApplicationUpdater = appUpdater;
             this.mainWindowTracker = mainWindowTracker;
+            this.configProvider = configProvider;
+            this.imageProvider = imageProvider;
             this.RaiseWhenSourceValue(x => x.IsActive, mainWindowTracker, x => x.IsActive).AddTo(Anchors);
 
             AudioSelectorWhenMuted = audioSelectorFactory.Create();
@@ -136,6 +143,7 @@ namespace MicSwitch.MainWindow.ViewModels
             this.RaiseWhenSourceValue(x => x.RunAtLogin, startupManager, x => x.IsRegistered).AddTo(Anchors);
             this.RaiseWhenSourceValue(x => x.MicrophoneVolume, microphoneController, x => x.VolumePercent).AddTo(Anchors);
             this.RaiseWhenSourceValue(x => x.MicrophoneMuted, microphoneController, x => x.Mute).AddTo(Anchors);
+            ImageProvider = imageProvider;
 
             microphoneProvider.Microphones
                 .ToObservableChangeSet()
@@ -236,6 +244,9 @@ namespace MicSwitch.MainWindow.ViewModels
             
             RunAtLoginToggleCommand = CommandWrapper.Create<bool>(RunAtLoginCommandExecuted);
             MuteMicrophoneCommand = CommandWrapper.Create<bool>(MuteMicrophoneCommandExecuted);
+            SelectMicrophoneIconCommand = CommandWrapper.Create(SelectMicrophoneIconCommandExecuted);
+            SelectMutedMicrophoneIconCommand = CommandWrapper.Create(SelectMutedMicrophoneIconCommandExecuted);
+            ResetMicrophoneIconsCommand = CommandWrapper.Create(ResetMicrophoneIconsCommandExecuted);
 
             var executingAssemblyName = Assembly.GetExecutingAssembly().GetName();
             Title = $"{(appArguments.IsDebugMode ? "[D]" : "")} {executingAssemblyName.Name} v{executingAssemblyName.Version}";
@@ -293,6 +304,66 @@ namespace MicSwitch.MainWindow.ViewModels
                 .AddTo(Anchors);
         }
 
+        private async Task SelectMicrophoneIconCommandExecuted()
+        {
+            var icon = await SelectIcon();
+            if (icon == null)
+            {
+                return;
+            }
+
+            var config = configProvider.ActualConfig.CloneJson();
+            config.MicrophoneIcon = icon.ToBitmap().ToBytes();
+            configProvider.Save(config);
+        }
+        
+        private async Task SelectMutedMicrophoneIconCommandExecuted()
+        {
+            var icon = await SelectIcon();
+            if (icon == null)
+            {
+                return;
+            }
+
+            var config = configProvider.ActualConfig.CloneJson();
+            config.MutedMicrophoneIcon = icon.ToBitmap().ToBytes();
+            configProvider.Save(config);
+        }
+
+        private async Task ResetMicrophoneIconsCommandExecuted()
+        {
+            var config = configProvider.ActualConfig.CloneJson();
+            config.MicrophoneIcon = null;
+            config.MutedMicrophoneIcon = null;
+            configProvider.Save(config);
+        }
+
+        private async Task<BitmapImage> SelectIcon()
+        {
+            Log.Info($"Showing OpenFileDialog to user");
+
+            var initialDirectory = string.Empty;
+            var op = new OpenFileDialog
+            {
+                Title = "Select an icon", 
+                InitialDirectory = !string.IsNullOrEmpty(initialDirectory) && Directory.Exists(initialDirectory) 
+                    ? initialDirectory
+                    : Environment.GetFolderPath(Environment.SpecialFolder.CommonPictures),
+                CheckPathExists = true,
+                Multiselect = false,
+                Filter = "All supported graphics|*.jpg;*.jpeg;*.png;*.bmp;*.gif|All files|*.*"
+            };
+
+            if (op.ShowDialog() != true)
+            {
+                Log.Info("User cancelled OpenFileDialog");
+                return null;
+            }
+
+            Log.Debug($"Opening image {op.FileName}");
+            return new BitmapImage(new Uri(op.FileName));
+        }
+
         private async Task MuteMicrophoneCommandExecuted(bool mute)
         {
             Log.Debug($"{(mute ? "Muting" : "Un-muting")} microphone {microphoneController.LineId}");
@@ -342,6 +413,12 @@ namespace MicSwitch.MainWindow.ViewModels
         public ICommand ExitAppCommand { get; }
 
         public ICommand ShowAppCommand { get; }
+        
+        public ICommand SelectMutedMicrophoneIconCommand { get; }
+        
+        public ICommand SelectMicrophoneIconCommand { get; }
+        
+        public ICommand ResetMicrophoneIconsCommand { get; }
 
         public CommandWrapper OpenAppDataDirectoryCommand { get; }
         
@@ -425,6 +502,8 @@ namespace MicSwitch.MainWindow.ViewModels
         {
             get => microphoneController.Mute ?? false;
         }
+        
+        public IImageProvider ImageProvider { get; }
 
         public bool SuppressHotkey
         {
