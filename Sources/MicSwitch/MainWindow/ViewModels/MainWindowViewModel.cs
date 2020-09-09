@@ -74,7 +74,7 @@ namespace MicSwitch.MainWindow.ViewModels
             [NotNull] IComplexHotkeyTracker hotkeyTracker,
             [NotNull] IMicrophoneProvider microphoneProvider,
             [NotNull] IImageProvider imageProvider,
-            [NotNull] IWindowViewController viewController,
+            [NotNull] IViewController viewController,
             [NotNull] [Dependency(WellKnownSchedulers.UI)] IScheduler uiScheduler)
         {
             var startupManagerArgs = new StartupManagerArgs
