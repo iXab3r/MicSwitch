@@ -120,6 +120,16 @@
             </DockPanel>
             
             <DockPanel Margin="0,5,0,0"  Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="False">
+                <TextBlock DockPanel.Dock="Left" MinWidth="120"
+                           TextAlignment="Right"
+                           Text="Show overlay:" />
+                <ToggleButton
+                    DockPanel.Dock="Left" Margin="5,0,0,0" HorizontalAlignment="Left"
+                    IsChecked="{Binding Overlay.IsEnabled}" />
+            </DockPanel>
+            
+            <DockPanel Margin="0,5,0,0"  Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="False"
+                       Visibility="{Binding Overlay.IsEnabled, Converter={StaticResource TrueToVisibleFalseToCollapsedConverter}}">
                 <TextBlock DockPanel.Dock="Left" MinWidth="120" TextAlignment="Right" Text="Icon:" />
                 <TextBlock DockPanel.Dock="Left" Margin="5,0,0,0" Text="when muted" />
                 <Border DockPanel.Dock="Left" Margin="5,0,0,0" Width="22" Height="22" BorderBrush="{StaticResource SecondaryAccentBrush}" BorderThickness="1" Background="Transparent"
@@ -219,7 +229,7 @@
                 </TextBlock>
             </DockPanel>
 
-            <DockPanel Margin="5,5" Style="{StaticResource SettingsRowDockPanelStyle}">
+            <DockPanel Margin="5,5" Style="{StaticResource SettingsRowDockPanelStyle}" Visibility="{Binding Overlay.IsEnabled, Converter={StaticResource TrueToVisibleFalseToCollapsedConverter}}">
                 <ContentControl Content="{Binding ResetOverlayPositionCommand}"
                                 MinWidth="120"
                                 eye:CommandWrapperHelper.Icon="&#xf0e2;"

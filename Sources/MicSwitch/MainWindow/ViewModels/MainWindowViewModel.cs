@@ -240,7 +240,7 @@ namespace MicSwitch.MainWindow.ViewModels
 
             OpenAppDataDirectoryCommand = CommandWrapper.Create(OpenAppDataDirectory);
 
-            ResetOverlayPositionCommand = CommandWrapper.Create(() => ResetOverlayPositionCommandExecuted());
+            ResetOverlayPositionCommand = CommandWrapper.Create(ResetOverlayPositionCommandExecuted);
             
             RunAtLoginToggleCommand = CommandWrapper.Create<bool>(RunAtLoginCommandExecuted);
             MuteMicrophoneCommand = CommandWrapper.Create<bool>(MuteMicrophoneCommandExecuted);

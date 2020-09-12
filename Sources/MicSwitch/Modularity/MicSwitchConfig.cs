@@ -26,13 +26,13 @@ namespace MicSwitch.Modularity
             Off = "Beep750"
         };
 
-        public bool IsVisible { get; set; } = true;
-
         public Point OverlayLocation { get; set; }
 
         public Size OverlaySize { get; set; }
 
         public float OverlayOpacity { get; set; }
+        
+        public bool OverlayEnabled { get; set; }
         
         public byte[] MutedMicrophoneIcon { get; set; }
         

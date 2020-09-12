@@ -27,16 +27,17 @@ namespace MicSwitch.MainWindow.ViewModels
         private static readonly TimeSpan ConfigThrottlingTimeout = TimeSpan.FromMilliseconds(250);
         private readonly IConfigProvider<MicSwitchConfig> configProvider;
         private readonly IImageProvider imageProvider;
+        private readonly IOverlayWindowController overlayWindowController;
         private readonly IMicrophoneController microphoneController;
 
-        private bool isVisible;
-
         public MicSwitchOverlayViewModel(
+            [NotNull] IOverlayWindowController overlayWindowController,
             [NotNull] IMicrophoneController microphoneController,
             [NotNull] IConfigProvider<MicSwitchConfig> configProvider,
             [NotNull] IImageProvider imageProvider,
             [NotNull] [Dependency(WellKnownSchedulers.UI)] IScheduler uiScheduler)
         {
+            this.overlayWindowController = overlayWindowController;
             this.microphoneController = microphoneController;
             this.configProvider = configProvider;
             this.imageProvider = imageProvider;
@@ -64,6 +65,7 @@ namespace MicSwitch.MainWindow.ViewModels
                 .Subscribe(lineId => { microphoneController.LineId = lineId; })
                 .AddTo(Anchors);
 
+            this.RaiseWhenSourceValue(x => x.IsEnabled, overlayWindowController, x => x.IsEnabled).AddTo(Anchors);
             this.RaiseWhenSourceValue(x => x.Mute, microphoneController, x => x.Mute).AddTo(Anchors);
             this.RaiseWhenSourceValue(x => x.MicrophoneImage, imageProvider, x => x.ActiveMicrophoneImage).AddTo(Anchors);
             
@@ -89,19 +91,25 @@ namespace MicSwitch.MainWindow.ViewModels
                     this.ObservableForProperty(x => x.Top, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.Width, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.Height, skipInitial: true).ToUnit(),
-                    this.ObservableForProperty(x => x.IsVisible, skipInitial: true).ToUnit(),
+                    this.ObservableForProperty(x => x.IsEnabled, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.IsLocked, skipInitial: true).ToUnit())
                 .SkipUntil(WhenLoaded)
                 .Throttle(ConfigThrottlingTimeout)
                 .ObserveOn(uiScheduler)
                 .Subscribe(SaveConfig, Log.HandleUiException)
                 .AddTo(Anchors);
+
+            this.WhenAnyValue(x => x.IsEnabled)
+                .Where(x => !IsEnabled && !IsLocked)
+                .ObserveOn(uiScheduler)
+                .Subscribe(() => LockWindowCommand.Execute(null), Log.HandleUiException)
+                .AddTo(Anchors);
         }
 
-        public bool IsVisible
+        public bool IsEnabled
         {
-            get => isVisible;
-            set => this.RaiseAndSetIfChanged(ref isVisible, value);
+            get => overlayWindowController.IsEnabled;
+            set => overlayWindowController.IsEnabled = value;
         }
 
         public bool Mute => microphoneController.Mute ?? false;
@@ -114,7 +122,7 @@ namespace MicSwitch.MainWindow.ViewModels
         {
             base.ApplyConfig(config);
 
-            IsVisible = config.IsVisible;
+            IsEnabled = config.OverlayEnabled;
         }
 
         private void SaveConfig()
@@ -122,8 +130,7 @@ namespace MicSwitch.MainWindow.ViewModels
             var config = configProvider.ActualConfig.CloneJson();
             SavePropertiesToConfig(config);
 
-            config.IsVisible = IsVisible;
-
+            config.OverlayEnabled = IsEnabled;
             configProvider.Save(config);
         }
     }

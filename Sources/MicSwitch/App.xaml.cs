@@ -90,6 +90,7 @@ namespace MicSwitch
                 container.RegisterType<IConfigProvider, ConfigProviderFromFile>();
             }
 
+            container.AddNewExtension<Diagnostic>();
             container.AddNewExtension<CommonRegistrations>();
             container.AddNewExtension<NativeRegistrations>();
             container.AddNewExtension<WpfCommonRegistrations>();
@@ -209,6 +210,18 @@ namespace MicSwitch
 
             using var sw = new BenchmarkTimer("MainWindow initialization routine", Log);
             Log.Info($"Application startup detected, PID: {Process.GetCurrentProcess().Id}");
+            
+            sw.Step("Registering overlay");
+            var micSwitchOverlayDependencyName = "MicSwitchOverlayAllWindows";
+            container.RegisterOverlayController(micSwitchOverlayDependencyName, micSwitchOverlayDependencyName);
+            var matcher = new RegexStringMatcher().AddToWhitelist(".*");
+            container.RegisterWindowTracker(micSwitchOverlayDependencyName, matcher);
+            var overlayController = container.Resolve<IOverlayWindowController>(micSwitchOverlayDependencyName);
+            var overlayViewModelFactory =
+                container.Resolve<IFactory<IMicSwitchOverlayViewModel, IOverlayWindowController>>();
+            var overlayViewModel = overlayViewModelFactory.Create(overlayController).AddTo(Anchors);
+            overlayController.RegisterChild(overlayViewModel);
+            
             var mainWindow = container.Resolve<MainWindow.Views.MainWindow>();
             sw.Step($"Main window view initialized");
             var viewController = new WindowViewController(mainWindow);
@@ -218,18 +231,6 @@ namespace MicSwitch
             sw.Step($"Main window view model assigned");
             mainWindow.Show();
             sw.Step($"Main window shown");
-
-            var micSwitchOverlayDependencyName = "MicSwitchOverlayAllWindows";
-            container.RegisterOverlayController(micSwitchOverlayDependencyName, micSwitchOverlayDependencyName);
-
-            var matcher = new RegexStringMatcher().AddToWhitelist(".*");
-            container.RegisterWindowTracker(micSwitchOverlayDependencyName, matcher);
-
-            var overlayController = container.Resolve<IOverlayWindowController>(micSwitchOverlayDependencyName);
-            var overlayViewModelFactory =
-                container.Resolve<IFactory<IMicSwitchOverlayViewModel, IOverlayWindowController>>();
-            var overlayViewModel = overlayViewModelFactory.Create(overlayController).AddTo(Anchors);
-            overlayController.RegisterChild(overlayViewModel);
         }
 
         protected override void OnExit(ExitEventArgs e)
