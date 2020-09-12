@@ -31,8 +31,8 @@ namespace MicSwitch.Modularity
         public Size OverlaySize { get; set; }
 
         public float OverlayOpacity { get; set; }
-        
-        public bool OverlayEnabled { get; set; }
+
+        public bool OverlayEnabled { get; set; } = true;
         
         public byte[] MutedMicrophoneIcon { get; set; }
         
