@@ -35,9 +35,9 @@ Also it supports configurable mute/unmute sounds(similar to TeamSpeak/Ventrilo) 
 
 ## Media
 ![UI](https://i.imgur.com/SAfqruj.png)
-![Customizable overlay/tray icons](https://i.imgur.com/Bq0yHnK.png)
 ![Overlay with configurable size/opacity](https://i.imgur.com/1Jf1RrH.gif)
-![Configurable Audio notification when microphone is muted/unmuted](https://i.imgur.com/Kj57Gsk.png)
+![Configurable Audio notification when microphone is muted/unmuted](https://i.imgur.com/Kj57Gsk.png) 
+![Customizable overlay/tray icons](https://i.imgur.com/Bq0yHnK.png)
 ![Auto-update via Github](https://i.imgur.com/O4SIuDy.gif)
 
 ## How to build application
