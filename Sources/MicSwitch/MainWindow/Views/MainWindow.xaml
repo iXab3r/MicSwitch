@@ -31,10 +31,17 @@
                  Title="{Binding Title}" Width="450" SizeToContent="Height">
 
     <Window.Resources>
-        <Style TargetType="{x:Type DockPanel}" x:Key="SettingsRowDockPanelStyle">
-            <Setter Property="DockPanel.Dock" Value="Top" />
-            <Setter Property="MinHeight" Value="24" />
-        </Style>
+        <ResourceDictionary>
+
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/PoeShared.Wpf;component/Themes/Generic.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <Style TargetType="{x:Type DockPanel}" x:Key="SettingsRowDockPanelStyle">
+                <Setter Property="DockPanel.Dock" Value="Top" />
+                <Setter Property="MinHeight" Value="24" />
+            </Style>
+        </ResourceDictionary>
     </Window.Resources>
 
     <Grid>
@@ -50,17 +57,17 @@
                         <MenuItem Header="Exit app" Command="{Binding ExitAppCommand}" />
                     </ContextMenu>
                 </tb:TaskbarIcon.ContextMenu>
-                
+
                 <i:Interaction.Behaviors>
-                    <models:TaskBarBitmapImageBehavior  Image="{Binding ImageProvider.ActiveMicrophoneImage}" />
+                    <models:TaskBarBitmapImageBehavior Image="{Binding ImageProvider.ActiveMicrophoneImage}" />
                 </i:Interaction.Behaviors>
             </tb:TaskbarIcon>
-            
+
             <DockPanel Margin="0,5,0,0" Style="{StaticResource SettingsRowDockPanelStyle}">
                 <TextBlock DockPanel.Dock="Left" MinWidth="120"
                            TextAlignment="Right"
                            Text="Microphone:" />
-                <ComboBox DockPanel.Dock="Top" Margin="5,0,5,0" 
+                <ComboBox DockPanel.Dock="Top" Margin="5,0,5,0"
                           ItemsSource="{Binding Microphones}"
                           SelectedItem="{Binding MicrophoneLine}"
                           DisplayMemberPath="Name" />
@@ -97,7 +104,7 @@
                 <TextBlock DockPanel.Dock="Left" MinWidth="120"
                            TextAlignment="Right"
                            Text="Mute:" />
-                <ToggleButton 
+                <ToggleButton
                     DockPanel.Dock="Left" Margin="5,0,0,0" HorizontalAlignment="Left"
                     Command="{Binding MuteMicrophoneCommand}"
                     CommandParameter="{Binding IsChecked, RelativeSource={RelativeSource Self}}"
@@ -112,15 +119,15 @@
                                 FontSize="18" />
             </DockPanel>
 
-            <DockPanel Margin="0,5,0,0"  Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="False">
+            <DockPanel Margin="0,5,0,0" Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="False">
                 <TextBlock DockPanel.Dock="Left" MinWidth="120" TextAlignment="Right" Text="Notification:" />
                 <TextBlock DockPanel.Dock="Left" Margin="5,0,0,0" Text="when muted" />
                 <ContentPresenter DockPanel.Dock="Left" Margin="5,0,0,0" Width="22" Height="22" Content="{Binding AudioSelectorWhenMuted}" />
                 <TextBlock DockPanel.Dock="Left" Margin="5,0,0,0" Text="when un-muted " />
                 <ContentPresenter Margin="5,0,0,0" DockPanel.Dock="Left" Width="22" Height="22" Content="{Binding AudioSelectorWhenUnmuted}" />
             </DockPanel>
-            
-            <DockPanel Margin="0,5,0,0"  Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="False">
+
+            <DockPanel Margin="0,5,0,0" Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="False">
                 <TextBlock DockPanel.Dock="Left" MinWidth="120"
                            TextAlignment="Right"
                            Text="Show overlay:" />
@@ -128,19 +135,19 @@
                     DockPanel.Dock="Left" Margin="5,0,0,0" HorizontalAlignment="Left"
                     IsChecked="{Binding Overlay.IsEnabled}" />
             </DockPanel>
-            
-            <DockPanel Margin="0,5,0,0"  Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="False"
+
+            <DockPanel Margin="0,5,0,0" Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="False"
                        Visibility="{Binding Overlay.IsEnabled, Converter={StaticResource TrueToVisibleFalseToCollapsedConverter}}">
                 <TextBlock DockPanel.Dock="Left" MinWidth="120" TextAlignment="Right" Text="Icon:" />
                 <TextBlock DockPanel.Dock="Left" Margin="5,0,0,0" Text="when muted" />
                 <Border DockPanel.Dock="Left" Margin="5,0,0,0" Width="22" Height="22" BorderBrush="{StaticResource SecondaryAccentBrush}" BorderThickness="1" Background="Transparent"
                         ToolTip="Click to select an icon">
-                    <Image 
+                    <Image
                         gif:ImageBehavior.RepeatBehavior="Forever"
-                        gif:ImageBehavior.AnimatedSource="{Binding ImageProvider.MutedMicrophoneImage}"></Image>
+                        gif:ImageBehavior.AnimatedSource="{Binding ImageProvider.MutedMicrophoneImage}" />
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
-                            <i:InvokeCommandAction Command="{Binding SelectMutedMicrophoneIconCommand}"/>
+                            <i:InvokeCommandAction Command="{Binding SelectMutedMicrophoneIconCommand}" />
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                 </Border>
@@ -148,10 +155,10 @@
                 <Border DockPanel.Dock="Left" Margin="5,0,0,0" Width="22" Height="22" BorderBrush="{StaticResource SecondaryAccentBrush}" BorderThickness="1" Background="Transparent"
                         ToolTip="Click to select an icon">
                     <Image gif:ImageBehavior.RepeatBehavior="Forever"
-                           gif:ImageBehavior.AnimatedSource="{Binding ImageProvider.MicrophoneImage}"></Image>
+                           gif:ImageBehavior.AnimatedSource="{Binding ImageProvider.MicrophoneImage}" />
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
-                            <i:InvokeCommandAction Command="{Binding SelectMicrophoneIconCommand}"/>
+                            <i:InvokeCommandAction Command="{Binding SelectMicrophoneIconCommand}" />
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                 </Border>
@@ -161,7 +168,7 @@
                                 eye:CommandWrapperHelper.Text="Reset icons" />
             </DockPanel>
 
-            <DockPanel Margin="0,5,0,0"  Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="True">
+            <DockPanel Margin="0,5,0,0" Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="True">
                 <TextBlock DockPanel.Dock="Left" MinWidth="120"
                            TextAlignment="Right"
                            Text="Push-to-talk:" />
@@ -170,7 +177,7 @@
                     IsChecked="{Binding IsPushToTalkMode}" />
             </DockPanel>
 
-            <DockPanel Margin="0,5,0,0"  Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="True">
+            <DockPanel Margin="0,5,0,0" Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="True">
                 <TextBlock DockPanel.Dock="Left" MinWidth="120"
                            TextAlignment="Right"
                            Text="Hotkey:" />
@@ -185,8 +192,8 @@
                     <hotkeys:HotKeyBox Grid.Column="2" HotKey="{Binding HotkeyAlt}" AcceptsTab="False" AcceptsReturn="False" AcceptsMouseKeys="True" />
                 </Grid>
             </DockPanel>
-            
-            <DockPanel Margin="0,5,0,0"  Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="True">
+
+            <DockPanel Margin="0,5,0,0" Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="True">
                 <TextBlock MinWidth="120"
                            TextAlignment="Right"
                            Text="Suppress Hotkey:" />
@@ -195,7 +202,7 @@
                     IsChecked="{Binding SuppressHotkey}" />
             </DockPanel>
 
-            <DockPanel Margin="0,5,0,0"  Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="True">
+            <DockPanel Margin="0,5,0,0" Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="True">
                 <TextBlock DockPanel.Dock="Left" MinWidth="120"
                            TextAlignment="Right"
                            Text="Run at start:" />
@@ -205,8 +212,8 @@
                     Command="{Binding RunAtLoginToggleCommand}"
                     CommandParameter="{Binding IsChecked, RelativeSource={RelativeSource Self}}" />
             </DockPanel>
-            
-            <DockPanel Margin="0,5,0,0"  Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="True">
+
+            <DockPanel Margin="0,5,0,0" Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="True">
                 <TextBlock DockPanel.Dock="Left" MinWidth="120"
                            TextAlignment="Right"
                            Text="Start Minimized:" />
@@ -215,7 +222,7 @@
                     IsChecked="{Binding StartMinimized}" />
             </DockPanel>
 
-            <DockPanel Margin="0,5,0,0"  Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="True">
+            <DockPanel Margin="0,5,0,0" Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="True">
                 <TextBlock MinWidth="120"
                            TextAlignment="Right"
                            Text="Check for updates:" />
@@ -223,12 +230,12 @@
                     Margin="5,0,0,0" HorizontalAlignment="Left"
                     IsChecked="{Binding ApplicationUpdater.CheckForUpdates, Mode=TwoWay}" />
                 <TextBlock Margin="5,0,0,0">
-                    <Run Text="update source:"/>
-                    <Hyperlink NavigateUri="{Binding ApplicationUpdater.UpdateSource.Uri}" 
+                    <Run Text="update source:" />
+                    <Hyperlink NavigateUri="{Binding ApplicationUpdater.UpdateSource.Uri}"
                                Command="{Binding ApplicationUpdater.OpenUri}"
                                CommandParameter="{Binding ApplicationUpdater.UpdateSource.Uri}"
                                ToolTip="{Binding ApplicationUpdater.UpdateSource.Uri}">
-                        <TextBlock Text="{Binding ApplicationUpdater.UpdateSource.Description}"/>
+                        <TextBlock Text="{Binding ApplicationUpdater.UpdateSource.Description}" />
                     </Hyperlink>
                 </TextBlock>
             </DockPanel>

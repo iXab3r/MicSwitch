@@ -57,15 +57,12 @@ namespace MicSwitch
                 Log.Debug($"ProcessID: {Process.GetCurrentProcess().Id}");
                 Log.Debug($"Parsed args: {AppArguments.Instance}");
                 Log.Debug($"Culture: {Thread.CurrentThread.CurrentCulture}, UICulture: {Thread.CurrentThread.CurrentUICulture}");
-
-                SingleInstanceValidationRoutine(true);
                 
                 Log.Debug($"UI Scheduler: {RxApp.MainThreadScheduler}");
-                RxApp.MainThreadScheduler = DispatcherScheduler.Current;
+                RxApp.MainThreadScheduler = container.Resolve<IScheduler>(WellKnownSchedulers.UI);
                 RxApp.TaskpoolScheduler = TaskPoolScheduler.Default;
                 Current.ShutdownMode = ShutdownMode.OnMainWindowClose;
                 Log.Debug($"New UI Scheduler: {RxApp.MainThreadScheduler}");
-
                 InitializeUpdateSettings();       
             }
             catch (Exception ex)
@@ -96,7 +93,7 @@ namespace MicSwitch
             container.AddNewExtension<WpfCommonRegistrations>();
             container.AddNewExtension<UpdaterRegistrations>();
             
-            container.RegisterType<IMicrophoneController, MicrophoneController>();
+            container.RegisterType<IMicrophoneControllerEx, ComplexMicrophoneController>();
             container.RegisterSingleton<IMicrophoneProvider, MicrophoneProvider>();
             container.RegisterSingleton<IMicSwitchOverlayViewModel, MicSwitchOverlayViewModel>();
             container.RegisterSingleton<IComplexHotkeyTracker, ComplexHotkeyTracker>();
@@ -210,6 +207,8 @@ namespace MicSwitch
 
             using var sw = new BenchmarkTimer("MainWindow initialization routine", Log);
             Log.Info($"Application startup detected, PID: {Process.GetCurrentProcess().Id}");
+            
+            SingleInstanceValidationRoutine(true);
             
             sw.Step("Registering overlay");
             var micSwitchOverlayDependencyName = "MicSwitchOverlayAllWindows";

@@ -4,7 +4,7 @@ namespace MicSwitch.Services
 {
     internal interface IMicrophoneController : IDisposableReactiveObject
     {
-        MicrophoneLineData LineId { get; set; }
+        MicrophoneLineData LineId { get; }
 
         bool? Mute { get; set; }
 

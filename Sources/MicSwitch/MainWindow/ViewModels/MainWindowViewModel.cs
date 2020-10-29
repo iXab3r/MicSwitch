@@ -48,7 +48,7 @@ namespace MicSwitch.MainWindow.ViewModels
 
         private readonly IStartupManager startupManager;
         private readonly IAppArguments appArguments;
-        private readonly IMicrophoneController microphoneController;
+        private readonly IMicrophoneControllerEx microphoneController;
 
         private HotkeyGesture hotkey;
         private HotkeyGesture hotkeyAlt;
@@ -64,7 +64,7 @@ namespace MicSwitch.MainWindow.ViewModels
         public MainWindowViewModel(
             [NotNull] IAppArguments appArguments,
             [NotNull] IFactory<IStartupManager, StartupManagerArgs> startupManagerFactory,
-            [NotNull] IMicrophoneController microphoneController,
+            [NotNull] IMicrophoneControllerEx microphoneController,
             [NotNull] IMicSwitchOverlayViewModel overlay,
             [NotNull] IAudioNotificationsManager audioNotificationsManager,
             [NotNull] IFactory<IAudioNotificationSelectorViewModel> audioSelectorFactory,
@@ -140,9 +140,9 @@ namespace MicSwitch.MainWindow.ViewModels
             
             Overlay = overlay;
 
-            this.RaiseWhenSourceValue(x => x.RunAtLogin, startupManager, x => x.IsRegistered).AddTo(Anchors);
-            this.RaiseWhenSourceValue(x => x.MicrophoneVolume, microphoneController, x => x.VolumePercent).AddTo(Anchors);
-            this.RaiseWhenSourceValue(x => x.MicrophoneMuted, microphoneController, x => x.Mute).AddTo(Anchors);
+            this.RaiseWhenSourceValue(x => x.RunAtLogin, startupManager, x => x.IsRegistered, uiScheduler).AddTo(Anchors);
+            this.RaiseWhenSourceValue(x => x.MicrophoneVolume, microphoneController, x => x.VolumePercent, uiScheduler).AddTo(Anchors);
+            this.RaiseWhenSourceValue(x => x.MicrophoneMuted, microphoneController, x => x.Mute, uiScheduler).AddTo(Anchors);
             ImageProvider = imageProvider;
 
             microphoneProvider.Microphones

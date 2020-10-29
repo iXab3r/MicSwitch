@@ -1,34 +1,26 @@
 using System;
-using System.Reactive.Concurrency;
-using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using JetBrains.Annotations;
 using log4net;
 using NAudio.CoreAudioApi;
-using NAudio.Wave;
 using PoeShared;
-using PoeShared.Prism;
 using PoeShared.Scaffolding;
 using ReactiveUI;
-using Unity;
 
 namespace MicSwitch.Services
 {
-    internal sealed class MicrophoneController : DisposableReactiveObject, IMicrophoneController
+    internal sealed class MultimediaMicrophoneController : DisposableReactiveObject, IMicrophoneControllerEx
     {
         private readonly IMicrophoneProvider microphoneProvider;
-        private static readonly ILog Log = LogManager.GetLogger(typeof(MicrophoneController));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(MultimediaMicrophoneController));
         private static readonly TimeSpan SamplingInterval = TimeSpan.FromMilliseconds(50);
-
+        private MMDevice mixerControl;
         private MicrophoneLineData lineId;
 
-        private MMDevice mixerControl;
-
-        public MicrophoneController(
-            IMicrophoneProvider microphoneProvider)
+        public MultimediaMicrophoneController(IMicrophoneProvider microphoneProvider)
         {
             this.microphoneProvider = microphoneProvider;
             this.WhenAnyValue(x => x.LineId)
+                .Where(x => !x.IsEmpty)
                 .Subscribe(InitializeLine)
                 .AddTo(Anchors);
 
@@ -37,7 +29,10 @@ namespace MicSwitch.Services
                 {
                     if (mixer == null)
                     {
-                        Log.Info($"Unbound controller from line #{lineId}");
+                        if (!lineId.IsEmpty)
+                        {
+                            Log.Info($"Unbound controller from line #{lineId}");
+                        }
                     }
                     else
                     {
@@ -98,7 +93,7 @@ namespace MicSwitch.Services
         public MicrophoneLineData LineId
         {
             get => lineId;
-            set => this.RaiseAndSetIfChanged(ref lineId, value);
+            set => RaiseAndSetIfChanged(ref lineId, value);
         }
 
         public bool? Mute

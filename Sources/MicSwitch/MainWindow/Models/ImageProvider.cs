@@ -19,14 +19,14 @@ namespace MicSwitch.MainWindow.Models
 {
     internal sealed class ImageProvider : DisposableReactiveObject, IImageProvider
     {
-        private readonly IMicrophoneController microphoneController;
+        private readonly IMicrophoneControllerEx microphoneController;
         private ImageSource microphoneImage;
         private ImageSource mutedMicrophoneImage;
         private readonly BitmapImage defaultMutedMicrophoneImage = new BitmapImage(new Uri("pack://application:,,,/Resources/microphoneDisabled.ico", UriKind.RelativeOrAbsolute));
         private readonly BitmapImage defaultMicrophoneImage = new BitmapImage(new Uri("pack://application:,,,/Resources/microphoneEnabled.ico", UriKind.RelativeOrAbsolute));
 
         public ImageProvider(
-            [NotNull] IMicrophoneController microphoneController,
+            [NotNull] IMicrophoneControllerEx microphoneController,
             [NotNull] IConfigProvider<MicSwitchConfig> configProvider,
             [NotNull] [Dependency(WellKnownSchedulers.UI)] IScheduler uiScheduler)
         {
@@ -47,11 +47,13 @@ namespace MicSwitch.MainWindow.Models
 
             configProvider.ListenTo(x => x.MicrophoneIcon)
                 .SelectSafeOrDefault(x => x.ToBitmapImage())
+                .ObserveOn(uiScheduler)
                 .Subscribe(x => MicrophoneImage = x ?? defaultMicrophoneImage)
                 .AddTo(Anchors);
             
             configProvider.ListenTo(x => x.MutedMicrophoneIcon)
                 .SelectSafeOrDefault(x => x.ToBitmapImage())
+                .ObserveOn(uiScheduler)
                 .Subscribe(x => MutedMicrophoneImage = x ?? defaultMutedMicrophoneImage)
                 .AddTo(Anchors);
         }

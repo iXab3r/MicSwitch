@@ -87,6 +87,8 @@ namespace MicSwitch.Services
 
         public IEnumerable<MicrophoneLineData> EnumerateLines()
         {
+            yield return MicrophoneLineData.All;
+
             var devices = EnumerateLinesInternal();
             foreach (var device in devices)
             {

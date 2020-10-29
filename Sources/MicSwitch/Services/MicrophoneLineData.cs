@@ -4,6 +4,8 @@ namespace MicSwitch.Services
 {
     internal struct MicrophoneLineData
     {
+        public static readonly MicrophoneLineData All = new MicrophoneLineData("all", "All microphones");
+        
         public MicrophoneLineData(string lineId, string name)
         {
             LineId = lineId;

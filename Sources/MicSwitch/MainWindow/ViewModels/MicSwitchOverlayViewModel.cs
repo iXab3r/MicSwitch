@@ -28,11 +28,11 @@ namespace MicSwitch.MainWindow.ViewModels
         private readonly IConfigProvider<MicSwitchConfig> configProvider;
         private readonly IImageProvider imageProvider;
         private readonly IOverlayWindowController overlayWindowController;
-        private readonly IMicrophoneController microphoneController;
+        private readonly IMicrophoneControllerEx microphoneController;
 
         public MicSwitchOverlayViewModel(
             [NotNull] IOverlayWindowController overlayWindowController,
-            [NotNull] IMicrophoneController microphoneController,
+            [NotNull] IMicrophoneControllerEx microphoneController,
             [NotNull] IConfigProvider<MicSwitchConfig> configProvider,
             [NotNull] IImageProvider imageProvider,
             [NotNull] [Dependency(WellKnownSchedulers.UI)] IScheduler uiScheduler)
