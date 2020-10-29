@@ -46,14 +46,12 @@ namespace MicSwitch.MainWindow.Models
                 .AddTo(Anchors);
 
             configProvider.ListenTo(x => x.MicrophoneIcon)
-                .Select(x => x.ToBitmap())
-                .Select(x => x.ToImageSource())
+                .SelectSafeOrDefault(x => x.ToBitmapImage())
                 .Subscribe(x => MicrophoneImage = x ?? defaultMicrophoneImage)
                 .AddTo(Anchors);
             
             configProvider.ListenTo(x => x.MutedMicrophoneIcon)
-                .Select(x => x.ToBitmap())
-                .Select(x => x.ToImageSource())
+                .SelectSafeOrDefault(x => x.ToBitmapImage())
                 .Subscribe(x => MutedMicrophoneImage = x ?? defaultMutedMicrophoneImage)
                 .AddTo(Anchors);
         }

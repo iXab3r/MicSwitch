@@ -1,3 +1,4 @@
+using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -54,6 +55,20 @@ namespace MicSwitch.MainWindow.Models
                 BitmapSizeOptions.FromEmptyOptions());
 
             return imageSource;
+        }
+        
+        public static BitmapImage ToBitmapImage(this byte[] data)
+        {
+            if (data == null || data.Length == 0)
+            {
+                return null;
+            }
+            var result = new BitmapImage();
+            result.BeginInit();
+            //FIXME Should probably be disposed 
+            result.StreamSource = new MemoryStream(data);
+            result.EndInit();
+            return result;
         }
         
         public static BitmapSource ToImageSource(this Icon icon)

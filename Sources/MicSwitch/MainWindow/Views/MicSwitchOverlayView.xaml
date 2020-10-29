@@ -1,7 +1,8 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:eye="http://coderush.net/poeeye/"
-                    xmlns:viewModels="clr-namespace:MicSwitch.MainWindow.ViewModels">
+                    xmlns:viewModels="clr-namespace:MicSwitch.MainWindow.ViewModels"
+                    xmlns:gif="http://wpfanimatedgif.codeplex.com">
 
     <DataTemplate DataType="{x:Type viewModels:MicSwitchOverlayViewModel}">
         <Grid Focusable="False">
@@ -22,7 +23,8 @@
                   Opacity="{Binding Opacity}">
                 <Viewbox>
                     <Image
-                        Source="{Binding MicrophoneImage}" />
+                        gif:ImageBehavior.RepeatBehavior="Forever"
+                        gif:ImageBehavior.AnimatedSource="{Binding MicrophoneImage}" />
                 </Viewbox>
             </Grid>
             <Grid Grid.Row="1" DockPanel.Dock="Bottom"

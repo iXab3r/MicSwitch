@@ -13,6 +13,7 @@
                  xmlns:fa="http://schemas.fontawesome.io/icons/"
                  xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
                  xmlns:models="clr-namespace:MicSwitch.MainWindow.Models"
+                 xmlns:gif="http://wpfanimatedgif.codeplex.com"
                  mc:Ignorable="d"
                  d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel}"
                  WindowState="{Binding WindowState, Mode=TwoWay}"
@@ -134,7 +135,9 @@
                 <TextBlock DockPanel.Dock="Left" Margin="5,0,0,0" Text="when muted" />
                 <Border DockPanel.Dock="Left" Margin="5,0,0,0" Width="22" Height="22" BorderBrush="{StaticResource SecondaryAccentBrush}" BorderThickness="1" Background="Transparent"
                         ToolTip="Click to select an icon">
-                    <Image  Source="{Binding ImageProvider.MutedMicrophoneImage}"></Image>
+                    <Image 
+                        gif:ImageBehavior.RepeatBehavior="Forever"
+                        gif:ImageBehavior.AnimatedSource="{Binding ImageProvider.MutedMicrophoneImage}"></Image>
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
                             <i:InvokeCommandAction Command="{Binding SelectMutedMicrophoneIconCommand}"/>
@@ -144,7 +147,8 @@
                 <TextBlock DockPanel.Dock="Left" Margin="5,0,0,0" Text="when un-muted " />
                 <Border DockPanel.Dock="Left" Margin="5,0,0,0" Width="22" Height="22" BorderBrush="{StaticResource SecondaryAccentBrush}" BorderThickness="1" Background="Transparent"
                         ToolTip="Click to select an icon">
-                    <Image  Source="{Binding ImageProvider.MicrophoneImage}"></Image>
+                    <Image gif:ImageBehavior.RepeatBehavior="Forever"
+                           gif:ImageBehavior.AnimatedSource="{Binding ImageProvider.MicrophoneImage}"></Image>
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
                             <i:InvokeCommandAction Command="{Binding SelectMicrophoneIconCommand}"/>

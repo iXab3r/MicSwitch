@@ -288,7 +288,6 @@ namespace MicSwitch.MainWindow.ViewModels
                     this.ObservableForProperty(x => x.SuppressHotkey, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.StartMinimized, skipInitial: true).ToUnit())
                 .Throttle(ConfigThrottlingTimeout)
-                .ObserveOn(uiScheduler)
                 .Subscribe(() =>
                 {
                     var config = configProvider.ActualConfig.CloneJson();
@@ -313,7 +312,7 @@ namespace MicSwitch.MainWindow.ViewModels
             }
 
             var config = configProvider.ActualConfig.CloneJson();
-            config.MicrophoneIcon = icon.ToBitmap().ToBytes();
+            config.MicrophoneIcon = icon;
             configProvider.Save(config);
         }
         
@@ -326,7 +325,7 @@ namespace MicSwitch.MainWindow.ViewModels
             }
 
             var config = configProvider.ActualConfig.CloneJson();
-            config.MutedMicrophoneIcon = icon.ToBitmap().ToBytes();
+            config.MutedMicrophoneIcon = icon;
             configProvider.Save(config);
         }
 
@@ -338,7 +337,7 @@ namespace MicSwitch.MainWindow.ViewModels
             configProvider.Save(config);
         }
 
-        private async Task<BitmapImage> SelectIcon()
+        private async Task<byte[]> SelectIcon()
         {
             Log.Info($"Showing OpenFileDialog to user");
 
@@ -361,7 +360,7 @@ namespace MicSwitch.MainWindow.ViewModels
             }
 
             Log.Debug($"Opening image {op.FileName}");
-            return new BitmapImage(new Uri(op.FileName));
+            return File.ReadAllBytes(op.FileName);
         }
 
         private async Task MuteMicrophoneCommandExecuted(bool mute)
