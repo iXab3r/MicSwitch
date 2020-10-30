@@ -288,6 +288,7 @@ namespace MicSwitch.MainWindow.ViewModels
                     this.ObservableForProperty(x => x.SuppressHotkey, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.StartMinimized, skipInitial: true).ToUnit())
                 .Throttle(ConfigThrottlingTimeout)
+                .ObserveOn(uiScheduler)
                 .Subscribe(() =>
                 {
                     var config = configProvider.ActualConfig.CloneJson();

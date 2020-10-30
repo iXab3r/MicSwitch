@@ -42,18 +42,19 @@ namespace MicSwitch.MainWindow.Models
                     this.WhenAnyValue(x => x.MicrophoneImage).ToUnit(),
                     this.WhenAnyValue(x => x.MutedMicrophoneImage).ToUnit()
                 )
+                .ObserveOn(uiScheduler)
                 .Subscribe(() => RaisePropertyChanged(nameof(ActiveMicrophoneImage)))
                 .AddTo(Anchors);
 
             configProvider.ListenTo(x => x.MicrophoneIcon)
-                .SelectSafeOrDefault(x => x.ToBitmapImage())
                 .ObserveOn(uiScheduler)
+                .SelectSafeOrDefault(x => x.ToBitmapImage())
                 .Subscribe(x => MicrophoneImage = x ?? defaultMicrophoneImage)
                 .AddTo(Anchors);
             
             configProvider.ListenTo(x => x.MutedMicrophoneIcon)
-                .SelectSafeOrDefault(x => x.ToBitmapImage())
                 .ObserveOn(uiScheduler)
+                .SelectSafeOrDefault(x => x.ToBitmapImage())
                 .Subscribe(x => MutedMicrophoneImage = x ?? defaultMutedMicrophoneImage)
                 .AddTo(Anchors);
         }

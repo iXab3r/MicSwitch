@@ -66,8 +66,8 @@ namespace MicSwitch.MainWindow.ViewModels
                 .AddTo(Anchors);
 
             this.RaiseWhenSourceValue(x => x.IsEnabled, overlayWindowController, x => x.IsEnabled).AddTo(Anchors);
-            this.RaiseWhenSourceValue(x => x.Mute, microphoneController, x => x.Mute).AddTo(Anchors);
-            this.RaiseWhenSourceValue(x => x.MicrophoneImage, imageProvider, x => x.ActiveMicrophoneImage).AddTo(Anchors);
+            this.RaiseWhenSourceValue(x => x.Mute, microphoneController, x => x.Mute, uiScheduler).AddTo(Anchors);
+            this.RaiseWhenSourceValue(x => x.MicrophoneImage, imageProvider, x => x.ActiveMicrophoneImage, uiScheduler).AddTo(Anchors);
             
             ToggleLockStateCommand = CommandWrapper.Create(
                 () =>
