@@ -115,7 +115,14 @@ namespace MicSwitch.MainWindow.ViewModels
             
             configProvider.ListenTo(x => x.IsPushToTalkMode)
                 .ObserveOn(uiScheduler)
-                .Subscribe(x => IsPushToTalkMode = x, Log.HandleException)
+                .Subscribe(x =>
+                {
+                    IsPushToTalkMode = x;
+                    if (isPushToTalkMode)
+                    {
+                        MuteMicrophoneCommand.Execute(true);
+                    }
+                }, Log.HandleException)
                 .AddTo(Anchors);
             
             configProvider.ListenTo(x => x.SuppressHotkey)
@@ -194,12 +201,19 @@ namespace MicSwitch.MainWindow.ViewModels
             hotkeyTracker
                 .WhenAnyValue(x => x.IsActive)
                 .ObserveOn(uiScheduler)
-                .Subscribe(async isActive =>
+                .Subscribe(isActive =>
                 {
-                    MuteMicrophoneCommand.Execute(isActive);
+                    if (isPushToTalkMode)
+                    {
+                        MuteMicrophoneCommand.Execute(!isActive);
+                    }
+                    else
+                    {
+                        MuteMicrophoneCommand.Execute(!MicrophoneMuted);
+                    }
                 }, Log.HandleUiException)
                 .AddTo(Anchors);
-
+            
             ToggleOverlayLockCommand = CommandWrapper.Create(
                 () =>
                 {

@@ -187,9 +187,9 @@
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    <hotkeys:HotKeyBox Grid.Column="0" HotKey="{Binding Hotkey}" AcceptsTab="False" AcceptsReturn="False" AcceptsMouseKeys="True" />
+                    <hotkeys:HotKeyBox Grid.Column="0" HotKey="{Binding Hotkey}" Background="Transparent" AcceptsTab="False" AcceptsReturn="False" AcceptsMouseKeys="True" />
                     <TextBlock Grid.Column="1" Margin="10,0" DockPanel.Dock="Left" Text="or" FontWeight="Bold" />
-                    <hotkeys:HotKeyBox Grid.Column="2" HotKey="{Binding HotkeyAlt}" AcceptsTab="False" AcceptsReturn="False" AcceptsMouseKeys="True" />
+                    <hotkeys:HotKeyBox Grid.Column="2" HotKey="{Binding HotkeyAlt}" Background="Transparent" AcceptsTab="False" AcceptsReturn="False" AcceptsMouseKeys="True" />
                 </Grid>
             </DockPanel>
 

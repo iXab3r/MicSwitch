@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Reactive.Concurrency;
+using System.Reactive.Linq;
 using System.Threading;
 using System.Windows;
 using JetBrains.Annotations;
@@ -78,13 +79,9 @@ namespace MicSwitch.Services
                     })
                 .AddTo(Anchors);
 
-            foreach (var tracker in trackers)
-            {
-                tracker
-                    .WhenAnyValue(x => x.IsActive)
-                    .Subscribe(x => IsActive = !IsActive)
-                    .AddTo(Anchors);
-            }
+            Observable.CombineLatest(trackers.Select(x => x.WhenAnyValue(y => y.IsActive)))
+                .Subscribe(x => IsActive = x.Any(y => y == true))
+                .AddTo(Anchors);
 
             try
             {
