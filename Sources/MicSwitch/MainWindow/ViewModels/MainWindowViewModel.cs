@@ -201,15 +201,15 @@ namespace MicSwitch.MainWindow.ViewModels
             hotkeyTracker
                 .WhenAnyValue(x => x.IsActive)
                 .ObserveOn(uiScheduler)
-                .Subscribe(isActive =>
+                .Subscribe(async isActive =>
                 {
                     if (isPushToTalkMode)
                     {
-                        MuteMicrophoneCommand.Execute(!isActive);
+                        await MuteMicrophoneCommandExecuted(!isActive);
                     }
                     else
                     {
-                        MuteMicrophoneCommand.Execute(!MicrophoneMuted);
+                        await MuteMicrophoneCommandExecuted(!MicrophoneMuted);
                     }
                 }, Log.HandleUiException)
                 .AddTo(Anchors);
