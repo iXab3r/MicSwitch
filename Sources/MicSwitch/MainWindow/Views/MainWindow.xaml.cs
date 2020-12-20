@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
@@ -46,6 +47,16 @@ namespace MicSwitch.MainWindow.Views
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
             Log.Debug($"MainWindow loaded");
+        }
+
+        private void OnClosed(object sender, EventArgs e)
+        {
+            Log.Debug($"MainWindow closed");
+        }
+
+        private void OnClosing(object sender, CancelEventArgs e)
+        {
+            Log.Debug($"MainWindow is closing");
         }
     }
 }

@@ -28,6 +28,8 @@
                  TextOptions.TextRenderingMode="Auto"
                  Loaded="OnLoaded"
                  Unloaded="OnUnloaded"
+                 Closed="OnClosed"
+                 Closing="OnClosing"
                  Title="{Binding Title}" Width="450" SizeToContent="Height">
 
     <Window.Resources>
@@ -201,6 +203,15 @@
                     Margin="5,0,0,0" HorizontalAlignment="Left"
                     IsChecked="{Binding SuppressHotkey}" />
             </DockPanel>
+            
+            <DockPanel Margin="0,5,0,0" Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="True">
+                <TextBlock DockPanel.Dock="Left" MinWidth="120"
+                           TextAlignment="Right"
+                           Text="Minimize on Close:" />
+                <ToggleButton
+                    DockPanel.Dock="Left" Margin="5,0,0,0" HorizontalAlignment="Left"
+                    IsChecked="{Binding MinimizeOnClose}" />
+            </DockPanel>
 
             <DockPanel Margin="0,5,0,0" Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="True">
                 <TextBlock DockPanel.Dock="Left" MinWidth="120"
@@ -277,7 +288,7 @@
                 FontFamily="{StaticResource FontAwesome}"
                 Margin="5,0"
                 FontWeight="Bold"
-                ToolTip="Open PoeEye folder"
+                ToolTip="Open logs/config folder"
                 Content="&#xF07C;"
                 Command="{Binding OpenAppDataDirectoryCommand}" />
         </mah:WindowCommands>

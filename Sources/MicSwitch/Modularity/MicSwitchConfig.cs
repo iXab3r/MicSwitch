@@ -16,6 +16,8 @@ namespace MicSwitch.Modularity
 
         public bool SuppressHotkey { get; set; } = true;
         
+        public bool MinimizeOnClose { get; set; } = true;
+        
         public string MicrophoneHotkey { get; set; }
 
         public string MicrophoneHotkeyAlt { get; set; }

@@ -222,9 +222,10 @@ namespace MicSwitch
             overlayController.RegisterChild(overlayViewModel);
             
             var mainWindow = container.Resolve<MainWindow.Views.MainWindow>();
+            Current.MainWindow = mainWindow;
             sw.Step($"Main window view initialized");
             var viewController = new WindowViewController(mainWindow);
-            var mainWindowViewModel = container.Resolve<IMainWindowViewModel>(new DependencyOverride<IViewController>(viewController)).AddTo(Anchors);
+            var mainWindowViewModel = container.Resolve<IMainWindowViewModel>(new DependencyOverride<IWindowViewController>(viewController)).AddTo(Anchors);
             sw.Step($"Main window view model resolved");
             mainWindow.DataContext = mainWindowViewModel;
             sw.Step($"Main window view model assigned");

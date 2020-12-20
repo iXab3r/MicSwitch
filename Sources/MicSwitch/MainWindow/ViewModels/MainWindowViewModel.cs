@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -60,6 +61,7 @@ namespace MicSwitch.MainWindow.ViewModels
         private WindowState windowState;
         private bool startMinimized;
         private Visibility visibility;
+        private bool minimizeOnClose;
 
         public MainWindowViewModel(
             [NotNull] IAppArguments appArguments,
@@ -74,7 +76,7 @@ namespace MicSwitch.MainWindow.ViewModels
             [NotNull] IComplexHotkeyTracker hotkeyTracker,
             [NotNull] IMicrophoneProvider microphoneProvider,
             [NotNull] IImageProvider imageProvider,
-            [NotNull] IViewController viewController,
+            [NotNull] IWindowViewController viewController,
             [NotNull] [Dependency(WellKnownSchedulers.UI)] IScheduler uiScheduler)
         {
             var startupManagerArgs = new StartupManagerArgs
@@ -128,6 +130,11 @@ namespace MicSwitch.MainWindow.ViewModels
             configProvider.ListenTo(x => x.SuppressHotkey)
                 .ObserveOn(uiScheduler)
                 .Subscribe(x => SuppressHotkey = x, Log.HandleException)
+                .AddTo(Anchors);
+            
+            configProvider.ListenTo(x => x.MinimizeOnClose)
+                .ObserveOn(uiScheduler)
+                .Subscribe(x => MinimizeOnClose = x, Log.HandleException)
                 .AddTo(Anchors);
 
             Observable.Merge(configProvider.ListenTo(x => x.MicrophoneHotkey), configProvider.ListenTo(x => x.MicrophoneHotkeyAlt))
@@ -234,7 +241,7 @@ namespace MicSwitch.MainWindow.ViewModels
                     configProvider.Save(configProvider.ActualConfig);
                     Application.Current.Shutdown();
                 });
-
+            
             this.WhenAnyValue(x => x.WindowState)
                 .Subscribe(x => ShowInTaskbar = x != WindowState.Minimized, Log.HandleUiException)
                 .AddTo(Anchors);
@@ -294,6 +301,11 @@ namespace MicSwitch.MainWindow.ViewModels
                     }, Log.HandleUiException)
                 .AddTo(Anchors);
 
+            viewController
+                .WhenClosing
+                .Subscribe(x => HandleWindowClosing(viewController, x))
+                .AddTo(Anchors);
+
             // config processing
             Observable.Merge(
                     this.ObservableForProperty(x => x.MicrophoneLine, skipInitial: true).ToUnit(),
@@ -315,9 +327,21 @@ namespace MicSwitch.MainWindow.ViewModels
                     config.Notification = AudioNotification;
                     config.SuppressHotkey = SuppressHotkey;
                     config.StartMinimized = StartMinimized;
+                    config.MinimizeOnClose = MinimizeOnClose;
                     configProvider.Save(config);
                 }, Log.HandleUiException)
                 .AddTo(Anchors);
+        }
+
+        private void HandleWindowClosing(IWindowViewController viewController, CancelEventArgs args)
+        {
+            Log.Info($"Main window is closing(cancel: {args.Cancel}), {nameof(Visibility)}: {Visibility}, {nameof(MicSwitchConfig.MinimizeOnClose)}: {configProvider.ActualConfig.MinimizeOnClose}");
+            if (MinimizeOnClose)
+            {
+                Log.Info("Cancelling main window closure (will be ignored during app shutdown)");
+                args.Cancel = true;
+                viewController.Hide();
+            }
         }
 
         private async Task SelectMicrophoneIconCommandExecuted()
@@ -468,6 +492,12 @@ namespace MicSwitch.MainWindow.ViewModels
         {
             get => startMinimized;
             set => this.RaiseAndSetIfChanged(ref startMinimized, value);
+        }
+
+        public bool MinimizeOnClose
+        {
+            get => minimizeOnClose;
+            set => RaiseAndSetIfChanged(ref minimizeOnClose, value);
         }
 
         public Visibility TrayIconVisibility
