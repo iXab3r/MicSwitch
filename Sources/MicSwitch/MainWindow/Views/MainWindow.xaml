@@ -68,6 +68,7 @@
             <DockPanel Margin="0,5,0,0" Style="{StaticResource SettingsRowDockPanelStyle}">
                 <TextBlock DockPanel.Dock="Left" MinWidth="120"
                            TextAlignment="Right"
+                           IsHitTestVisible="True"
                            Text="Microphone:" />
                 <ComboBox DockPanel.Dock="Top" Margin="5,0,5,0"
                           ItemsSource="{Binding Microphones}"
@@ -78,35 +79,10 @@
             <DockPanel Margin="0,5,0,0" Style="{StaticResource SettingsRowDockPanelStyle}">
                 <TextBlock DockPanel.Dock="Left" MinWidth="120"
                            TextAlignment="Right"
-                           Text="Volume:" />
-
-                <TextBlock DockPanel.Dock="Right"
-                           MinWidth="50"
-                           TextAlignment="Left"
-                           Margin="5,0">
-                    <TextBlock.Text>
-                        <Binding Path="MicrophoneVolume" StringFormat="{}{0:F1}%">
-                            <Binding.Converter>
-                                <blue:MultiplyDoubleConverter MinValue="0"
-                                                              Factor="100"
-                                                              MaxValue="100" />
-                            </Binding.Converter>
-                        </Binding>
-                    </TextBlock.Text>
-                </TextBlock>
-
-                <Slider DockPanel.Dock="Left"
-                        Value="{Binding MicrophoneVolume}"
-                        Minimum="0" Maximum="1"
-                        Margin="5,4,5,0"
-                        TickFrequency="0.1" />
-            </DockPanel>
-
-            <DockPanel Margin="0,5,0,0" Style="{StaticResource SettingsRowDockPanelStyle}">
-                <TextBlock DockPanel.Dock="Left" MinWidth="120"
-                           TextAlignment="Right"
                            Text="Mute:" />
+                
                 <ToggleButton
+                    ToolTip="Microphone mute is system-wide"
                     DockPanel.Dock="Left" Margin="5,0,0,0" HorizontalAlignment="Left"
                     Command="{Binding MuteMicrophoneCommand}"
                     CommandParameter="{Binding IsChecked, RelativeSource={RelativeSource Self}}"
@@ -119,6 +95,41 @@
                                 VerticalAlignment="Center"
                                 ToolTip="{Binding MuteMicrophoneCommand.Error}"
                                 FontSize="18" />
+            </DockPanel>
+            
+            <DockPanel Margin="0,5,0,0" Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="False">
+                <TextBlock DockPanel.Dock="Left" MinWidth="120"
+                           TextAlignment="Right"
+                           Text="Volume:" />
+                
+                <ToggleButton
+                    ToolTip="If enabled application will set microphone(s) volume to specified value"
+                    DockPanel.Dock="Left" Margin="5,0,0,0" HorizontalAlignment="Left"
+                    IsChecked="{Binding MicrophoneVolumeControlEnabled}" />
+                
+                <Slider Width="180"
+                        IsEnabled="{Binding MicrophoneVolumeControlEnabled}"
+                        Visibility="{Binding MicrophoneVolumeControlEnabled, Converter={StaticResource TrueToVisibleFalseToCollapsedConverter}}"
+                        Value="{Binding MicrophoneVolume}"
+                        Minimum="0" Maximum="1"
+                        Margin="5,4,5,0"
+                        TickFrequency="0.1" />
+                
+                <TextBlock 
+                    MinWidth="45">
+                    <TextBlock.Text>
+                        <Binding Path="MicrophoneVolume" StringFormat="{}{0:F1}%">
+                            <Binding.Converter>
+                                <blue:MultiplyDoubleConverter MinValue="0"
+                                                              Factor="100"
+                                                              MaxValue="100" />
+                            </Binding.Converter>
+                        </Binding>
+                    </TextBlock.Text>
+                </TextBlock>
+                <TextBlock Style="{StaticResource WarningIconTextBlock}" Margin="2.5,0,0,0"
+                           Visibility="{Binding MicrophoneVolumeControlEnabled, Converter={StaticResource TrueToCollapsedFalseToVisibleConverter}}"
+                           ToolTip="May be inaccurate because Volume control is disabled" />
             </DockPanel>
 
             <DockPanel Margin="0,5,0,0" Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="False">
@@ -201,6 +212,7 @@
                            Text="Suppress Hotkey:" />
                 <ToggleButton
                     Margin="5,0,0,0" HorizontalAlignment="Left"
+                    ToolTip="If enabled other applications will not react to pressed hotkey. May not work for mouse buttons of some special keys"
                     IsChecked="{Binding SuppressHotkey}" />
             </DockPanel>
             
@@ -210,6 +222,7 @@
                            Text="Minimize on Close:" />
                 <ToggleButton
                     DockPanel.Dock="Left" Margin="5,0,0,0" HorizontalAlignment="Left"
+                    ToolTip="If enabled application will minimize instead of close when X button is pressed. App still could be closed via taskbar icon"
                     IsChecked="{Binding MinimizeOnClose}" />
             </DockPanel>
 
@@ -230,6 +243,7 @@
                            Text="Start Minimized:" />
                 <ToggleButton
                     DockPanel.Dock="Left" Margin="5,0,0,0" HorizontalAlignment="Left"
+                    ToolTip="Minimize application window on startup"
                     IsChecked="{Binding StartMinimized}" />
             </DockPanel>
 
@@ -239,6 +253,7 @@
                            Text="Check for updates:" />
                 <ToggleButton
                     Margin="5,0,0,0" HorizontalAlignment="Left"
+                    ToolTip="Periodically check for updates and report if new version is available"
                     IsChecked="{Binding ApplicationUpdater.CheckForUpdates, Mode=TwoWay}" />
                 <TextBlock Margin="5,0,0,0">
                     <Run Text="update source:" />

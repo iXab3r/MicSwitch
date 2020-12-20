@@ -5,6 +5,7 @@ using ReactiveUI;
 using System.Reactive.Linq;
 using log4net;
 using PoeShared;
+using PoeShared.Prism;
 using PoeShared.Scaffolding;
 
 namespace MicSwitch.Services
@@ -18,13 +19,19 @@ namespace MicSwitch.Services
         private MicrophoneLineData lineId;
 
         public ComplexMicrophoneController(
+            IFactory<MultimediaMicrophoneController, IMicrophoneProvider> multimediaControllerFactory,
             IMicrophoneProvider microphoneProvider)
         {
             microphones = microphoneProvider
                 .Microphones
                 .ToObservableChangeSet()
                 .Filter(x => x.LineId != MicrophoneLineData.All.LineId)
-                .Transform(x => (IMicrophoneController) new MultimediaMicrophoneController(microphoneProvider) {LineId = x})
+                .Transform(x =>
+                {
+                    var multimediaLine = multimediaControllerFactory.Create(microphoneProvider);
+                    multimediaLine.LineId = x;
+                    return (IMicrophoneController) multimediaLine;
+                })
                 .Bind(out var sources)
                 .AddKey(x => x.LineId)
                 .AsObservableCache();

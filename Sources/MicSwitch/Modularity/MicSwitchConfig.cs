@@ -18,6 +18,8 @@ namespace MicSwitch.Modularity
         
         public bool MinimizeOnClose { get; set; } = true;
         
+        public bool VolumeControlEnabled { get; set; } = false;
+        
         public string MicrophoneHotkey { get; set; }
 
         public string MicrophoneHotkeyAlt { get; set; }

@@ -1,8 +1,10 @@
 using System;
 using System.Reactive.Linq;
 using log4net;
+using MicSwitch.Modularity;
 using NAudio.CoreAudioApi;
 using PoeShared;
+using PoeShared.Modularity;
 using PoeShared.Scaffolding;
 using ReactiveUI;
 
@@ -10,14 +12,18 @@ namespace MicSwitch.Services
 {
     internal sealed class MultimediaMicrophoneController : DisposableReactiveObject, IMicrophoneControllerEx
     {
+        private readonly IConfigProvider<MicSwitchConfig> configProvider;
         private readonly IMicrophoneProvider microphoneProvider;
         private static readonly ILog Log = LogManager.GetLogger(typeof(MultimediaMicrophoneController));
         private static readonly TimeSpan SamplingInterval = TimeSpan.FromMilliseconds(50);
         private MMDevice mixerControl;
         private MicrophoneLineData lineId;
 
-        public MultimediaMicrophoneController(IMicrophoneProvider microphoneProvider)
+        public MultimediaMicrophoneController(
+            IConfigProvider<MicSwitchConfig> configProvider,
+            IMicrophoneProvider microphoneProvider)
         {
+            this.configProvider = configProvider;
             this.microphoneProvider = microphoneProvider;
             this.WhenAnyValue(x => x.LineId)
                 .Where(x => !x.IsEmpty)
@@ -81,6 +87,12 @@ namespace MicSwitch.Services
             {
                 if (value == null || mixerControl?.AudioEndpointVolume == null)
                 {
+                    return;
+                }
+
+                if (configProvider.ActualConfig.VolumeControlEnabled == false)
+                {
+                    Log.Warn($"[#{LineId}] Ignoring volume control request because it is disable, value: {value}");
                     return;
                 }
 

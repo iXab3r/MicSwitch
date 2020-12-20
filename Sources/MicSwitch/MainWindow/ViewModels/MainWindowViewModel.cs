@@ -62,6 +62,7 @@ namespace MicSwitch.MainWindow.ViewModels
         private bool startMinimized;
         private Visibility visibility;
         private bool minimizeOnClose;
+        private bool microphoneVolumeControlEnabled;
 
         public MainWindowViewModel(
             [NotNull] IAppArguments appArguments,
@@ -136,6 +137,11 @@ namespace MicSwitch.MainWindow.ViewModels
                 .ObserveOn(uiScheduler)
                 .Subscribe(x => MinimizeOnClose = x, Log.HandleException)
                 .AddTo(Anchors);
+            
+            configProvider.ListenTo(x => x.VolumeControlEnabled)
+                .ObserveOn(uiScheduler)
+                .Subscribe(x => MicrophoneVolumeControlEnabled = x, Log.HandleException)
+                .AddTo(Anchors);
 
             Observable.Merge(configProvider.ListenTo(x => x.MicrophoneHotkey), configProvider.ListenTo(x => x.MicrophoneHotkeyAlt))
                 .Select(x => new
@@ -207,6 +213,7 @@ namespace MicSwitch.MainWindow.ViewModels
 
             hotkeyTracker
                 .WhenAnyValue(x => x.IsActive)
+                .Skip(1)
                 .ObserveOn(uiScheduler)
                 .Subscribe(async isActive =>
                 {
@@ -314,6 +321,8 @@ namespace MicSwitch.MainWindow.ViewModels
                     this.ObservableForProperty(x => x.HotkeyAlt, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.Hotkey, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.SuppressHotkey, skipInitial: true).ToUnit(),
+                    this.ObservableForProperty(x => x.MinimizeOnClose, skipInitial: true).ToUnit(),
+                    this.ObservableForProperty(x => x.MicrophoneVolumeControlEnabled, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.StartMinimized, skipInitial: true).ToUnit())
                 .Throttle(ConfigThrottlingTimeout)
                 .ObserveOn(uiScheduler)
@@ -542,6 +551,12 @@ namespace MicSwitch.MainWindow.ViewModels
         {
             get => microphoneController.VolumePercent ?? 0;
             set => microphoneController.VolumePercent = value;
+        }
+
+        public bool MicrophoneVolumeControlEnabled
+        {
+            get => microphoneVolumeControlEnabled;
+            set => RaiseAndSetIfChanged(ref microphoneVolumeControlEnabled, value);
         }
 
         public bool MicrophoneMuted
