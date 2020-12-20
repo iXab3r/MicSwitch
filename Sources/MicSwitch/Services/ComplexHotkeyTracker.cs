@@ -1,9 +1,13 @@
 using System;
+using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Windows;
+using System.Windows.Interop;
 using JetBrains.Annotations;
 using log4net;
 using MicSwitch.Modularity;
@@ -22,6 +26,8 @@ namespace MicSwitch.Services
     internal sealed class ComplexHotkeyTracker : DisposableReactiveObject, IComplexHotkeyTracker
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(ComplexHotkeyTracker));
+        private static readonly TimeSpan MainWindowCheckPeriod = TimeSpan.FromMilliseconds(1000);
+        private static readonly Process CurrentProcess = Process.GetCurrentProcess();
 
         private readonly IHotkeyConverter hotkeyConverter;
         private readonly IConfigProvider<MicSwitchConfig> configProvider;
@@ -85,9 +91,17 @@ namespace MicSwitch.Services
 
             try
             {
-                Log.Debug($"Running message loop");
+                while (CurrentProcess.MainWindowHandle == IntPtr.Zero)
+                {
+                    Log.Debug($"Main application window is not initialized yet, awaiting for {MainWindowCheckPeriod.TotalMilliseconds:F0}ms...");
+                    Thread.Sleep(MainWindowCheckPeriod);
+                }
+                
+                Log.Debug($"Creating form for hooking keyboard and mouse events, process main window: {CurrentProcess.MainWindowTitle} {CurrentProcess.MainWindowHandle}");
                 hookForm = new HookForm();
-                hookForm.ShowDialog();
+                Log.Debug($"Running message loop in hook form");
+                var result = hookForm.ShowDialog();
+                Log.Debug($"Message loop terminated gracefully, dialog result: {result}");
             }
             catch (Exception e)
             {
@@ -95,20 +109,39 @@ namespace MicSwitch.Services
             }
             finally
             {
-                Log.Debug($"Message loop terminated");
+                Log.Debug($"Hook form thread terminated");
             }
         }
 
-        private class HookForm : TransparentWindow
+        private sealed class HookForm : Window
         {
             public HookForm()
             {
+                var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
+                Title = $"{assembly.GetName().Name} {assembly.GetName().Version} {nameof(HookForm)}";
                 ShowInTaskbar = false;
                 WindowStyle = WindowStyle.None;
+                ResizeMode = ResizeMode.NoResize;
                 Width = 0;
                 Height = 0;
-                Visibility = Visibility.Collapsed;
-                MakeTransparent();
+                this.Loaded += OnLoaded;
+                Log.Info("HookForm created");
+            }
+
+            private void OnLoaded(object sender, RoutedEventArgs e)
+            {
+                this.Loaded -= OnLoaded;
+
+                Log.Info("HookForm loaded, applying style...");
+                var hwnd = new WindowInteropHelper(this).EnsureHandle();
+                Log.Debug($"HookForm handle: {hwnd.ToHexadecimal()}");
+                UnsafeNative.SetWindowRgn(hwnd, Rectangle.Empty);
+                Log.Info("HookForm successfully initialized");
+            }
+
+            protected override void OnSourceInitialized(EventArgs e)
+            {
+                base.OnSourceInitialized(e);
             }
         }
     }

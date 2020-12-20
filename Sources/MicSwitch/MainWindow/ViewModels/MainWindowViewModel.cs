@@ -244,10 +244,12 @@ namespace MicSwitch.MainWindow.ViewModels
                 {
                     if (Visibility != Visibility.Visible)
                     {
+                        Log.Debug($"Showing application, currents state: {Visibility}");
                         viewController.Show();
                     }
                     else
                     {
+                        Log.Debug($"Hiding application, currents state: {Visibility}");
                         viewController.Hide();
                     }
                 });
