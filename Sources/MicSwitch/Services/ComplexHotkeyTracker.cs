@@ -10,6 +10,7 @@ using System.Windows;
 using System.Windows.Interop;
 using JetBrains.Annotations;
 using log4net;
+using MicSwitch.MainWindow.Models;
 using MicSwitch.Modularity;
 using Mono.Collections.Generic;
 using PoeShared;
@@ -78,7 +79,7 @@ namespace MicSwitch.Services
                         hotkey.Hotkey = hotkeyConverter.ConvertFromString(actualConfig.MicrophoneHotkey);
                         hotkeyAlt.Hotkey = hotkeyConverter.ConvertFromString(actualConfig.MicrophoneHotkeyAlt);
 
-                        hotkey.HotkeyMode = hotkeyAlt.HotkeyMode = actualConfig.IsPushToTalkMode
+                        hotkey.HotkeyMode = hotkeyAlt.HotkeyMode = actualConfig.MuteMode == MuteMode.PushToMute || actualConfig.MuteMode == MuteMode.PushToTalk
                             ? HotkeyMode.Hold
                             : HotkeyMode.Click;
                         hotkey.SuppressKey = hotkeyAlt.SuppressKey = actualConfig.SuppressHotkey;

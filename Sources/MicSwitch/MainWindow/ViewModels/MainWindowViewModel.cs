@@ -53,7 +53,6 @@ namespace MicSwitch.MainWindow.ViewModels
 
         private HotkeyGesture hotkey;
         private HotkeyGesture hotkeyAlt;
-        private bool isPushToTalkMode;
         private bool suppressHotkey;
         private MicrophoneLineData microphoneLine;
         private bool showInTaskbar;
@@ -63,6 +62,7 @@ namespace MicSwitch.MainWindow.ViewModels
         private Visibility visibility;
         private bool minimizeOnClose;
         private bool microphoneVolumeControlEnabled;
+        private MuteMode muteMode;
 
         public MainWindowViewModel(
             [NotNull] IAppArguments appArguments,
@@ -107,6 +107,10 @@ namespace MicSwitch.MainWindow.ViewModels
                 .Subscribe(() => this.RaisePropertyChanged(nameof(AudioNotification)), Log.HandleException)
                 .AddTo(Anchors);
 
+            configProvider.WhenChanged
+                .Subscribe()
+                .AddTo(Anchors);
+
             configProvider.ListenTo(x => x.Notification)
                 .ObserveOn(uiScheduler)
                 .Subscribe(cfg =>
@@ -116,15 +120,37 @@ namespace MicSwitch.MainWindow.ViewModels
                 }, Log.HandleException)
                 .AddTo(Anchors);
             
-            configProvider.ListenTo(x => x.IsPushToTalkMode)
+            configProvider.ListenTo(x => x.MuteMode)
                 .ObserveOn(uiScheduler)
                 .Subscribe(x =>
                 {
-                    IsPushToTalkMode = x;
-                    if (isPushToTalkMode)
+                    Log.Debug($"Mute mode loaded from config: {x}");
+                    MuteMode = x;
+                }, Log.HandleException)
+                .AddTo(Anchors);
+
+            this.WhenAnyValue(x => x.MuteMode)
+                .Subscribe(x =>
+                {
+                    if (x == MuteMode.PushToTalk)
                     {
+                        Log.Debug($"{nameof(MuteMode.PushToTalk)} mute mode is enabled, un-muting microphone");
                         MuteMicrophoneCommand.Execute(true);
+                    } else if (x == MuteMode.PushToMute)
+                    {
+                        MuteMicrophoneCommand.Execute(false);
+                        Log.Debug($"{nameof(MuteMode.PushToMute)} mute mode is enabled, muting microphone");
                     }
+                })
+                .AddTo(Anchors);
+            
+            configProvider.ListenTo(x => x.IsPushToTalkMode)
+                .Where(x => x == true)
+                .ObserveOn(uiScheduler)
+                .Subscribe(x =>
+                {
+                    //FIXME This whole block is for backward-compatibility reasons and should be removed when possible
+                    MuteMode = MuteMode.PushToTalk;
                 }, Log.HandleException)
                 .AddTo(Anchors);
             
@@ -217,13 +243,20 @@ namespace MicSwitch.MainWindow.ViewModels
                 .ObserveOn(uiScheduler)
                 .Subscribe(async isActive =>
                 {
-                    if (isPushToTalkMode)
+                    Log.Debug($"Handling hotkey press (isActive: {isActive}), mute mode: {muteMode}");
+                    switch (muteMode)
                     {
-                        await MuteMicrophoneCommandExecuted(!isActive);
-                    }
-                    else
-                    {
-                        await MuteMicrophoneCommandExecuted(!MicrophoneMuted);
+                        case MuteMode.PushToTalk:
+                            await MuteMicrophoneCommandExecuted(!isActive);
+                            break;
+                        case MuteMode.PushToMute:
+                            await MuteMicrophoneCommandExecuted(isActive);
+                            break;
+                        case MuteMode.ToggleMute:
+                            await MuteMicrophoneCommandExecuted(!MicrophoneMuted);
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(muteMode), muteMode, @"Unsupported mute mode");
                     }
                 }, Log.HandleUiException)
                 .AddTo(Anchors);
@@ -316,7 +349,7 @@ namespace MicSwitch.MainWindow.ViewModels
             // config processing
             Observable.Merge(
                     this.ObservableForProperty(x => x.MicrophoneLine, skipInitial: true).ToUnit(),
-                    this.ObservableForProperty(x => x.IsPushToTalkMode, skipInitial: true).ToUnit(),
+                    this.ObservableForProperty(x => x.MuteMode, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.AudioNotification, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.HotkeyAlt, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.Hotkey, skipInitial: true).ToUnit(),
@@ -329,7 +362,8 @@ namespace MicSwitch.MainWindow.ViewModels
                 .Subscribe(() =>
                 {
                     var config = configProvider.ActualConfig.CloneJson();
-                    config.IsPushToTalkMode = IsPushToTalkMode;
+                    config.IsPushToTalkMode = null;
+                    config.MuteMode = muteMode;
                     config.MicrophoneHotkey = (Hotkey ?? new HotkeyGesture()).ToString();
                     config.MicrophoneHotkeyAlt = (HotkeyAlt ?? new HotkeyGesture()).ToString();
                     config.MicrophoneLineId = MicrophoneLine;
@@ -474,7 +508,7 @@ namespace MicSwitch.MainWindow.ViewModels
         public CommandWrapper RunAtLoginToggleCommand { get; }
 
         public CommandWrapper MuteMicrophoneCommand { get; }
-
+        
         public IMicSwitchOverlayViewModel Overlay { get; }
 
         public IAudioNotificationSelectorViewModel AudioSelectorWhenUnmuted { get; }
@@ -535,10 +569,10 @@ namespace MicSwitch.MainWindow.ViewModels
 
         public string Title { get; }
 
-        public bool IsPushToTalkMode
+        public MuteMode MuteMode
         {
-            get => isPushToTalkMode;
-            set => this.RaiseAndSetIfChanged(ref isPushToTalkMode, value);
+            get => muteMode;
+            set => RaiseAndSetIfChanged(ref muteMode, value);
         }
 
         public MicrophoneLineData MicrophoneLine

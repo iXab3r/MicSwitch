@@ -8,7 +8,11 @@ namespace MicSwitch.Modularity
 {
     internal sealed class MicSwitchConfig : IPoeEyeConfigVersioned, IOverlayConfig
     {
-        public bool IsPushToTalkMode { get; set; }
+        public static readonly string DiscordInviteLink = @"https://discord.gg/pFHHebM";
+        
+        public bool? IsPushToTalkMode { get; set; }
+
+        public MuteMode MuteMode { get; set; } = MuteMode.ToggleMute;
         
         public bool StartMinimized { get; set; }
 
