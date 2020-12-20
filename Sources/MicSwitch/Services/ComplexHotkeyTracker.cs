@@ -27,7 +27,6 @@ namespace MicSwitch.Services
     internal sealed class ComplexHotkeyTracker : DisposableReactiveObject, IComplexHotkeyTracker
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(ComplexHotkeyTracker));
-        private static readonly TimeSpan MainWindowCheckPeriod = TimeSpan.FromMilliseconds(1000);
         private static readonly Process CurrentProcess = Process.GetCurrentProcess();
 
         private readonly IHotkeyConverter hotkeyConverter;
@@ -92,12 +91,6 @@ namespace MicSwitch.Services
 
             try
             {
-                while (CurrentProcess.MainWindowHandle == IntPtr.Zero)
-                {
-                    Log.Debug($"Main application window is not initialized yet, awaiting for {MainWindowCheckPeriod.TotalMilliseconds:F0}ms...");
-                    Thread.Sleep(MainWindowCheckPeriod);
-                }
-                
                 Log.Debug($"Creating form for hooking keyboard and mouse events, process main window: {CurrentProcess.MainWindowTitle} {CurrentProcess.MainWindowHandle}");
                 hookForm = new HookForm();
                 Log.Debug($"Running message loop in hook form");
@@ -136,13 +129,10 @@ namespace MicSwitch.Services
                 Log.Info("HookForm loaded, applying style...");
                 var hwnd = new WindowInteropHelper(this).EnsureHandle();
                 Log.Debug($"HookForm handle: {hwnd.ToHexadecimal()}");
+                UnsafeNative.HideSystemMenu(hwnd);
+                UnsafeNative.SetWindowExTransparent(hwnd);
                 UnsafeNative.SetWindowRgn(hwnd, Rectangle.Empty);
                 Log.Info("HookForm successfully initialized");
-            }
-
-            protected override void OnSourceInitialized(EventArgs e)
-            {
-                base.OnSourceInitialized(e);
             }
         }
     }

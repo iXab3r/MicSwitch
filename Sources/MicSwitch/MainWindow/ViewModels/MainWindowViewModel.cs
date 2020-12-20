@@ -43,6 +43,8 @@ namespace MicSwitch.MainWindow.ViewModels
         private static readonly ILog Log = LogManager.GetLogger(typeof(MainWindowViewModel));
         private static readonly TimeSpan ConfigThrottlingTimeout = TimeSpan.FromMilliseconds(250);
         private static readonly string ExplorerExecutablePath = Environment.ExpandEnvironmentVariables(@"%WINDIR%\explorer.exe");
+        private static readonly Process CurrentProcess = Process.GetCurrentProcess();
+        
         private readonly IWindowTracker mainWindowTracker;
         private readonly IConfigProvider<MicSwitchConfig> configProvider;
         private readonly IAudioNotificationsManager notificationsManager;
@@ -70,6 +72,7 @@ namespace MicSwitch.MainWindow.ViewModels
             [NotNull] IFactory<IStartupManager, StartupManagerArgs> startupManagerFactory,
             [NotNull] IMicrophoneControllerEx microphoneController,
             [NotNull] IMicSwitchOverlayViewModel overlay,
+            [NotNull] IOverlayWindowController overlayWindowController,
             [NotNull] IAudioNotificationsManager audioNotificationsManager,
             [NotNull] IFactory<IAudioNotificationSelectorViewModel> audioSelectorFactory,
             [NotNull] IApplicationUpdaterViewModel appUpdater,
@@ -375,6 +378,15 @@ namespace MicSwitch.MainWindow.ViewModels
                     config.StartMinimized = StartMinimized;
                     config.MinimizeOnClose = MinimizeOnClose;
                     configProvider.Save(config);
+                }, Log.HandleUiException)
+                .AddTo(Anchors);
+
+            viewController.WhenLoaded
+                .Subscribe(() =>
+                {
+                    Log.Debug($"Main window loaded - loading overlay, current process({CurrentProcess.ProcessName} 0x{CurrentProcess.Id:x8}) main window: {CurrentProcess.MainWindowHandle} ({CurrentProcess.MainWindowTitle})");
+                    overlayWindowController.RegisterChild(overlay);
+                    Log.Debug("Overlay loaded successfully");
                 }, Log.HandleUiException)
                 .AddTo(Anchors);
         }
