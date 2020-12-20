@@ -34,7 +34,7 @@ Also it supports configurable mute/unmute sounds(similar to TeamSpeak/Ventrilo) 
 - Auto-updates via Github
 
 ## Media
-![UI](https://i.imgur.com/JUF0IEb.png)
+![UI](https://i.imgur.com/oRcFrsS.png)
 
 ### Overlay with configurable size/opacity
 ![Overlay with configurable size/opacity](https://i.imgur.com/1Jf1RrH.gif)
