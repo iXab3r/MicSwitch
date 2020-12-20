@@ -45,7 +45,7 @@ namespace MicSwitch.MainWindow.ViewModels
         private static readonly string ExplorerExecutablePath = Environment.ExpandEnvironmentVariables(@"%WINDIR%\explorer.exe");
         private readonly IWindowTracker mainWindowTracker;
         private readonly IConfigProvider<MicSwitchConfig> configProvider;
-        private readonly IImageProvider imageProvider;
+        private readonly IAudioNotificationsManager notificationsManager;
 
         private readonly IStartupManager startupManager;
         private readonly IAppArguments appArguments;
@@ -63,6 +63,7 @@ namespace MicSwitch.MainWindow.ViewModels
         private bool minimizeOnClose;
         private bool microphoneVolumeControlEnabled;
         private MuteMode muteMode;
+        private string lastOpenedDirectory;
 
         public MainWindowViewModel(
             [NotNull] IAppArguments appArguments,
@@ -77,6 +78,7 @@ namespace MicSwitch.MainWindow.ViewModels
             [NotNull] IComplexHotkeyTracker hotkeyTracker,
             [NotNull] IMicrophoneProvider microphoneProvider,
             [NotNull] IImageProvider imageProvider,
+            [NotNull] IAudioNotificationsManager notificationsManager,
             [NotNull] IWindowViewController viewController,
             [NotNull] [Dependency(WellKnownSchedulers.UI)] IScheduler uiScheduler)
         {
@@ -95,7 +97,7 @@ namespace MicSwitch.MainWindow.ViewModels
             ApplicationUpdater = appUpdater;
             this.mainWindowTracker = mainWindowTracker;
             this.configProvider = configProvider;
-            this.imageProvider = imageProvider;
+            this.notificationsManager = notificationsManager;
             this.RaiseWhenSourceValue(x => x.IsActive, mainWindowTracker, x => x.IsActive).AddTo(Anchors);
 
             AudioSelectorWhenMuted = audioSelectorFactory.Create();
@@ -310,6 +312,7 @@ namespace MicSwitch.MainWindow.ViewModels
             SelectMicrophoneIconCommand = CommandWrapper.Create(SelectMicrophoneIconCommandExecuted);
             SelectMutedMicrophoneIconCommand = CommandWrapper.Create(SelectMutedMicrophoneIconCommandExecuted);
             ResetMicrophoneIconsCommand = CommandWrapper.Create(ResetMicrophoneIconsCommandExecuted);
+            AddSoundCommand = CommandWrapper.Create(AddSoundCommandExecuted);
 
             var executingAssemblyName = Assembly.GetExecutingAssembly().GetName();
             Title = $"{(appArguments.IsDebugMode ? "[D]" : "")} {executingAssemblyName.Name} v{executingAssemblyName.Version}";
@@ -605,6 +608,14 @@ namespace MicSwitch.MainWindow.ViewModels
             get => suppressHotkey;
             set => this.RaiseAndSetIfChanged(ref suppressHotkey, value);
         }
+        
+        public CommandWrapper AddSoundCommand { get; }
+        
+        public string LastOpenedDirectory
+        {
+            get => lastOpenedDirectory;
+            set => RaiseAndSetIfChanged(ref lastOpenedDirectory, value);
+        }
 
         public TwoStateNotification AudioNotification
         {
@@ -627,6 +638,32 @@ namespace MicSwitch.MainWindow.ViewModels
         private async Task OpenAppDataDirectory()
         {
             await Task.Run(() => Process.Start(ExplorerExecutablePath, appArguments.AppDataDirectory));
+        }
+        
+        private void AddSoundCommandExecuted()
+        {
+            Log.Info($"Showing OpenFileDialog to user");
+
+            var op = new OpenFileDialog
+            {
+                Title = "Select an image", 
+                InitialDirectory = !string.IsNullOrEmpty(lastOpenedDirectory) && Directory.Exists(lastOpenedDirectory) 
+                    ? lastOpenedDirectory
+                    : Environment.GetFolderPath(Environment.SpecialFolder.CommonMusic),
+                CheckPathExists = true,
+                Multiselect = false,
+                Filter = "All supported sound files|*.wav;*.mp3|All files|*.*"
+            };
+
+            if (op.ShowDialog() != true)
+            {
+                return;
+            }
+
+            Log.Debug($"Adding notification {op.FileName}");
+            LastOpenedDirectory = Path.GetDirectoryName(op.FileName);
+            var notification = notificationsManager.AddFromFile(new FileInfo(op.FileName));
+            Log.Debug($"Added notification {notification}, list of notifications: {notificationsManager.Notifications.JoinStrings(", ")}");
         }
     }
 }
