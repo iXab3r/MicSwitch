@@ -15,7 +15,7 @@ There are dozens of different audio chat apps like Discord, TeamSpeak, Ventrilo,
 MicSwitch allows you to mute/unmute your system microphone using a predefined system-wide hotkey which will affect any program that uses microphone (no more heavy breathing during Skype conferences, hooray!)
 Also it supports configurable mute/unmute sounds(similar to TeamSpeak/Ventrilo) and a configurable overlay with scaling/transparency support. All these features allow you to seamlessly switch between chat apps and use THE SAME input system with overlay and notifications support.
 
-# Features / Bugfixes priority (click to vote)
+# Features / Bugfixes priority (click to vote or post feature/bug request)
 [![Requests](https://feathub.com/iXab3r/MicSwitch?format=svg)](https://feathub.com/iXab3r/MicSwitch)
 
 # Prerequisites
