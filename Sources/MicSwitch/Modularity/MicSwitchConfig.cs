@@ -8,7 +8,7 @@ namespace MicSwitch.Modularity
 {
     internal sealed class MicSwitchConfig : IPoeEyeConfigVersioned, IOverlayConfig
     {
-        public static readonly string DiscordInviteLink = @"https://discord.gg/pFHHebM";
+        public static readonly string DiscordInviteLink = @"https://discord.gg/BExRm22";
         
         public bool? IsPushToTalkMode { get; set; }
 
