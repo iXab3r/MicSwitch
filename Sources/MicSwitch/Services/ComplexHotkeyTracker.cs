@@ -71,7 +71,7 @@ namespace MicSwitch.Services
             trackers.Add(hotkeyAlt);
 
             configProvider.WhenChanged
-                .Subscribe(
+                .SubscribeSafe(
                     () =>
                     {
                         var actualConfig = configProvider.ActualConfig;
@@ -82,11 +82,11 @@ namespace MicSwitch.Services
                             ? HotkeyMode.Hold
                             : HotkeyMode.Click;
                         hotkey.SuppressKey = hotkeyAlt.SuppressKey = actualConfig.SuppressHotkey;
-                    })
+                    }, Log.HandleUiException)
                 .AddTo(Anchors);
 
             Observable.CombineLatest(trackers.Select(x => x.WhenAnyValue(y => y.IsActive)))
-                .Subscribe(x => IsActive = x.Any(y => y == true))
+                .SubscribeSafe(x => IsActive = x.Any(y => y == true), Log.HandleUiException)
                 .AddTo(Anchors);
 
             try

@@ -12,9 +12,10 @@ namespace MicSwitch.Services
 {
     internal sealed class MultimediaMicrophoneController : DisposableReactiveObject, IMicrophoneControllerEx
     {
+        private static readonly ILog Log = LogManager.GetLogger(typeof(MultimediaMicrophoneController));
+
         private readonly IConfigProvider<MicSwitchConfig> configProvider;
         private readonly IMicrophoneProvider microphoneProvider;
-        private static readonly ILog Log = LogManager.GetLogger(typeof(MultimediaMicrophoneController));
         private static readonly TimeSpan SamplingInterval = TimeSpan.FromMilliseconds(50);
         private MMDevice mixerControl;
         private MicrophoneLineData lineId;
@@ -27,7 +28,7 @@ namespace MicSwitch.Services
             this.microphoneProvider = microphoneProvider;
             this.WhenAnyValue(x => x.LineId)
                 .Where(x => !x.IsEmpty)
-                .Subscribe(InitializeLine)
+                .SubscribeSafe(InitializeLine, Log.HandleUiException)
                 .AddTo(Anchors);
 
             this.WhenAnyValue(x => x.MixerControl)
@@ -70,7 +71,7 @@ namespace MicSwitch.Services
                         Log.Debug($"[#{LineId}] Volume notification: {evt.DumpToTextRaw()}");
                     }
                 })
-                .Subscribe(Update, Log.HandleException)
+                .SubscribeSafe(Update, Log.HandleException)
                 .AddTo(Anchors);
         }
 

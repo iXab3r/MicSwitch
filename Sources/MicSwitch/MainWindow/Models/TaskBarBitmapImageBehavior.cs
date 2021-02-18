@@ -2,16 +2,21 @@ using System;
 using System.Drawing;
 using System.IO;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Windows;
 using System.Windows.Interactivity;
 using System.Windows.Media.Imaging;
 using Hardcodet.Wpf.TaskbarNotification;
+using log4net;
+using PoeShared;
 using PoeShared.Scaffolding;
 
 namespace MicSwitch.MainWindow.Models
 {
     internal class TaskBarBitmapImageBehavior : Behavior<TaskbarIcon>
     {
+        private static readonly ILog Log = LogManager.GetLogger(typeof(TaskBarBitmapImageBehavior));
+
         public static readonly DependencyProperty ImageProperty = DependencyProperty.Register(
             "Image", typeof(BitmapSource), typeof(TaskBarBitmapImageBehavior), new PropertyMetadata(default(BitmapSource)));
 
@@ -30,7 +35,7 @@ namespace MicSwitch.MainWindow.Models
             attachmentAnchors.Disposable =
                 this.Observe(ImageProperty)
                     .Select(() => Image)
-                    .Subscribe(HandleImageChange);
+                    .SubscribeSafe(HandleImageChange, Log.HandleUiException);
         }
 
         private void HandleImageChange(BitmapSource source)

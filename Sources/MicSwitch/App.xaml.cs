@@ -198,7 +198,7 @@ namespace MicSwitch
 
             var logFileConfigPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "log4net.config");
             SharedLog.Instance.LoadLogConfiguration(new FileInfo(logFileConfigPath));
-            SharedLog.Instance.Errors.Subscribe(x => ReportCrash(x)).AddTo(Anchors);
+            SharedLog.Instance.Errors.SubscribeSafe(x => ReportCrash(x), Log.HandleUiException).AddTo(Anchors);
         }
 
         protected override void OnStartup(StartupEventArgs e)

@@ -3,12 +3,16 @@ using System.Linq;
 using System.Reactive.Linq;
 using DynamicData.Binding;
 using DynamicData;
+using log4net;
+using PoeShared;
 using PoeShared.Scaffolding;
 
 namespace MicSwitch.Services
 {
     internal sealed class AllMicrophonesController : DisposableReactiveObject, IMicrophoneController
     {
+        private static readonly ILog Log = LogManager.GetLogger(typeof(AllMicrophonesController));
+
         private readonly ReadOnlyObservableCollection<IMicrophoneController> microphones;
         private MicrophoneLineData lineId;
 
@@ -21,14 +25,14 @@ namespace MicSwitch.Services
                 .ToObservableChangeSet()
                 .WhenPropertyChanged(x => x.Mute)
                 .StartWithDefault()
-                .Subscribe(() => RaisePropertyChanged(nameof(Mute)))
+                .SubscribeSafe(() => RaisePropertyChanged(nameof(Mute)), Log.HandleUiException)
                 .AddTo(Anchors);
             
             microphones
                 .ToObservableChangeSet()
                 .WhenPropertyChanged(x => x.VolumePercent)
                 .StartWithDefault()
-                .Subscribe(() => RaisePropertyChanged(nameof(VolumePercent)))
+                .SubscribeSafe(() => RaisePropertyChanged(nameof(VolumePercent)), Log.HandleUiException)
                 .AddTo(Anchors);
         }
 

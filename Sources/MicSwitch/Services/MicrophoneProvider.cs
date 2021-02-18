@@ -36,7 +36,7 @@ namespace MicSwitch.Services
             microphoneLines
                 .Connect()
                 .Bind(out var microphones)
-                .Subscribe()
+                .SubscribeSafe(Log.HandleUiException)
                 .AddTo(Anchors);
             Microphones = microphones;
 
@@ -52,7 +52,7 @@ namespace MicSwitch.Services
                     Log.Debug($"Successfully subscribed to Notifications using {deviceEnumerator}");
                 })
                 .RetryWithDelay(RetryTimeout)
-                .Subscribe()
+                .SubscribeSafe(Log.HandleUiException)
                 .AddTo(Anchors);
 
             Observable.Merge(
@@ -63,7 +63,7 @@ namespace MicSwitch.Services
                 .Throttle(ThrottlingTimeout)
                 .Select(x => EnumerateLines())
                 .DistinctUntilChanged(x => x.DumpToText())
-                .Subscribe(newLines =>
+                .SubscribeSafe(newLines =>
                 {
                     Log.Debug($"Microphone lines list changed:\n\tCurrent lines list:\n\t\t{microphoneLines.Items.DumpToTable("\n\t\t")}\n\tNew lines list:\n\t\t{newLines.DumpToTable("\n\t\t")}");
                     var linesToAdd = newLines.Except(microphoneLines.Items).ToArray();

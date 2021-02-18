@@ -109,16 +109,13 @@ namespace MicSwitch.MainWindow.ViewModels
             Observable.Merge(
                     AudioSelectorWhenMuted.ObservableForProperty(x => x.SelectedValue, skipInitial: true),
                     AudioSelectorWhenUnmuted.ObservableForProperty(x => x.SelectedValue, skipInitial: true))
-                .Subscribe(() => this.RaisePropertyChanged(nameof(AudioNotification)), Log.HandleException)
-                .AddTo(Anchors);
-
-            configProvider.WhenChanged
-                .Subscribe()
+                .ObserveOn(uiScheduler)
+                .SubscribeSafe(() => this.RaisePropertyChanged(nameof(AudioNotification)), Log.HandleException)
                 .AddTo(Anchors);
 
             configProvider.ListenTo(x => x.Notification)
                 .ObserveOn(uiScheduler)
-                .Subscribe(cfg =>
+                .SubscribeSafe(cfg =>
                 {
                     Log.Debug($"Applying new notification configuration: {cfg.DumpToTextRaw()} (current: {AudioNotification.DumpToTextRaw()})");
                     AudioNotification = cfg;
@@ -127,7 +124,7 @@ namespace MicSwitch.MainWindow.ViewModels
             
             configProvider.ListenTo(x => x.MuteMode)
                 .ObserveOn(uiScheduler)
-                .Subscribe(x =>
+                .SubscribeSafe(x =>
                 {
                     Log.Debug($"Mute mode loaded from config: {x}");
                     MuteMode = x;
@@ -135,7 +132,8 @@ namespace MicSwitch.MainWindow.ViewModels
                 .AddTo(Anchors);
 
             this.WhenAnyValue(x => x.MuteMode)
-                .Subscribe(x =>
+                .ObserveOn(uiScheduler)
+                .SubscribeSafe(x =>
                 {
                     if (x == MuteMode.PushToTalk)
                     {
@@ -146,13 +144,13 @@ namespace MicSwitch.MainWindow.ViewModels
                         MuteMicrophoneCommand.Execute(false);
                         Log.Debug($"{nameof(MuteMode.PushToMute)} mute mode is enabled, muting microphone");
                     }
-                })
+                }, Log.HandleUiException)
                 .AddTo(Anchors);
             
             configProvider.ListenTo(x => x.IsPushToTalkMode)
                 .Where(x => x == true)
                 .ObserveOn(uiScheduler)
-                .Subscribe(x =>
+                .SubscribeSafe(x =>
                 {
                     //FIXME This whole block is for backward-compatibility reasons and should be removed when possible
                     MuteMode = MuteMode.PushToTalk;
@@ -161,17 +159,17 @@ namespace MicSwitch.MainWindow.ViewModels
             
             configProvider.ListenTo(x => x.SuppressHotkey)
                 .ObserveOn(uiScheduler)
-                .Subscribe(x => SuppressHotkey = x, Log.HandleException)
+                .SubscribeSafe(x => SuppressHotkey = x, Log.HandleException)
                 .AddTo(Anchors);
             
             configProvider.ListenTo(x => x.MinimizeOnClose)
                 .ObserveOn(uiScheduler)
-                .Subscribe(x => MinimizeOnClose = x, Log.HandleException)
+                .SubscribeSafe(x => MinimizeOnClose = x, Log.HandleException)
                 .AddTo(Anchors);
             
             configProvider.ListenTo(x => x.VolumeControlEnabled)
                 .ObserveOn(uiScheduler)
-                .Subscribe(x => MicrophoneVolumeControlEnabled = x, Log.HandleException)
+                .SubscribeSafe(x => MicrophoneVolumeControlEnabled = x, Log.HandleException)
                 .AddTo(Anchors);
 
             Observable.Merge(configProvider.ListenTo(x => x.MicrophoneHotkey), configProvider.ListenTo(x => x.MicrophoneHotkeyAlt))
@@ -181,7 +179,7 @@ namespace MicSwitch.MainWindow.ViewModels
                     HotkeyAlt = (HotkeyGesture)new HotkeyConverter().ConvertFrom(configProvider.ActualConfig.MicrophoneHotkeyAlt ?? string.Empty), 
                 })
                 .ObserveOn(uiScheduler)
-                .Subscribe(cfg =>
+                .SubscribeSafe(cfg =>
                 {
                     Log.Debug($"Setting new hotkeys configuration: {cfg.DumpToTextRaw()} (current: {hotkey}, alt: {hotkeyAlt})");
                     Hotkey = cfg.Hotkey;
@@ -200,7 +198,7 @@ namespace MicSwitch.MainWindow.ViewModels
                 .ToObservableChangeSet()
                 .ObserveOn(uiScheduler)
                 .Bind(out var microphones)
-                .Subscribe()
+                .SubscribeSafe(Log.HandleUiException)
                 .AddTo(Anchors);
             Microphones = microphones;
 
@@ -208,7 +206,7 @@ namespace MicSwitch.MainWindow.ViewModels
                 .DistinctUntilChanged()
                 .Where(x => !MicrophoneLine.IsEmpty)
                 .Skip(1) // skip initial setup
-                .Subscribe(x =>
+                .SubscribeSafe(x =>
                 {
                     var cfg = configProvider.ActualConfig.Notification;
                     var notificationToPlay = x.Value ? cfg.On : cfg.Off;
@@ -219,7 +217,7 @@ namespace MicSwitch.MainWindow.ViewModels
 
             this.WhenAnyValue(x => x.MicrophoneLine)
                 .DistinctUntilChanged()
-                .Subscribe(x => microphoneController.LineId = x, Log.HandleUiException)
+                .SubscribeSafe(x => microphoneController.LineId = x, Log.HandleUiException)
                 .AddTo(Anchors);
 
             Observable.Merge(
@@ -227,7 +225,7 @@ namespace MicSwitch.MainWindow.ViewModels
                     Microphones.ToObservableChangeSet().ToUnit())
                 .Select(_ => configProvider.ActualConfig.MicrophoneLineId)
                 .ObserveOn(uiScheduler)
-                .Subscribe(configLineId =>
+                .SubscribeSafe(configLineId =>
                 {
                     Log.Debug($"Microphone line configuration changed, lineId: {configLineId}, known lines: {Microphones.DumpToTextRaw()}");
 
@@ -246,7 +244,7 @@ namespace MicSwitch.MainWindow.ViewModels
                 .WhenAnyValue(x => x.IsActive)
                 .Skip(1)
                 .ObserveOn(uiScheduler)
-                .Subscribe(async isActive =>
+                .SubscribeSafe(async isActive =>
                 {
                     Log.Debug($"Handling hotkey press (isActive: {isActive}), mute mode: {muteMode}");
                     switch (muteMode)
@@ -288,7 +286,7 @@ namespace MicSwitch.MainWindow.ViewModels
                 });
             
             this.WhenAnyValue(x => x.WindowState)
-                .Subscribe(x => ShowInTaskbar = x != WindowState.Minimized, Log.HandleUiException)
+                .SubscribeSafe(x => ShowInTaskbar = x != WindowState.Minimized, Log.HandleUiException)
                 .AddTo(Anchors);
 
             ShowAppCommand = CommandWrapper.Create(
@@ -328,7 +326,7 @@ namespace MicSwitch.MainWindow.ViewModels
                 .Switch()
                 .Take(1)
                 .ObserveOn(uiScheduler)
-                .Subscribe(
+                .SubscribeSafe(
                     x =>
                     {
                         if (x)
@@ -349,7 +347,7 @@ namespace MicSwitch.MainWindow.ViewModels
 
             viewController
                 .WhenClosing
-                .Subscribe(x => HandleWindowClosing(viewController, x))
+                .SubscribeSafe(x => HandleWindowClosing(viewController, x), Log.HandleUiException)
                 .AddTo(Anchors);
 
             // config processing
@@ -365,7 +363,7 @@ namespace MicSwitch.MainWindow.ViewModels
                     this.ObservableForProperty(x => x.StartMinimized, skipInitial: true).ToUnit())
                 .Throttle(ConfigThrottlingTimeout)
                 .ObserveOn(uiScheduler)
-                .Subscribe(() =>
+                .SubscribeSafe(() =>
                 {
                     var config = configProvider.ActualConfig.CloneJson();
                     config.IsPushToTalkMode = null;
@@ -382,7 +380,7 @@ namespace MicSwitch.MainWindow.ViewModels
                 .AddTo(Anchors);
 
             viewController.WhenLoaded
-                .Subscribe(() =>
+                .SubscribeSafe(() =>
                 {
                     Log.Debug($"Main window loaded - loading overlay, current process({CurrentProcess.ProcessName} 0x{CurrentProcess.Id:x8}) main window: {CurrentProcess.MainWindowHandle} ({CurrentProcess.MainWindowTitle})");
                     overlayWindowController.RegisterChild(overlay);

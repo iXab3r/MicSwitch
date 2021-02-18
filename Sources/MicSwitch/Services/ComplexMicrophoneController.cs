@@ -41,15 +41,15 @@ namespace MicSwitch.Services
             this.WhenAnyValue(x => x.LineId)
                 .Select(x => microphones.Lookup(x))
                 .Select(x => x.HasValue ? x.Value : allLinesController)
-                .Subscribe(x => ActiveController = x, Log.HandleUiException)
+                .SubscribeSafe(x => ActiveController = x, Log.HandleUiException)
                 .AddTo(Anchors);
 
             this.WhenAnyValue(x => x.ActiveController.VolumePercent)
-                .Subscribe(() => RaisePropertyChanged(nameof(VolumePercent)))
+                .SubscribeSafe(() => RaisePropertyChanged(nameof(VolumePercent)), Log.HandleUiException)
                 .AddTo(Anchors);
 
             this.WhenAnyValue(x => x.ActiveController.Mute)
-                .Subscribe(() => RaisePropertyChanged(nameof(Mute)))
+                .SubscribeSafe(() => RaisePropertyChanged(nameof(Mute)), Log.HandleUiException)
                 .AddTo(Anchors);
 
             this.WhenAnyValue(x => x.ActiveController)
@@ -62,7 +62,7 @@ namespace MicSwitch.Services
                     })
                     : Observable.Empty<IChangeSet>())
                 .Switch()
-                .Subscribe()
+                .SubscribeSafe(Log.HandleUiException)
                 .AddTo(Anchors);
 
             LineId = MicrophoneLineData.All;

@@ -53,21 +53,21 @@ namespace MicSwitch.MainWindow.ViewModels
                 .Select(x => configProvider.WhenChanged)
                 .Switch()
                 .ObserveOn(uiScheduler)
-                .Subscribe(ApplyConfig)
+                .SubscribeSafe(ApplyConfig, Log.HandleUiException)
                 .AddTo(Anchors);
 
             this.WhenAnyValue(x => x.IsLocked)
-                .Subscribe(isLocked => OverlayMode = isLocked ? OverlayMode.Transparent : OverlayMode.Layered)
+                .SubscribeSafe(isLocked => OverlayMode = isLocked ? OverlayMode.Transparent : OverlayMode.Layered, Log.HandleUiException)
                 .AddTo(Anchors);
 
             configProvider.ListenTo(x => x.MicrophoneLineId)
                 .ObserveOn(uiScheduler)
-                .Subscribe(lineId => { microphoneController.LineId = lineId; })
+                .SubscribeSafe(lineId => { microphoneController.LineId = lineId; }, Log.HandleUiException)
                 .AddTo(Anchors);
 
             this.RaiseWhenSourceValue(x => x.IsEnabled, overlayWindowController, x => x.IsEnabled).AddTo(Anchors);
             this.RaiseWhenSourceValue(x => x.Mute, microphoneController, x => x.Mute, uiScheduler).AddTo(Anchors);
-            this.RaiseWhenSourceValue(x => x.MicrophoneImage, imageProvider, x => x.ActiveMicrophoneImage, uiScheduler).AddTo(Anchors);
+            this.RaiseWhenSourceValue(x => x.MicrophoneImage, imageProvider, x => x.MicrophoneImage, uiScheduler).AddTo(Anchors);
             
             ToggleLockStateCommand = CommandWrapper.Create(
                 () =>
@@ -96,13 +96,13 @@ namespace MicSwitch.MainWindow.ViewModels
                 .SkipUntil(WhenLoaded)
                 .Throttle(ConfigThrottlingTimeout)
                 .ObserveOn(uiScheduler)
-                .Subscribe(SaveConfig, Log.HandleUiException)
+                .SubscribeSafe(SaveConfig, Log.HandleUiException)
                 .AddTo(Anchors);
 
             this.WhenAnyValue(x => x.IsEnabled)
                 .Where(x => !IsEnabled && !IsLocked)
                 .ObserveOn(uiScheduler)
-                .Subscribe(() => LockWindowCommand.Execute(null), Log.HandleUiException)
+                .SubscribeSafe(() => LockWindowCommand.Execute(null), Log.HandleUiException)
                 .AddTo(Anchors);
         }
 
@@ -114,7 +114,7 @@ namespace MicSwitch.MainWindow.ViewModels
 
         public bool Mute => microphoneController.Mute ?? false;
 
-        public ImageSource MicrophoneImage => imageProvider.ActiveMicrophoneImage;
+        public ImageSource MicrophoneImage => imageProvider.MicrophoneImage;
 
         public ICommand ToggleLockStateCommand { get; }
         

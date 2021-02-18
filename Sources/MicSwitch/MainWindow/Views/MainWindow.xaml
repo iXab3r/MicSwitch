@@ -31,6 +31,8 @@
                  Unloaded="OnUnloaded"
                  Closed="OnClosed"
                  Closing="OnClosing"
+                 UseLayoutRounding="True"
+                 RenderOptions.EdgeMode="Aliased"
                  Title="{Binding Title}" Width="450" SizeToContent="Height">
 
     <Window.Resources>
@@ -69,7 +71,7 @@
                 </tb:TaskbarIcon.ContextMenu>
 
                 <i:Interaction.Behaviors>
-                    <models:TaskBarBitmapImageBehavior Image="{Binding ImageProvider.ActiveMicrophoneImage}" />
+                    <models:TaskBarBitmapImageBehavior Image="{Binding ImageProvider.MicrophoneImage}" />
                 </i:Interaction.Behaviors>
             </tb:TaskbarIcon>
 
@@ -180,7 +182,7 @@
                 <Border DockPanel.Dock="Left" Margin="5,0,0,0" Width="22" Height="22" BorderBrush="{StaticResource SecondaryAccentBrush}" BorderThickness="1" Background="Transparent"
                         ToolTip="Click to select an icon">
                     <Image gif:ImageBehavior.RepeatBehavior="Forever"
-                           gif:ImageBehavior.AnimatedSource="{Binding ImageProvider.MicrophoneImage}" />
+                           gif:ImageBehavior.AnimatedSource="{Binding ImageProvider.StreamingMicrophoneImage}" />
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
                             <i:InvokeCommandAction Command="{Binding SelectMicrophoneIconCommand}" />
@@ -323,7 +325,7 @@
     </Grid>
 
     <Window.Icon>
-        <Binding Path="ImageProvider.ActiveMicrophoneImage" />
+        <Binding Path="ImageProvider.MicrophoneImage" />
     </Window.Icon>
 
     <mah:MetroWindow.LeftWindowCommands>

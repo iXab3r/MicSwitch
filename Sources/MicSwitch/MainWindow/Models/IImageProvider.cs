@@ -5,8 +5,8 @@ namespace MicSwitch.MainWindow.Models
 {
     internal interface IImageProvider : IDisposableReactiveObject
     {
-        ImageSource ActiveMicrophoneImage { get; }
         ImageSource MicrophoneImage { get; }
+        ImageSource StreamingMicrophoneImage { get; }
         ImageSource MutedMicrophoneImage { get; }
     }
 }
