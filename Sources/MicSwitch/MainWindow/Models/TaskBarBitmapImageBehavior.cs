@@ -34,7 +34,7 @@ namespace MicSwitch.MainWindow.Models
 
             attachmentAnchors.Disposable =
                 this.Observe(ImageProperty)
-                    .Select(() => Image)
+                    .Select(_ => Image)
                     .SubscribeSafe(HandleImageChange, Log.HandleUiException);
         }
 

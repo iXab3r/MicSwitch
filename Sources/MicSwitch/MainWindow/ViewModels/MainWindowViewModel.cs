@@ -198,7 +198,7 @@ namespace MicSwitch.MainWindow.ViewModels
                 .ToObservableChangeSet()
                 .ObserveOn(uiScheduler)
                 .Bind(out var microphones)
-                .SubscribeSafe(Log.HandleUiException)
+                .SubscribeToErrors(Log.HandleUiException)
                 .AddTo(Anchors);
             Microphones = microphones;
 
@@ -322,7 +322,7 @@ namespace MicSwitch.MainWindow.ViewModels
             viewController
                 .WhenLoaded
                 .Take(1)
-                .Select(() => configProvider.ListenTo(y => y.StartMinimized))
+                .Select(_ => configProvider.ListenTo(y => y.StartMinimized))
                 .Switch()
                 .Take(1)
                 .ObserveOn(uiScheduler)

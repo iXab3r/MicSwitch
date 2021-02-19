@@ -21,6 +21,7 @@ build/
 bld/
 [Bb]in/
 [Oo]bj/
+[Oo]ut/
 
 # Squirrel
 */app*/
@@ -222,3 +223,4 @@ Sources/PoeShared
 
 /Sources/PoeShared
 /Sources/PoeShared*
+*.binlog
