@@ -29,6 +29,7 @@ namespace MicSwitch.MainWindow.Models
         private ImageSource streamingMicrophoneImage;
         private ImageSource mutedMicrophoneImage;
         private ImageSource microphoneImage;
+        private Icon microphoneImageAsIcon;
 
         public ImageProvider(
             [NotNull] IMicrophoneControllerEx microphoneController,
@@ -36,22 +37,28 @@ namespace MicSwitch.MainWindow.Models
             [NotNull] [Dependency(WellKnownSchedulers.UI)] IScheduler uiScheduler)
         {
             this.microphoneController = microphoneController;
-            
-            configProvider.ListenTo(x => x.MicrophoneLineId)
-                .ObserveOn(uiScheduler)
-                .SubscribeSafe(lineId => microphoneController.LineId = lineId, Log.HandleUiException)
-                .AddTo(Anchors);
 
             Observable.Merge(
                     microphoneController.WhenAnyValue(x => x.Mute).ToUnit(),
                     this.WhenAnyValue(x => x.StreamingMicrophoneImage).ToUnit(),
-                    this.WhenAnyValue(x => x.MutedMicrophoneImage).ToUnit()
-                )
+                    this.WhenAnyValue(x => x.MutedMicrophoneImage).ToUnit())
                 .ObserveOn(uiScheduler)
                 .Select(x => microphoneController.Mute ?? false ? mutedMicrophoneImage : streamingMicrophoneImage)
                 .SubscribeSafe(x => MicrophoneImage = x, Log.HandleUiException)
                 .AddTo(Anchors);
 
+            this.WhenAnyValue(x => x.MicrophoneImage)
+                .Select(x => x as BitmapSource)
+                .SelectSafeOrDefault(x => x == null ? default : Icon.FromHandle(x.ToBitmap().GetHicon()))
+                .DisposePrevious()
+                .SubscribeSafe(x => MicrophoneImageAsIcon = x, Log.HandleUiException)
+                .AddTo(Anchors);
+            
+            configProvider.ListenTo(x => x.MicrophoneLineId)
+                .ObserveOn(uiScheduler)
+                .SubscribeSafe(lineId => microphoneController.LineId = lineId, Log.HandleUiException)
+                .AddTo(Anchors);
+            
             configProvider.ListenTo(x => x.MicrophoneIcon)
                 .ObserveOn(uiScheduler)
                 .SelectSafeOrDefault(x => x.ToBitmapImage())
@@ -81,6 +88,12 @@ namespace MicSwitch.MainWindow.Models
         {
             get => mutedMicrophoneImage;
             private set => RaiseAndSetIfChanged(ref mutedMicrophoneImage, value);
+        }
+
+        public Icon MicrophoneImageAsIcon
+        {
+            get => microphoneImageAsIcon;
+            private set => RaiseAndSetIfChanged(ref microphoneImageAsIcon, value);
         }
     }
 }

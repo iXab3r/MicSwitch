@@ -39,6 +39,7 @@ namespace MicSwitch.Services
                 .SubscribeToErrors(Log.HandleUiException)
                 .AddTo(Anchors);
             Microphones = microphones;
+            return;
 
             Observable
                 .Start(() =>
@@ -85,7 +86,7 @@ namespace MicSwitch.Services
 
         public ReadOnlyObservableCollection<MicrophoneLineData> Microphones { get; }
 
-        public IEnumerable<MicrophoneLineData> EnumerateLines()
+        private IEnumerable<MicrophoneLineData> EnumerateLines()
         {
             yield return MicrophoneLineData.All;
 

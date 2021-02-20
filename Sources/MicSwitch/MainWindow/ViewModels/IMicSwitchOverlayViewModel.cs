@@ -6,6 +6,6 @@ namespace MicSwitch.MainWindow.ViewModels
     {
         bool Mute { get; }
         
-        bool IsEnabled { get; }
+        bool IsEnabled { get; set; }
     }
 }

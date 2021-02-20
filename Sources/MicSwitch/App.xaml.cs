@@ -27,6 +27,7 @@ using PoeShared.Wpf.UI.ExceptionViewer;
 using ReactiveUI;
 using Unity;
 using Unity.Resolution;
+using Application = System.Windows.Forms.Application;
 
 namespace MicSwitch
 {
@@ -122,7 +123,6 @@ namespace MicSwitch
             }
         }
 
-
         private void SingleInstanceValidationRoutine(bool retryIfAbandoned)
         {
             var mutexId = $"MicSwitch{(appArguments.IsDebugMode ? "DEBUG" : "RELEASE")}{{567EBFFF-E391-4B38-AC85-469978EB37C4}}";
@@ -199,6 +199,8 @@ namespace MicSwitch
                 SharedLog.Instance.InitializeLogging("Release", appArguments.AppName);
             }
 
+            SharedLog.Instance.AddTraceAppender().AddTo(Anchors);
+
             var logFileConfigPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "log4net.config");
             SharedLog.Instance.LoadLogConfiguration(new FileInfo(logFileConfigPath));
             SharedLog.Instance.Errors.SubscribeSafe(x => ReportCrash(x), Log.HandleUiException).AddTo(Anchors);
@@ -212,7 +214,6 @@ namespace MicSwitch
             Log.Info($"Application startup detected, PID: {Process.GetCurrentProcess().Id}");
             
             SingleInstanceValidationRoutine(true);
-            
             sw.Step("Registering overlay");
             var micSwitchOverlayDependencyName = "MicSwitchOverlayAllWindows";
             container.RegisterOverlayController(micSwitchOverlayDependencyName, micSwitchOverlayDependencyName);
@@ -226,6 +227,7 @@ namespace MicSwitch
             var mainWindow = container.Resolve<MainWindow.Views.MainWindow>();
             Current.MainWindow = mainWindow;
             sw.Step($"Main window view initialized");
+            
             var viewController = new WindowViewController(mainWindow);
             var mainWindowViewModel = container.Resolve<IMainWindowViewModel>(
                 new DependencyOverride<IWindowViewController>(viewController),

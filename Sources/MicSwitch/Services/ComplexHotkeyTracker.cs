@@ -13,14 +13,15 @@ using log4net;
 using MicSwitch.MainWindow.Models;
 using MicSwitch.Modularity;
 using Mono.Collections.Generic;
+using PInvoke;
 using PoeShared;
 using PoeShared.Modularity;
 using PoeShared.Native;
 using PoeShared.Prism;
 using PoeShared.Scaffolding;
+using PoeShared.Scaffolding.WPF;
 using PoeShared.UI.Hotkeys;
 using ReactiveUI;
-using Unity;
 
 namespace MicSwitch.Services
 {
@@ -120,6 +121,8 @@ namespace MicSwitch.Services
                 Height = 0;
                 this.Loaded += OnLoaded;
                 Log.Info("HookForm created");
+
+                this.LogWndProc("HookForm");
             }
 
             private void OnLoaded(object sender, RoutedEventArgs e)

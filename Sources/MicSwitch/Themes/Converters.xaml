@@ -1,9 +1,19 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:converters="http://schemas.kent.boogaart.com/converters">
+                    xmlns:converters="http://schemas.kent.boogaart.com/converters"
+                    xmlns:eye="http://coderush.net/poeeye/"
+                    xmlns:models="clr-namespace:MicSwitch.MainWindow.Models">
 
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="pack://application:,,,/PoeShared.Wpf;component/Themes/Converters.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
+    <ObjectDataProvider x:Key="MuteModeDataProvider"
+                        MethodName="GetValuesAndDescriptions"
+                        ObjectType="eye:EnumHelper">
+        <ObjectDataProvider.MethodParameters>
+            <x:TypeExtension TypeName="models:MuteMode" />
+        </ObjectDataProvider.MethodParameters>
+    </ObjectDataProvider>
+    
 </ResourceDictionary>
