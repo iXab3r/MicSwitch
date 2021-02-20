@@ -39,7 +39,6 @@ namespace MicSwitch.Services
                 .SubscribeToErrors(Log.HandleUiException)
                 .AddTo(Anchors);
             Microphones = microphones;
-            return;
 
             Observable
                 .Start(() =>
