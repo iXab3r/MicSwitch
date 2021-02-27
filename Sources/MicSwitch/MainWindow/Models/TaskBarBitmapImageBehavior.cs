@@ -17,15 +17,15 @@ namespace MicSwitch.MainWindow.Models
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(TaskBarBitmapImageBehavior));
 
-        public static readonly DependencyProperty ImageProperty = DependencyProperty.Register(
-            "Image", typeof(BitmapSource), typeof(TaskBarBitmapImageBehavior), new PropertyMetadata(default(BitmapSource)));
+        public static readonly DependencyProperty IconProperty = DependencyProperty.Register(
+            "Icon", typeof(Icon), typeof(TaskBarBitmapImageBehavior), new PropertyMetadata(default(Icon)));
 
         private readonly SerialDisposable attachmentAnchors = new SerialDisposable();
 
-        public BitmapSource Image
+        public Icon Icon
         {
-            get => (BitmapSource) GetValue(ImageProperty);
-            set => SetValue(ImageProperty, value);
+            get => (Icon) GetValue(IconProperty);
+            set => SetValue(IconProperty, value);
         }
 
         protected override void OnAttached()
@@ -33,22 +33,14 @@ namespace MicSwitch.MainWindow.Models
             base.OnAttached();
 
             attachmentAnchors.Disposable =
-                this.Observe(ImageProperty)
-                    .Select(() => Image)
+                this.Observe(IconProperty)
+                    .Select(_ => Icon)
                     .SubscribeSafe(HandleImageChange, Log.HandleUiException);
         }
 
-        private void HandleImageChange(BitmapSource source)
+        private void HandleImageChange(Icon source)
         {
-            if (source == null)
-            {
-                AssociatedObject.Icon = null;
-            }
-            else
-            {
-                var bitmap = source.ToBitmap();
-                AssociatedObject.Icon = Icon.FromHandle(bitmap.GetHicon());
-            }
+            AssociatedObject.Icon = source;
         }
 
         protected override void OnDetaching()

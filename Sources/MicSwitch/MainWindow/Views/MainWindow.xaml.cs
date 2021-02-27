@@ -5,17 +5,20 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Subjects;
 using System.Windows;
+using System.Windows.Interop;
 using log4net;
 using MicSwitch.MainWindow.Models;
 using MicSwitch.MainWindow.ViewModels;
 using MicSwitch.Prism;
 using MicSwitch.Services;
+using PInvoke;
 using PoeShared;
 using PoeShared.Modularity;
 using PoeShared.Native;
 using PoeShared.Native.Scaffolding;
 using PoeShared.Prism;
 using PoeShared.Scaffolding;
+using PoeShared.Scaffolding.WPF;
 using PoeShared.Squirrel.Prism;
 using PoeShared.Squirrel.Updater;
 using PoeShared.Wpf.Scaffolding;
@@ -36,6 +39,8 @@ namespace MicSwitch.MainWindow.Views
             using var sw = new BenchmarkTimer("MainWindow", Log);
             Log.Debug($"Initializing MainWindow for process {appArguments.ProcessId}");
             InitializeComponent();
+
+            this.LogWndProc("MainWindow");
             sw.Step($"BAML loaded");
         }
         

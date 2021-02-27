@@ -27,6 +27,7 @@ using PoeShared.Wpf.UI.ExceptionViewer;
 using ReactiveUI;
 using Unity;
 using Unity.Resolution;
+using Application = System.Windows.Forms.Application;
 
 namespace MicSwitch
 {
@@ -37,25 +38,37 @@ namespace MicSwitch
     {
         public readonly TimeSpan StartupTimeout = TimeSpan.FromSeconds(10);
         private readonly UnityContainer container = new UnityContainer();
+        private readonly IAppArguments appArguments;
 
         public App()
         {
             try
             {
                 var arguments = Environment.GetCommandLineArgs();
-                AppArguments.Instance.AppName = "MicSwitch";
 
-                if (!AppArguments.Parse(arguments))
+                InitializeContainer();
+                appArguments = container.Resolve<IAppArguments>();
+              
+                if (!appArguments.Parse(arguments))
                 {
-                    SharedLog.Instance.InitializeLogging("Startup", AppArguments.Instance.AppName);
+                    SharedLog.Instance.InitializeLogging("Startup", appArguments.AppName);
                     throw new ApplicationException($"Failed to parse command line args: {string.Join(" ", arguments)}");
                 }
-                InitializeContainer();
+                
+                if (appArguments.IsDebugMode)
+                {
+                    container.RegisterType<IConfigProvider, PoeEyeConfigProviderInMemory>();
+                }
+                else
+                {
+                    container.RegisterType<IConfigProvider, ConfigProviderFromFile>();
+                }
+                
                 InitializeLogging();
 
                 Log.Debug($"Arguments: {arguments.DumpToText()}");
                 Log.Debug($"ProcessID: {Process.GetCurrentProcess().Id}");
-                Log.Debug($"Parsed args: {AppArguments.Instance}");
+                Log.Debug($"Parsed args: {appArguments}");
                 Log.Debug($"Culture: {Thread.CurrentThread.CurrentCulture}, UICulture: {Thread.CurrentThread.CurrentUICulture}");
                 
                 Log.Debug($"UI Scheduler: {RxApp.MainThreadScheduler}");
@@ -78,15 +91,6 @@ namespace MicSwitch
         
         private void InitializeContainer()
         {
-            if (AppArguments.Instance.IsDebugMode)
-            {
-                container.RegisterType<IConfigProvider, PoeEyeConfigProviderInMemory>();
-            }
-            else
-            {
-                container.RegisterType<IConfigProvider, ConfigProviderFromFile>();
-            }
-
             container.AddNewExtension<Diagnostic>();
             container.AddNewExtension<CommonRegistrations>();
             container.AddNewExtension<NativeRegistrations>();
@@ -119,10 +123,9 @@ namespace MicSwitch
             }
         }
 
-
         private void SingleInstanceValidationRoutine(bool retryIfAbandoned)
         {
-            var mutexId = $"MicSwitch{(AppArguments.Instance.IsDebugMode ? "DEBUG" : "RELEASE")}{{567EBFFF-E391-4B38-AC85-469978EB37C4}}";
+            var mutexId = $"MicSwitch{(appArguments.IsDebugMode ? "DEBUG" : "RELEASE")}{{567EBFFF-E391-4B38-AC85-469978EB37C4}}";
             Log.Debug($"Acquiring mutex {mutexId} (retryIfAbandoned: {retryIfAbandoned})...");
             try
             {
@@ -187,14 +190,16 @@ namespace MicSwitch
             Dispatcher.CurrentDispatcher.UnhandledException += DispatcherOnUnhandledException;
             TaskScheduler.UnobservedTaskException += TaskSchedulerOnUnobservedTaskException;
             RxApp.DefaultExceptionHandler = SharedLog.Instance.Errors;
-            if (AppArguments.Instance.IsDebugMode)
+            if (appArguments.IsDebugMode)
             {
-                SharedLog.Instance.InitializeLogging("Debug", AppArguments.Instance.AppName);
+                SharedLog.Instance.InitializeLogging("Debug", appArguments.AppName);
             }
             else
             {
-                SharedLog.Instance.InitializeLogging("Release", AppArguments.Instance.AppName);
+                SharedLog.Instance.InitializeLogging("Release", appArguments.AppName);
             }
+
+            SharedLog.Instance.AddTraceAppender().AddTo(Anchors);
 
             var logFileConfigPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "log4net.config");
             SharedLog.Instance.LoadLogConfiguration(new FileInfo(logFileConfigPath));
@@ -209,7 +214,6 @@ namespace MicSwitch
             Log.Info($"Application startup detected, PID: {Process.GetCurrentProcess().Id}");
             
             SingleInstanceValidationRoutine(true);
-            
             sw.Step("Registering overlay");
             var micSwitchOverlayDependencyName = "MicSwitchOverlayAllWindows";
             container.RegisterOverlayController(micSwitchOverlayDependencyName, micSwitchOverlayDependencyName);
@@ -223,6 +227,7 @@ namespace MicSwitch
             var mainWindow = container.Resolve<MainWindow.Views.MainWindow>();
             Current.MainWindow = mainWindow;
             sw.Step($"Main window view initialized");
+            
             var viewController = new WindowViewController(mainWindow);
             var mainWindowViewModel = container.Resolve<IMainWindowViewModel>(
                 new DependencyOverride<IWindowViewController>(viewController),

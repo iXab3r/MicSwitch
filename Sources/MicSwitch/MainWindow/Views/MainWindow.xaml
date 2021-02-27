@@ -33,27 +33,15 @@
                  Closing="OnClosing"
                  UseLayoutRounding="True"
                  RenderOptions.EdgeMode="Aliased"
-                 Title="{Binding Title}" Width="450" SizeToContent="Height">
+                 Title="{Binding Title}" Width="450" SizeToContent="Height"
+                 Icon="{Binding ImageProvider.MicrophoneImage}">
 
     <Window.Resources>
         <ResourceDictionary>
-
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/PoeShared.Wpf;component/Themes/Generic.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-
             <Style TargetType="{x:Type DockPanel}" x:Key="SettingsRowDockPanelStyle">
                 <Setter Property="DockPanel.Dock" Value="Top" />
                 <Setter Property="MinHeight" Value="24" />
             </Style>
-            
-            <ObjectDataProvider x:Key="MuteModeDataProvider"
-                                MethodName="GetValuesAndDescriptions"
-                                ObjectType="eye:EnumHelper">
-                <ObjectDataProvider.MethodParameters>
-                    <x:TypeExtension TypeName="models:MuteMode" />
-                </ObjectDataProvider.MethodParameters>
-            </ObjectDataProvider>
         </ResourceDictionary>
     </Window.Resources>
 
@@ -71,7 +59,7 @@
                 </tb:TaskbarIcon.ContextMenu>
 
                 <i:Interaction.Behaviors>
-                    <models:TaskBarBitmapImageBehavior Image="{Binding ImageProvider.MicrophoneImage}" />
+                    <models:TaskBarBitmapImageBehavior Icon="{Binding ImageProvider.MicrophoneImageAsIcon}" />
                 </i:Interaction.Behaviors>
             </tb:TaskbarIcon>
 
@@ -323,10 +311,6 @@
             </materialDesign:DrawerHost.BottomDrawerContent>
         </materialDesign:DrawerHost>
     </Grid>
-
-    <Window.Icon>
-        <Binding Path="ImageProvider.MicrophoneImage" />
-    </Window.Icon>
 
     <mah:MetroWindow.LeftWindowCommands>
         <mah:WindowCommands ShowSeparators="True">

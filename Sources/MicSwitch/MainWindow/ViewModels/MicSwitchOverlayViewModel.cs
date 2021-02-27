@@ -48,9 +48,11 @@ namespace MicSwitch.MainWindow.ViewModels
             TargetAspectRatio = MinSize.Width / MinSize.Height;
             IsUnlockable = true;
             Title = "MicSwitch";
+            IsEnabled = true;
+            
             WhenLoaded
                 .Take(1)
-                .Select(x => configProvider.WhenChanged)
+                .Select(_ => configProvider.WhenChanged)
                 .Switch()
                 .ObserveOn(uiScheduler)
                 .SubscribeSafe(ApplyConfig, Log.HandleUiException)
@@ -62,7 +64,7 @@ namespace MicSwitch.MainWindow.ViewModels
 
             configProvider.ListenTo(x => x.MicrophoneLineId)
                 .ObserveOn(uiScheduler)
-                .SubscribeSafe(lineId => { microphoneController.LineId = lineId; }, Log.HandleUiException)
+                .SubscribeSafe(lineId => microphoneController.LineId = lineId, Log.HandleUiException)
                 .AddTo(Anchors);
 
             this.RaiseWhenSourceValue(x => x.IsEnabled, overlayWindowController, x => x.IsEnabled).AddTo(Anchors);
@@ -87,10 +89,7 @@ namespace MicSwitch.MainWindow.ViewModels
                 });
             
             Observable.Merge(
-                    this.ObservableForProperty(x => x.Left, skipInitial: true).ToUnit(),
-                    this.ObservableForProperty(x => x.Top, skipInitial: true).ToUnit(),
-                    this.ObservableForProperty(x => x.Width, skipInitial: true).ToUnit(),
-                    this.ObservableForProperty(x => x.Height, skipInitial: true).ToUnit(),
+                    this.ObservableForProperty(x => x.NativeBounds, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.IsEnabled, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.IsLocked, skipInitial: true).ToUnit())
                 .SkipUntil(WhenLoaded)
@@ -103,6 +102,11 @@ namespace MicSwitch.MainWindow.ViewModels
                 .Where(x => !IsEnabled && !IsLocked)
                 .ObserveOn(uiScheduler)
                 .SubscribeSafe(() => LockWindowCommand.Execute(null), Log.HandleUiException)
+                .AddTo(Anchors);
+
+            this.WhenAnyValue(x => x.OverlayWindow)
+                .Where(x => x != null)
+                .SubscribeSafe(x => x.LogWndProc("MicOverlay").AddTo(Anchors), Log.HandleUiException)
                 .AddTo(Anchors);
         }
 
@@ -121,7 +125,6 @@ namespace MicSwitch.MainWindow.ViewModels
         private void ApplyConfig(MicSwitchConfig config)
         {
             base.ApplyConfig(config);
-
             IsEnabled = config.OverlayEnabled;
         }
 

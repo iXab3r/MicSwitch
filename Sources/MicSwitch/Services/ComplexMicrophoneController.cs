@@ -62,7 +62,7 @@ namespace MicSwitch.Services
                     })
                     : Observable.Empty<IChangeSet>())
                 .Switch()
-                .SubscribeSafe(Log.HandleUiException)
+                .SubscribeToErrors(Log.HandleUiException)
                 .AddTo(Anchors);
 
             LineId = MicrophoneLineData.All;

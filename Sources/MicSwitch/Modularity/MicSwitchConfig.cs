@@ -1,8 +1,10 @@
-﻿using System.Windows;
+﻿using System.Drawing;
 using MicSwitch.MainWindow.Models;
 using MicSwitch.Services;
 using PoeShared.Modularity;
 using PoeShared.Native;
+using Point = System.Windows.Point;
+using Size = System.Windows.Size;
 
 namespace MicSwitch.Modularity
 {
@@ -10,8 +12,6 @@ namespace MicSwitch.Modularity
     {
         public static readonly string DiscordInviteLink = @"https://discord.gg/BExRm22";
         
-        public bool? IsPushToTalkMode { get; set; }
-
         public MuteMode MuteMode { get; set; } = MuteMode.ToggleMute;
         
         public bool StartMinimized { get; set; }
@@ -37,6 +37,8 @@ namespace MicSwitch.Modularity
         public Point OverlayLocation { get; set; }
 
         public Size OverlaySize { get; set; }
+
+        public Rectangle OverlayBounds { get; set; }
 
         public float OverlayOpacity { get; set; }
 
