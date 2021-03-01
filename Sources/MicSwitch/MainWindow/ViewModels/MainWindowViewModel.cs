@@ -18,6 +18,7 @@ using DynamicData.Binding;
 using JetBrains.Annotations;
 using log4net;
 using Microsoft.Win32;
+using Microsoft.Xaml.Behaviors.Input;
 using MicSwitch.MainWindow.Models;
 using MicSwitch.Modularity;
 using MicSwitch.Services;
@@ -85,6 +86,7 @@ namespace MicSwitch.MainWindow.ViewModels
             IImageProvider imageProvider,
             IAudioNotificationsManager notificationsManager,
             IWindowViewController viewController,
+            IHotkeyConverter hotkeyConverter,
             [Dependency(WellKnownSchedulers.UI)] IScheduler uiScheduler)
         {
             Title = $"{(appArguments.IsDebugMode ? "[D]" : "")} {appArguments.AppName} v{appArguments.Version}";
@@ -273,10 +275,25 @@ namespace MicSwitch.MainWindow.ViewModels
                 .AddTo(Anchors);
 
             Observable.Merge(configProvider.ListenTo(x => x.MicrophoneHotkey), configProvider.ListenTo(x => x.MicrophoneHotkeyAlt))
-                .Select(x => new
+                .Select(x =>
                 {
-                    Hotkey = (HotkeyGesture)new HotkeyConverter().ConvertFrom(configProvider.ActualConfig.MicrophoneHotkey ?? string.Empty), 
-                    HotkeyAlt = (HotkeyGesture)new HotkeyConverter().ConvertFrom(configProvider.ActualConfig.MicrophoneHotkeyAlt ?? string.Empty), 
+                    try
+                    {
+                        return new
+                        {
+                            Hotkey = hotkeyConverter.ConvertFromString(configProvider.ActualConfig.MicrophoneHotkey ?? string.Empty),
+                            HotkeyAlt = hotkeyConverter.ConvertFromString(configProvider.ActualConfig.MicrophoneHotkeyAlt ?? string.Empty),
+                        };
+                    }
+                    catch (Exception e)
+                    {
+                        Log.Error($"Failed to parse config hotkeys: {new { configProvider.ActualConfig.MicrophoneHotkey, configProvider.ActualConfig.MicrophoneHotkeyAlt }}", e);
+                        return new
+                        {
+                            Hotkey = HotkeyGesture.Empty,
+                            HotkeyAlt = HotkeyGesture.Empty
+                        };
+                    }
                 })
                 .ObserveOn(uiScheduler)
                 .SubscribeSafe(cfg =>
@@ -328,8 +345,8 @@ namespace MicSwitch.MainWindow.ViewModels
                 {
                     var config = configProvider.ActualConfig.CloneJson();
                     config.MuteMode = muteMode;
-                    config.MicrophoneHotkey = (Hotkey ?? new HotkeyGesture()).ToString();
-                    config.MicrophoneHotkeyAlt = (HotkeyAlt ?? new HotkeyGesture()).ToString();
+                    config.MicrophoneHotkey = hotkeyConverter.ConvertToString(Hotkey);
+                    config.MicrophoneHotkeyAlt = hotkeyConverter.ConvertToString(HotkeyAlt);
                     config.MicrophoneLineId = MicrophoneLine;
                     config.Notification = AudioNotification;
                     config.SuppressHotkey = SuppressHotkey;
