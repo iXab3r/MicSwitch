@@ -125,18 +125,6 @@ namespace MicSwitch.MainWindow.ViewModels
                 .SubscribeToErrors(Log.HandleUiException)
                 .AddTo(Anchors);
             Microphones = microphones;
-
-            this.ObservableForProperty(x => x.MicrophoneMuted, skipInitial: true)
-                .DistinctUntilChanged()
-                .Where(x => !MicrophoneLine.IsEmpty)
-                .Skip(1) // skip initial setup
-                .SubscribeSafe(x =>
-                {
-                    var notificationToPlay = x.Value ? AudioNotification.On : AudioNotification.Off;
-                    Log.Debug($"Playing notification {notificationToPlay} (cfg: {AudioNotification.DumpToTextRaw()})");
-                    audioNotificationsManager.PlayNotification(notificationToPlay);
-                }, Log.HandleUiException)
-                .AddTo(Anchors);
             
             this.WhenAnyValue(x => x.MuteMode)
                 .ObserveOn(uiScheduler)
@@ -173,6 +161,18 @@ namespace MicSwitch.MainWindow.ViewModels
                     Off = AudioSelectorWhenMuted.SelectedValue
                 })
                 .ToPropertyHelper(this, x => x.AudioNotification)
+                .AddTo(Anchors);
+            
+            this.ObservableForProperty(x => x.MicrophoneMuted, skipInitial: true)
+                .DistinctUntilChanged()
+                .Where(x => !MicrophoneLine.IsEmpty)
+                .Skip(1) // skip initial setup
+                .SubscribeSafe(x =>
+                {
+                    var notificationToPlay = (x.Value ? AudioNotification.On : AudioNotification.Off) ?? default(AudioNotificationType).ToString();
+                    Log.Debug($"Playing notification {notificationToPlay} (cfg: {AudioNotification.DumpToTextRaw()})");
+                    audioNotificationsManager.PlayNotification(notificationToPlay);
+                }, Log.HandleUiException)
                 .AddTo(Anchors);
 
            hotkeyTracker
