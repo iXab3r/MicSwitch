@@ -8,7 +8,6 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <iconUrl>https://raw.githubusercontent.com/iXab3r/MicSwitch/5616417dcca560094c5dd1d75f619c165bf6b4d3/Sources/MicSwitch/Resources/microphoneEnabled.png</iconUrl>
     <projectUrl>https://github.com/iXab3r/MicSwitch</projectUrl>
-    <projectSourceUrl>https://github.com/iXab3r/MicSwitch</projectSourceUrl>
     <tags>microphone control mute unmute switch toggle overlay multi multiple all</tags>
     <description>MicSwitch is an Open Source audio tool designed for muting/unmuting your microphone via a predefined systemwide hotkey. It is usable across any program utilizing your microphone. Also, it supports configurable mute/unmute sounds(similar to TeamSpeak/Ventrilo) as well as a configurable overlay that allows for scaling and transparency manipulation. All the features included within MicSwitch will allow seamless switching between chat apps while utilizing the same input system with overlay along with notifications support.</description>
   </metadata>
