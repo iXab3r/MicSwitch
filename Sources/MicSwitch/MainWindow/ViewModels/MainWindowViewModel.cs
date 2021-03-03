@@ -166,7 +166,6 @@ namespace MicSwitch.MainWindow.ViewModels
             this.ObservableForProperty(x => x.MicrophoneMuted, skipInitial: true)
                 .DistinctUntilChanged()
                 .Where(x => !MicrophoneLine.IsEmpty)
-                .Skip(1) // skip initial setup
                 .SubscribeSafe(x =>
                 {
                     var notificationToPlay = (x.Value ? AudioNotification.On : AudioNotification.Off) ?? default(AudioNotificationType).ToString();
