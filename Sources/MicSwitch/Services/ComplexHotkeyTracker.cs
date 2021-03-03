@@ -76,8 +76,17 @@ namespace MicSwitch.Services
                     () =>
                     {
                         var actualConfig = configProvider.ActualConfig;
-                        hotkey.Hotkey = hotkeyConverter.ConvertFromString(actualConfig.MicrophoneHotkey);
-                        hotkeyAlt.Hotkey = hotkeyConverter.ConvertFromString(actualConfig.MicrophoneHotkeyAlt);
+                        try
+                        {
+                            hotkey.Hotkey = hotkeyConverter.ConvertFromString(actualConfig.MicrophoneHotkey);
+                            hotkeyAlt.Hotkey = hotkeyConverter.ConvertFromString(actualConfig.MicrophoneHotkeyAlt);
+                        }
+                        catch (Exception e)
+                        {
+                            Log.Error($"Failed to parse config hotkeys: {new { configProvider.ActualConfig.MicrophoneHotkey, configProvider.ActualConfig.MicrophoneHotkeyAlt }}", e);
+                            hotkey.Hotkey = HotkeyGesture.Empty;
+                            hotkeyAlt.Hotkey = HotkeyGesture.Empty;
+                        }
 
                         hotkey.HotkeyMode = hotkeyAlt.HotkeyMode = actualConfig.MuteMode == MuteMode.PushToMute || actualConfig.MuteMode == MuteMode.PushToTalk
                             ? HotkeyMode.Hold
