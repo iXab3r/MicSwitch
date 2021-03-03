@@ -57,11 +57,11 @@ namespace MicSwitch
                 
                 if (appArguments.IsDebugMode)
                 {
-                    container.RegisterType<IConfigProvider, PoeEyeConfigProviderInMemory>();
+                    container.RegisterSingleton<IConfigProvider, PoeEyeConfigProviderInMemory>();
                 }
                 else
                 {
-                    container.RegisterType<IConfigProvider, ConfigProviderFromFile>();
+                    container.RegisterSingleton<IConfigProvider, ConfigProviderFromFile>();
                 }
                 
                 InitializeLogging();
@@ -97,7 +97,7 @@ namespace MicSwitch
             container.AddNewExtension<WpfCommonRegistrations>();
             container.AddNewExtension<UpdaterRegistrations>();
             
-            container.RegisterType<IMicrophoneControllerEx, ComplexMicrophoneController>();
+            container.RegisterSingleton<IMicrophoneControllerEx, ComplexMicrophoneController>();
             container.RegisterSingleton<IMicrophoneProvider, MicrophoneProvider>();
             container.RegisterSingleton<IMicSwitchOverlayViewModel, MicSwitchOverlayViewModel>();
             container.RegisterSingleton<IComplexHotkeyTracker, ComplexHotkeyTracker>();

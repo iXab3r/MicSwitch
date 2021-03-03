@@ -15,6 +15,8 @@
                  xmlns:models="clr-namespace:MicSwitch.MainWindow.Models"
                  xmlns:gif="http://wpfanimatedgif.codeplex.com"
                  xmlns:modularity="clr-namespace:MicSwitch.Modularity"
+                 xmlns:st="http://schemas.spicytaco.io/"
+                 xmlns:converters="http://schemas.kent.boogaart.com/converters"
                  mc:Ignorable="d"
                  d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel}"
                  WindowState="{Binding WindowState, Mode=TwoWay}"
@@ -33,14 +35,26 @@
                  Closing="OnClosing"
                  UseLayoutRounding="True"
                  RenderOptions.EdgeMode="Aliased"
-                 Title="{Binding Title}" Width="450" SizeToContent="Height"
+                 Title="{Binding Title}" Width="460" SizeToContent="Height"
                  Icon="{Binding ImageProvider.MicrophoneImage}">
 
     <Window.Resources>
         <ResourceDictionary>
-            <Style TargetType="{x:Type DockPanel}" x:Key="SettingsRowDockPanelStyle">
-                <Setter Property="DockPanel.Dock" Value="Top" />
-                <Setter Property="MinHeight" Value="24" />
+            <Style TargetType="{x:Type st:StackPanel}">
+                <Setter Property="Orientation" Value="Horizontal" />
+                <Setter Property="MarginBetweenChildren" Value="5" />
+            </Style>
+            <Style TargetType="{x:Type TextBlock}" x:Key="SettingsLabelStyle">
+                <Setter Property="TextAlignment" Value="Right" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="IsHitTestVisible" Value="True"/>
+            </Style>
+            <Style TargetType="{x:Type Image}">
+                <Style.Triggers>
+                    <Trigger Property="IsEnabled" Value="False">
+                        <Setter Property="Opacity" Value="0.66"></Setter>
+                    </Trigger>
+                </Style.Triggers>
             </Style>
         </ResourceDictionary>
     </Window.Resources>
@@ -63,247 +77,245 @@
                 </i:Interaction.Behaviors>
             </tb:TaskbarIcon>
 
-            <DockPanel Margin="0,5,0,0" Style="{StaticResource SettingsRowDockPanelStyle}">
-                <TextBlock DockPanel.Dock="Left" MinWidth="120"
-                           TextAlignment="Right"
-                           IsHitTestVisible="True"
-                           Text="Microphone:" />
-                <ComboBox DockPanel.Dock="Top" Margin="5,0,5,0"
-                          ItemsSource="{Binding Microphones}"
-                          SelectedItem="{Binding MicrophoneLine}"
-                          DisplayMemberPath="Name" />
-            </DockPanel>
-
-            <DockPanel Margin="0,5,0,0" Style="{StaticResource SettingsRowDockPanelStyle}">
-                <TextBlock DockPanel.Dock="Left" MinWidth="120"
-                           TextAlignment="Right"
-                           Text="Mute:" />
+            <st:AutoGrid Columns="120,*" ChildMargin="5" RowHeight="32">
+                <TextBlock  Style="{StaticResource SettingsLabelStyle}" st:AutoGrid.RowHeightOverride="40"
+                            Text="Microphone:" />
+                <st:StackPanel st:AutoGrid.RowHeightOverride="40">
+                    <ComboBox st:StackPanel.Fill="Fill"
+                              ItemsSource="{Binding Microphones}"
+                              SelectedItem="{Binding MicrophoneLine}"
+                              DisplayMemberPath="Name" />
+                </st:StackPanel>
                 
-                <ToggleButton
-                    ToolTip="Microphone mute is system-wide"
-                    DockPanel.Dock="Left" Margin="5,0,0,0" HorizontalAlignment="Left"
-                    Command="{Binding MuteMicrophoneCommand}"
-                    CommandParameter="{Binding IsChecked, RelativeSource={RelativeSource Self}}"
-                    IsChecked="{Binding MicrophoneMuted, Mode=OneWay}" />
-                <fa:FontAwesome Icon="Warning"
-                                Margin="5,0"
-                                Visibility="{Binding MuteMicrophoneCommand.Error, Converter={StaticResource NullToCollapsedConverter}}"
-                                Foreground="{StaticResource NegativeBrush}"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                ToolTip="{Binding MuteMicrophoneCommand.Error}"
-                                FontSize="18" />
-            </DockPanel>
-            
-            <DockPanel Margin="0,5,0,0" Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="False">
-                <TextBlock DockPanel.Dock="Left" MinWidth="120"
-                           TextAlignment="Right"
-                           Text="Volume:" />
-                
-                <ToggleButton
-                    ToolTip="If enabled application will set microphone(s) volume to specified value"
-                    DockPanel.Dock="Left" Margin="5,0,0,0" HorizontalAlignment="Left"
-                    IsChecked="{Binding MicrophoneVolumeControlEnabled}" />
-                
-                <Slider Width="180"
-                        IsEnabled="{Binding MicrophoneVolumeControlEnabled}"
-                        Visibility="{Binding MicrophoneVolumeControlEnabled, Converter={StaticResource TrueToVisibleFalseToCollapsedConverter}}"
-                        Value="{Binding MicrophoneVolume}"
-                        Minimum="0" Maximum="1"
-                        Margin="5,4,5,0"
-                        TickFrequency="0.1" />
-                
-                <TextBlock 
-                    MinWidth="45">
-                    <TextBlock.Text>
-                        <Binding Path="MicrophoneVolume" StringFormat="{}{0:F1}%">
-                            <Binding.Converter>
-                                <blue:MultiplyDoubleConverter MinValue="0"
-                                                              Factor="100"
-                                                              MaxValue="100" />
-                            </Binding.Converter>
-                        </Binding>
-                    </TextBlock.Text>
-                </TextBlock>
-                <TextBlock Style="{StaticResource WarningIconTextBlock}" Margin="2.5,0,0,0"
-                           Visibility="{Binding MicrophoneVolumeControlEnabled, Converter={StaticResource TrueToCollapsedFalseToVisibleConverter}}"
-                           ToolTip="May be inaccurate because Volume control is disabled" />
-            </DockPanel>
+                <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Mute:" />
+                <st:StackPanel>
+                    <ToggleButton
+                        ToolTip="Microphone mute is system-wide"
+                        HorizontalAlignment="Left"
+                        Command="{Binding MuteMicrophoneCommand}"
+                        CommandParameter="{Binding IsChecked, RelativeSource={RelativeSource Self}}"
+                        IsChecked="{Binding MicrophoneMuted, Mode=OneWay}" />
+                    <fa:FontAwesome Icon="Warning"
+                                    Margin="5,0"
+                                    Visibility="{Binding MuteMicrophoneCommand.Error, Converter={StaticResource NullToCollapsedConverter}}"
+                                    Foreground="{StaticResource NegativeBrush}"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    ToolTip="{Binding MuteMicrophoneCommand.Error}"
+                                    FontSize="18" />
+                </st:StackPanel>
 
-            <DockPanel Margin="0,5,0,0" Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="False">
-                <TextBlock DockPanel.Dock="Left" MinWidth="120" TextAlignment="Right" Text="Notification:" />
-                <TextBlock DockPanel.Dock="Left" Margin="5,0,0,0" Text="when muted" />
-                <ContentPresenter DockPanel.Dock="Left" Margin="5,0,0,0" Width="22" Height="22" Content="{Binding AudioSelectorWhenMuted}" />
-                <TextBlock DockPanel.Dock="Left" Margin="5,0,0,0" Text="when un-muted " />
-                <ContentPresenter Margin="5,0,0,0" DockPanel.Dock="Left" Width="22" Height="22" Content="{Binding AudioSelectorWhenUnmuted}" />
-                <ContentControl Content="{Binding AddSoundCommand}" Margin="5,0"
-                                MinWidth="90"
-                                eye:CommandWrapperHelper.Icon="&#xf115;"
-                                eye:CommandWrapperHelper.Text="Load..." />
-            </DockPanel>
+                <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Volume:" />
+                <st:StackPanel>
+                    <ToggleButton
+                        ToolTip="If enabled application will set microphone(s) volume to specified value"
+                        HorizontalAlignment="Left"
+                        IsChecked="{Binding MicrophoneVolumeControlEnabled}" />
 
-            <DockPanel Margin="0,5,0,0" Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="False">
-                <TextBlock DockPanel.Dock="Left" MinWidth="120"
-                           TextAlignment="Right"
-                           Text="Show overlay:" />
-                <ToggleButton
-                    DockPanel.Dock="Left" Margin="5,0,0,0" HorizontalAlignment="Left"
-                    IsChecked="{Binding Overlay.IsEnabled}" />
-            </DockPanel>
+                    <Slider Width="180"
+                            IsEnabled="{Binding MicrophoneVolumeControlEnabled}"
+                            Visibility="{Binding MicrophoneVolumeControlEnabled, Converter={StaticResource TrueToVisibleFalseToCollapsedConverter}}"
+                            Value="{Binding MicrophoneVolume}"
+                            Minimum="0" Maximum="1"
+                            Margin="5,4,5,0"
+                            TickFrequency="0.1" />
 
-            <DockPanel Margin="0,5,0,0" Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="False"
-                       Visibility="{Binding Overlay.IsEnabled, Converter={StaticResource TrueToVisibleFalseToCollapsedConverter}}">
-                <TextBlock DockPanel.Dock="Left" MinWidth="120" TextAlignment="Right" Text="Icon:" />
-                <TextBlock DockPanel.Dock="Left" Margin="5,0,0,0" Text="when muted" />
-                <Border DockPanel.Dock="Left" Margin="5,0,0,0" Width="22" Height="22" BorderBrush="{StaticResource SecondaryAccentBrush}" BorderThickness="1" Background="Transparent"
-                        ToolTip="Click to select an icon">
-                    <Image
-                        gif:ImageBehavior.RepeatBehavior="Forever"
-                        gif:ImageBehavior.AnimatedSource="{Binding ImageProvider.MutedMicrophoneImage}" />
-                    <i:Interaction.Triggers>
-                        <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
-                            <i:InvokeCommandAction Command="{Binding SelectMutedMicrophoneIconCommand}" />
-                        </i:EventTrigger>
-                    </i:Interaction.Triggers>
-                </Border>
-                <TextBlock DockPanel.Dock="Left" Margin="5,0,0,0" Text="when un-muted " />
-                <Border DockPanel.Dock="Left" Margin="5,0,0,0" Width="22" Height="22" BorderBrush="{StaticResource SecondaryAccentBrush}" BorderThickness="1" Background="Transparent"
-                        ToolTip="Click to select an icon">
-                    <Image gif:ImageBehavior.RepeatBehavior="Forever"
-                           gif:ImageBehavior.AnimatedSource="{Binding ImageProvider.StreamingMicrophoneImage}" />
-                    <i:Interaction.Triggers>
-                        <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
-                            <i:InvokeCommandAction Command="{Binding SelectMicrophoneIconCommand}" />
-                        </i:EventTrigger>
-                    </i:Interaction.Triggers>
-                </Border>
-                <ContentControl Content="{Binding ResetMicrophoneIconsCommand}"
-                                MinWidth="120"
-                                eye:CommandWrapperHelper.Icon="&#xf0e2;"
-                                eye:CommandWrapperHelper.Text="Reset icons" />
-            </DockPanel>
+                    <TextBlock
+                        MinWidth="45">
+                        <TextBlock.Text>
+                            <Binding Path="MicrophoneVolume" StringFormat="{}{0:F1}%">
+                                <Binding.Converter>
+                                    <blue:MultiplyDoubleConverter MinValue="0"
+                                                                  Factor="100"
+                                                                  MaxValue="100" />
+                                </Binding.Converter>
+                            </Binding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                    <TextBlock Style="{StaticResource WarningIconTextBlock}" Margin="2.5,0,0,0"
+                               Visibility="{Binding MicrophoneVolumeControlEnabled, Converter={StaticResource TrueToCollapsedFalseToVisibleConverter}}"
+                               ToolTip="May be inaccurate because Volume control is disabled" />
+                </st:StackPanel>
 
-            <DockPanel Margin="0,5,0,0" Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="True">
-                <TextBlock DockPanel.Dock="Left" MinWidth="120"
-                           TextAlignment="Right"
-                           Text="Mute mode:" />
-                <ComboBox  DockPanel.Dock="Left" Margin="5,0,10,0" 
-                           DisplayMemberPath="Description"
-                           SelectedValuePath="Value"
-                           SelectedValue="{Binding MuteMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                           ItemsSource="{Binding Source={StaticResource MuteModeDataProvider}}" />
-            </DockPanel>
+                <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Notification:" />
+                <st:StackPanel>
+                    <TextBlock Text="when muted" />
+                    <ContentPresenter Width="22" Height="22" Content="{Binding AudioSelectorWhenMuted}" />
+                    <TextBlock Text="when un-muted " />
+                    <ContentPresenter Width="22" Height="22" Content="{Binding AudioSelectorWhenUnmuted}" />
+                    <ContentControl Content="{Binding AddSoundCommand}" 
+                                    st:StackPanel.Fill="Fill"
+                                    MinWidth="90"
+                                    eye:CommandWrapperHelper.Icon="&#xf115;"
+                                    eye:CommandWrapperHelper.Text="Load..." />
+                </st:StackPanel>
 
-            <DockPanel Margin="0,5,0,0" Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="True">
-                <TextBlock DockPanel.Dock="Left" MinWidth="120"
-                           TextAlignment="Right"
-                           Text="Hotkey:" />
-                <Grid Margin="5,0,10,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <hotkeys:HotKeyBox Grid.Column="0" HotKey="{Binding Hotkey}" Background="Transparent" AcceptsTab="False" AcceptsReturn="False" AcceptsMouseKeys="True" />
-                    <TextBlock Grid.Column="1" Margin="10,0" DockPanel.Dock="Left" Text="or" FontWeight="Bold" />
-                    <hotkeys:HotKeyBox Grid.Column="2" HotKey="{Binding HotkeyAlt}" Background="Transparent" AcceptsTab="False" AcceptsReturn="False" AcceptsMouseKeys="True" />
-                </Grid>
-            </DockPanel>
+                <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Show overlay:" />
+                <st:StackPanel>
+                    <RadioButton
+                        VerticalContentAlignment="Center"
+                        IsChecked="{Binding Overlay.OverlayVisibilityMode, Converter={StaticResource EqualToTrueConverter}, ConverterParameter={x:Static models:OverlayVisibilityMode.Always}}"
+                        Content="Always" />
+                    <RadioButton
+                        VerticalContentAlignment="Center"
+                        IsChecked="{Binding Overlay.OverlayVisibilityMode, Converter={StaticResource EqualToTrueConverter}, ConverterParameter={x:Static models:OverlayVisibilityMode.WhenMuted}}"
+                        Content="When muted" />
+                    <RadioButton
+                        VerticalContentAlignment="Center"
+                        IsChecked="{Binding Overlay.OverlayVisibilityMode, Converter={StaticResource EqualToTrueConverter}, ConverterParameter={x:Static models:OverlayVisibilityMode.WhenUnmuted}}"
+                        Content="When un-muted" />
+                    <RadioButton
+                        VerticalContentAlignment="Center"
+                        IsChecked="{Binding Overlay.OverlayVisibilityMode, Converter={StaticResource EqualToTrueConverter}, ConverterParameter={x:Static models:OverlayVisibilityMode.Never}}"
+                        Content="Hide" />
+                </st:StackPanel>
 
-            <DockPanel Margin="0,5,0,0" Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="True">
-                <TextBlock MinWidth="120"
-                           TextAlignment="Right"
-                           Text="Suppress Hotkey:" />
-                <ToggleButton
-                    Margin="5,0,0,0" HorizontalAlignment="Left"
-                    ToolTip="If enabled other applications will not react to pressed hotkey. May not work for mouse buttons of some special keys"
-                    IsChecked="{Binding SuppressHotkey}" />
-            </DockPanel>
-            
-            <DockPanel Margin="0,5,0,0" Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="True">
-                <TextBlock DockPanel.Dock="Left" MinWidth="120"
-                           TextAlignment="Right"
-                           Text="Minimize on Close:" />
-                <ToggleButton
-                    DockPanel.Dock="Left" Margin="5,0,0,0" HorizontalAlignment="Left"
-                    ToolTip="If enabled application will minimize instead of close when X button is pressed. App still could be closed via taskbar icon"
-                    IsChecked="{Binding MinimizeOnClose}" />
-            </DockPanel>
+                <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Icon:"
+                           IsEnabled="{Binding ShowOverlaySettings}"/>
+                <st:StackPanel IsEnabled="{Binding ShowOverlaySettings}">
+                    <TextBlock Text="when muted" />
+                    <Border Width="22" Height="22" BorderBrush="{StaticResource SecondaryAccentBrush}" BorderThickness="1"
+                            Background="Transparent"
+                            ToolTip="Click to select an icon">
+                        <Image
+                            gif:ImageBehavior.RepeatBehavior="Forever"
+                            gif:ImageBehavior.AnimatedSource="{Binding ImageProvider.MutedMicrophoneImage}" />
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+                                <i:InvokeCommandAction Command="{Binding SelectMutedMicrophoneIconCommand}" />
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </Border>
+                    <TextBlock Text="when un-muted " />
+                    <Border Width="22" Height="22" BorderBrush="{StaticResource SecondaryAccentBrush}" BorderThickness="1"
+                            Background="Transparent"
+                            ToolTip="Click to select an icon">
+                        <Image gif:ImageBehavior.RepeatBehavior="Forever"
+                               gif:ImageBehavior.AnimatedSource="{Binding ImageProvider.StreamingMicrophoneImage}" />
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+                                <i:InvokeCommandAction Command="{Binding SelectMicrophoneIconCommand}" />
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </Border>
+                    <ContentControl Content="{Binding ResetMicrophoneIconsCommand}"
+                                    eye:CommandWrapperHelper.Icon="&#xf0e2;"
+                                    eye:CommandWrapperHelper.Text="Reset icons" />
+                </st:StackPanel>
 
-            <DockPanel Margin="0,5,0,0" Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="True">
-                <TextBlock DockPanel.Dock="Left" MinWidth="120"
-                           TextAlignment="Right"
-                           Text="Run at start:" />
-                <ToggleButton
-                    DockPanel.Dock="Left" Margin="5,0,0,0" HorizontalAlignment="Left"
-                    IsChecked="{Binding RunAtLogin, Mode=OneWay}"
-                    Command="{Binding RunAtLoginToggleCommand}"
-                    CommandParameter="{Binding IsChecked, RelativeSource={RelativeSource Self}}" />
-            </DockPanel>
+                <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Mute mode:" />
+                <st:StackPanel>
+                    <RadioButton
+                        VerticalContentAlignment="Center"
+                        ToolTip="Toggle Mute state on Hotkey press"
+                        IsChecked="{Binding MuteMode, Converter={StaticResource EqualToTrueConverter}, ConverterParameter={x:Static models:MuteMode.ToggleMute}}"
+                        Content="Toggle" />
+                    <RadioButton
+                        VerticalContentAlignment="Center"
+                        ToolTip="Unmute microphone while Hotkey is held"
+                        IsChecked="{Binding MuteMode, Converter={StaticResource EqualToTrueConverter}, ConverterParameter={x:Static models:MuteMode.PushToTalk}}"
+                        Content="Push-To-Talk" />
+                    <RadioButton
+                        VerticalContentAlignment="Center"
+                        ToolTip="Mute microphone while Hotkey is held"
+                        IsChecked="{Binding MuteMode, Converter={StaticResource EqualToTrueConverter}, ConverterParameter={x:Static models:MuteMode.PushToMute}}"
+                        Content="Push-To-Mute" />
+                </st:StackPanel>
 
-            <DockPanel Margin="0,5,0,0" Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="True">
-                <TextBlock DockPanel.Dock="Left" MinWidth="120"
-                           TextAlignment="Right"
-                           Text="Start Minimized:" />
-                <ToggleButton
-                    DockPanel.Dock="Left" Margin="5,0,0,0" HorizontalAlignment="Left"
-                    ToolTip="Minimize application window on startup"
-                    IsChecked="{Binding StartMinimized}" />
-            </DockPanel>
+                <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Hotkey:" />
+                <st:StackPanel>
+                    <hotkeys:HotKeyBox st:StackPanel.Fill="Fill" HotKey="{Binding Hotkey}" Background="Transparent" AcceptsTab="False" AcceptsReturn="False"
+                                       AcceptsMouseKeys="True" />
+                    <TextBlock Margin="10,0" Text="or" FontWeight="Bold" />
+                    <hotkeys:HotKeyBox st:StackPanel.Fill="Fill" HotKey="{Binding HotkeyAlt}" Background="Transparent" AcceptsTab="False" AcceptsReturn="False"
+                                       AcceptsMouseKeys="True" />
+                </st:StackPanel>
 
-            <DockPanel Margin="0,5,0,0" Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="True">
-                <TextBlock MinWidth="120"
-                           TextAlignment="Right"
-                           Text="Check for updates:" />
-                <ToggleButton
-                    Margin="5,0,0,0" HorizontalAlignment="Left"
-                    ToolTip="Periodically check for updates and report if new version is available"
-                    IsChecked="{Binding ApplicationUpdater.CheckForUpdates, Mode=TwoWay}" />
-                <TextBlock Margin="5,0,0,0" IsHitTestVisible="True">
-                    <Run Text="update source:" />
-                    <Hyperlink NavigateUri="{Binding ApplicationUpdater.UpdateSource.Uri}"
-                               Command="{Binding ApplicationUpdater.OpenUri}"
-                               CommandParameter="{Binding ApplicationUpdater.UpdateSource.Uri}"
-                               ToolTip="{Binding ApplicationUpdater.UpdateSource.Uri}">
-                        <TextBlock Text="{Binding ApplicationUpdater.UpdateSource.Description}" IsHitTestVisible="True"/>
-                    </Hyperlink>
-                </TextBlock>
-            </DockPanel>
-            
-            <DockPanel Margin="0,5,0,0" Style="{StaticResource SettingsRowDockPanelStyle}" LastChildFill="True">
-                <TextBlock MinWidth="120"
-                           TextAlignment="Right"
-                           Text="Contacts:" />
-                <TextBlock Margin="5,0,0,0" IsHitTestVisible="True">
-                    <Run Text="Xab3r via " />
-                    <Hyperlink NavigateUri="{Binding Source={x:Static modularity:MicSwitchConfig.DiscordInviteLink}}"
-                               Command="{Binding ApplicationUpdater.OpenUri}"
-                               CommandParameter="{x:Static modularity:MicSwitchConfig.DiscordInviteLink}"
-                               ToolTip="{x:Static modularity:MicSwitchConfig.DiscordInviteLink}">
-                        <TextBlock Text="Discord" IsHitTestVisible="True"/>
-                    </Hyperlink>
-                </TextBlock>
-            </DockPanel>
+                <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Suppress Hotkey:" />
+                <st:StackPanel>
+                    <ToggleButton
+                        HorizontalAlignment="Left"
+                        ToolTip="If enabled other applications will not react to pressed hotkey. May not work for mouse buttons of some special keys"
+                        IsChecked="{Binding SuppressHotkey}" />
+                </st:StackPanel>
 
-            <DockPanel Margin="5,5" Style="{StaticResource SettingsRowDockPanelStyle}" Visibility="{Binding Overlay.IsEnabled, Converter={StaticResource TrueToVisibleFalseToCollapsedConverter}}">
-                <ContentControl Content="{Binding ResetOverlayPositionCommand}"
-                                MinWidth="120"
-                                eye:CommandWrapperHelper.Icon="&#xf0e2;"
-                                eye:CommandWrapperHelper.Text="Reset overlay" />
-                <Grid DockPanel.Dock="Right" Margin="5,0,0,0">
-                    <ContentControl Content="{Binding ToggleOverlayLockCommand}"
-                                    eye:CommandWrapperHelper.Icon="&#xf09c;"
-                                    Visibility="{Binding Overlay.IsLocked, Converter={StaticResource TrueToVisibleFalseToCollapsedConverter}}"
-                                    eye:CommandWrapperHelper.Text="Unlock overlay" />
-                    <ContentControl Content="{Binding ToggleOverlayLockCommand}"
-                                    eye:CommandWrapperHelper.Icon="&#xf023;"
-                                    Visibility="{Binding Overlay.IsLocked, Converter={StaticResource TrueToCollapsedFalseToVisibleConverter}}"
-                                    eye:CommandWrapperHelper.Text="Lock overlay" />
-                </Grid>
-            </DockPanel>
+                <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Minimize on Close:" />
+                <st:StackPanel>
+                    <ToggleButton
+                        HorizontalAlignment="Left"
+                        ToolTip="If enabled application will minimize instead of close when X button is pressed. App still could be closed via taskbar icon"
+                        IsChecked="{Binding MinimizeOnClose}" />
+                </st:StackPanel>
+
+                <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Run at start:" />
+                <st:StackPanel>
+                    <ToggleButton
+                        HorizontalAlignment="Left"
+                        IsChecked="{Binding RunAtLogin, Mode=OneWay}"
+                        Command="{Binding RunAtLoginToggleCommand}"
+                        CommandParameter="{Binding IsChecked, RelativeSource={RelativeSource Self}}" />
+                </st:StackPanel>
+
+                <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Start Minimized:" />
+                <st:StackPanel>
+                    <ToggleButton
+                        HorizontalAlignment="Left"
+                        ToolTip="Minimize application window on startup"
+                        IsChecked="{Binding StartMinimized}" />
+                </st:StackPanel>
+
+                <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Check for updates:" />
+                <st:StackPanel>
+                    <ToggleButton
+                        HorizontalAlignment="Left"
+                        ToolTip="Periodically check for updates and report if new version is available"
+                        IsChecked="{Binding ApplicationUpdater.CheckForUpdates, Mode=TwoWay}" />
+                    <TextBlock IsHitTestVisible="True">
+                        <Run Text="update source:" />
+                        <Hyperlink NavigateUri="{Binding ApplicationUpdater.UpdateSource.Uri}"
+                                   Command="{Binding ApplicationUpdater.OpenUri}"
+                                   CommandParameter="{Binding ApplicationUpdater.UpdateSource.Uri}"
+                                   ToolTip="{Binding ApplicationUpdater.UpdateSource.Uri}">
+                            <TextBlock Text="{Binding ApplicationUpdater.UpdateSource.Description}" IsHitTestVisible="True" />
+                        </Hyperlink>
+                    </TextBlock>
+                </st:StackPanel>
+
+                <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Contacts:" />
+                <st:StackPanel>
+                    <TextBlock IsHitTestVisible="True">
+                        <Run Text="Xab3r via " />
+                        <Hyperlink NavigateUri="{Binding Source={x:Static modularity:MicSwitchConfig.DiscordInviteLink}}"
+                                   Command="{Binding ApplicationUpdater.OpenUri}"
+                                   CommandParameter="{x:Static modularity:MicSwitchConfig.DiscordInviteLink}"
+                                   ToolTip="{x:Static modularity:MicSwitchConfig.DiscordInviteLink}">
+                            <TextBlock Text="Discord" IsHitTestVisible="True" />
+                        </Hyperlink>
+                    </TextBlock>
+                </st:StackPanel>
+
+                <DockPanel
+                    Margin="5,5"
+                    IsEnabled="{Binding ShowOverlaySettings}"
+                    Grid.ColumnSpan="2">
+                    <ContentControl Content="{Binding ResetOverlayPositionCommand}"
+                                    eye:CommandWrapperHelper.Icon="&#xf0e2;"
+                                    eye:CommandWrapperHelper.Text="Reset overlay" />
+                    <Grid DockPanel.Dock="Right" Margin="5,0,0,0">
+                        <ContentControl Content="{Binding ToggleOverlayLockCommand}"
+                                        eye:CommandWrapperHelper.Icon="&#xf09c;"
+                                        Visibility="{Binding Overlay.IsLocked, Converter={StaticResource TrueToVisibleFalseToCollapsedConverter}}"
+                                        eye:CommandWrapperHelper.Text="Unlock overlay" />
+                        <ContentControl Content="{Binding ToggleOverlayLockCommand}"
+                                        eye:CommandWrapperHelper.Icon="&#xf023;"
+                                        Visibility="{Binding Overlay.IsLocked, Converter={StaticResource TrueToCollapsedFalseToVisibleConverter}}"
+                                        eye:CommandWrapperHelper.Text="Lock overlay" />
+                    </Grid>
+                </DockPanel>
+            </st:AutoGrid>
         </DockPanel>
 
-        <materialDesign:DrawerHost IsBottomDrawerOpen="{Binding ApplicationUpdater.IsOpen}" BottomDrawerBackground="{StaticResource MaterialDesignBody}">
+        <materialDesign:DrawerHost IsBottomDrawerOpen="{Binding ApplicationUpdater.IsOpen}">
             <materialDesign:DrawerHost.BottomDrawerContent>
                 <Grid Height="60">
                     <ContentPresenter Content="{Binding ApplicationUpdater}" />

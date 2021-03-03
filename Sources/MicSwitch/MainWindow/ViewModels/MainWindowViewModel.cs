@@ -48,6 +48,7 @@ namespace MicSwitch.MainWindow.ViewModels
         
         private readonly IWindowTracker mainWindowTracker;
         private readonly IConfigProvider<MicSwitchConfig> configProvider;
+        private readonly IConfigProvider<MicSwitchOverlayConfig> overlayConfigProvider;
         private readonly IAudioNotificationsManager notificationsManager;
         private readonly IWindowViewController viewController;
 
@@ -81,6 +82,7 @@ namespace MicSwitch.MainWindow.ViewModels
             IApplicationUpdaterViewModel appUpdater,
             [Dependency(WellKnownWindows.MainWindow)] IWindowTracker mainWindowTracker,
             IConfigProvider<MicSwitchConfig> configProvider,
+            IConfigProvider<MicSwitchOverlayConfig> overlayConfigProvider,
             IComplexHotkeyTracker hotkeyTracker,
             IMicrophoneProvider microphoneProvider,
             IImageProvider imageProvider,
@@ -94,15 +96,16 @@ namespace MicSwitch.MainWindow.ViewModels
             this.appArguments = appArguments;
             this.mainWindowTracker = mainWindowTracker;
             this.configProvider = configProvider;
+            this.overlayConfigProvider = overlayConfigProvider;
             this.notificationsManager = notificationsManager;
             this.viewController = viewController;
             this.microphoneController = microphoneController.AddTo(Anchors);
             ApplicationUpdater = appUpdater.AddTo(Anchors);
-            ImageProvider = imageProvider.AddTo(Anchors);
+            ImageProvider = imageProvider;
             AudioSelectorWhenMuted = audioSelectorFactory.Create().AddTo(Anchors);
             AudioSelectorWhenUnmuted = audioSelectorFactory.Create().AddTo(Anchors);
             WindowState = WindowState.Minimized;
-            Overlay = overlay;
+            Overlay = overlay.AddTo(Anchors);
             
             var startupManagerArgs = new StartupManagerArgs
             {
@@ -117,6 +120,7 @@ namespace MicSwitch.MainWindow.ViewModels
             this.RaiseWhenSourceValue(x => x.RunAtLogin, startupManager, x => x.IsRegistered, uiScheduler).AddTo(Anchors);
             this.RaiseWhenSourceValue(x => x.MicrophoneVolume, microphoneController, x => x.VolumePercent, uiScheduler).AddTo(Anchors);
             this.RaiseWhenSourceValue(x => x.MicrophoneMuted, microphoneController, x => x.Mute, uiScheduler).AddTo(Anchors);
+            this.RaiseWhenSourceValue(x => x.ShowOverlaySettings, Overlay, x => x.OverlayVisibilityMode).AddTo(Anchors);
 
             microphoneProvider.Microphones
                 .ToObservableChangeSet()
@@ -218,6 +222,8 @@ namespace MicSwitch.MainWindow.ViewModels
             SelectMutedMicrophoneIconCommand = CommandWrapper.Create(SelectMutedMicrophoneIconCommandExecuted);
             ResetMicrophoneIconsCommand = CommandWrapper.Create(ResetMicrophoneIconsCommandExecuted);
             AddSoundCommand = CommandWrapper.Create(AddSoundCommandExecuted);
+            
+            ActualizeConfig(configProvider, overlayConfigProvider);
 
             configProvider.ListenTo(x => x.Notification)
                 .ObserveOn(uiScheduler)
@@ -328,6 +334,10 @@ namespace MicSwitch.MainWindow.ViewModels
                     }, Log.HandleUiException)
                 .AddTo(Anchors);
 
+            configProvider.WhenChanged
+                .Subscribe()
+                .AddTo(Anchors);
+
             Observable.Merge(
                     this.ObservableForProperty(x => x.MicrophoneLine, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.MuteMode, skipInitial: true).ToUnit(),
@@ -351,6 +361,12 @@ namespace MicSwitch.MainWindow.ViewModels
                     config.SuppressHotkey = SuppressHotkey;
                     config.StartMinimized = StartMinimized;
                     config.MinimizeOnClose = MinimizeOnClose;
+                    
+                    config.OverlayOpacity = null;
+                    config.OverlayLocation = null;
+                    config.OverlaySize = null;
+                    config.OverlayEnabled = null;
+                    config.OverlayBounds = null;
                     configProvider.Save(config);
                 }, Log.HandleUiException)
                 .AddTo(Anchors);
@@ -359,7 +375,7 @@ namespace MicSwitch.MainWindow.ViewModels
                 .SubscribeSafe(() =>
                 {
                     Log.Debug($"Main window loaded - loading overlay, current process({CurrentProcess.ProcessName} 0x{CurrentProcess.Id:x8}) main window: {CurrentProcess.MainWindowHandle} ({CurrentProcess.MainWindowTitle})");
-                    overlayWindowController.RegisterChild(overlay).AddTo(Anchors);
+                    overlayWindowController.RegisterChild(Overlay).AddTo(Anchors);
                     Log.Debug("Overlay loaded successfully");
                 }, Log.HandleUiException)
                 .AddTo(Anchors);
@@ -398,7 +414,7 @@ namespace MicSwitch.MainWindow.ViewModels
             }
         }
 
-        private void HandleWindowClosing(IWindowViewController viewController, CancelEventArgs args)
+        private void HandleWindowClosing(IViewController viewController, CancelEventArgs args)
         {
             Log.Info($"Main window is closing(cancel: {args.Cancel}), {nameof(Visibility)}: {Visibility}, {nameof(MicSwitchConfig.MinimizeOnClose)}: {configProvider.ActualConfig.MinimizeOnClose}");
             if (MinimizeOnClose)
@@ -417,9 +433,9 @@ namespace MicSwitch.MainWindow.ViewModels
                 return;
             }
 
-            var config = configProvider.ActualConfig.CloneJson();
+            var config = overlayConfigProvider.ActualConfig.CloneJson();
             config.MicrophoneIcon = icon;
-            configProvider.Save(config);
+            overlayConfigProvider.Save(config);
         }
         
         private async Task SelectMutedMicrophoneIconCommandExecuted()
@@ -430,17 +446,17 @@ namespace MicSwitch.MainWindow.ViewModels
                 return;
             }
 
-            var config = configProvider.ActualConfig.CloneJson();
+            var config = overlayConfigProvider.ActualConfig.CloneJson();
             config.MutedMicrophoneIcon = icon;
-            configProvider.Save(config);
+            overlayConfigProvider.Save(config);
         }
 
         private async Task ResetMicrophoneIconsCommandExecuted()
         {
-            var config = configProvider.ActualConfig.CloneJson();
+            var config = overlayConfigProvider.ActualConfig.CloneJson();
             config.MicrophoneIcon = null;
             config.MutedMicrophoneIcon = null;
-            configProvider.Save(config);
+            overlayConfigProvider.Save(config);
         }
 
         private static async Task<byte[]> SelectIcon()
@@ -547,6 +563,8 @@ namespace MicSwitch.MainWindow.ViewModels
             set => this.RaiseAndSetIfChanged(ref windowState, value);
         }
 
+        public bool ShowOverlaySettings => Overlay.OverlayVisibilityMode != OverlayVisibilityMode.Never;
+        
         public Visibility Visibility
         {
             get => visibility;
@@ -671,6 +689,52 @@ namespace MicSwitch.MainWindow.ViewModels
             LastOpenedDirectory = Path.GetDirectoryName(op.FileName);
             var notification = notificationsManager.AddFromFile(new FileInfo(op.FileName));
             Log.Debug($"Added notification {notification}, list of notifications: {notificationsManager.Notifications.JoinStrings(", ")}");
+        }
+        
+        private static void ActualizeConfig(IConfigProvider<MicSwitchConfig> mainConfigProvider, IConfigProvider<MicSwitchOverlayConfig> overlayConfigProvider)
+        {
+            Log.Debug("Actualizing obsolete configuration format");
+
+            var mainConfig = mainConfigProvider.ActualConfig.CloneJson();
+            if (mainConfig.OverlayBounds == null)
+            {
+                Log.Debug("Main configuration is up-to-date");
+                return;
+            }
+
+            Log.Warn($"Main configuration is obsolete, converting to a newer format: { new { mainConfig.OverlayBounds, mainConfig.OverlayEnabled } }");
+            var config = overlayConfigProvider.ActualConfig.CloneJson();
+            if (mainConfig.OverlayBounds != null)
+            {
+                config.OverlayBounds = mainConfig.OverlayBounds.Value;
+            }
+            if (mainConfig.OverlayEnabled != null)
+            {
+                config.OverlayVisibilityMode = mainConfig.OverlayEnabled == false ? OverlayVisibilityMode.Never : OverlayVisibilityMode.Always;
+            }
+            if (mainConfig.OverlayOpacity != null)
+            {
+                config.OverlayOpacity = mainConfig.OverlayOpacity.Value;
+            }
+            if (mainConfig.MicrophoneIcon != null)
+            {
+                config.MicrophoneIcon = mainConfig.MicrophoneIcon;
+            }
+            if (mainConfig.MutedMicrophoneIcon != null)
+            {
+                config.MutedMicrophoneIcon = mainConfig.MutedMicrophoneIcon;
+            }
+            overlayConfigProvider.Save(config);
+            
+            mainConfig.OverlayBounds = null;
+            mainConfig.OverlayEnabled = null;
+            mainConfig.OverlayOpacity = null;
+            mainConfig.OverlayLocation = null;
+            mainConfig.OverlaySize = null;
+            mainConfig.MicrophoneIcon = null;
+            mainConfig.MutedMicrophoneIcon = null;
+            mainConfigProvider.Save(mainConfig);
+            Log.Debug("Config format updated successfully");
         }
     }
 }

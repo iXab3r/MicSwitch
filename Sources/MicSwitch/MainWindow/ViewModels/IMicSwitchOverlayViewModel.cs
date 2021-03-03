@@ -1,3 +1,5 @@
+using MicSwitch.MainWindow.Models;
+using MicSwitch.Modularity;
 using PoeShared.Native;
 
 namespace MicSwitch.MainWindow.ViewModels
@@ -7,5 +9,7 @@ namespace MicSwitch.MainWindow.ViewModels
         bool Mute { get; }
         
         bool IsEnabled { get; set; }
+        
+        OverlayVisibilityMode OverlayVisibilityMode { get; set; }
     }
 }

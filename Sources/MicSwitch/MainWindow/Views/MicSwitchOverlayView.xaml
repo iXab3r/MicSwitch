@@ -16,7 +16,7 @@
                   Visibility="{Binding IsLocked, Converter={StaticResource TrueToCollapsedFalseToVisibleConverter}}"
                   eye:EnableDragHelper.EnableDrag="{Binding IsLocked, Converter={StaticResource NotConverter}}">
                 <Grid.InputBindings>
-                    <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding ToggleLockStateCommand}"/> 
+                    <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding ToggleLockStateCommand}" />
                 </Grid.InputBindings>
             </Grid>
             <Grid Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Top" IsHitTestVisible="False"
@@ -51,9 +51,7 @@
                         </DockPanel>
                     </StackPanel>
                 </Border>
-
             </Grid>
-
         </Grid>
     </DataTemplate>
 </ResourceDictionary>

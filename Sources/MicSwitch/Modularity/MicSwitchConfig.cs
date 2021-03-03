@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 using MicSwitch.MainWindow.Models;
 using MicSwitch.Services;
 using PoeShared.Modularity;
@@ -8,7 +9,7 @@ using Size = System.Windows.Size;
 
 namespace MicSwitch.Modularity
 {
-    internal sealed class MicSwitchConfig : IPoeEyeConfigVersioned, IOverlayConfig
+    internal sealed class MicSwitchConfig : IPoeEyeConfigVersioned
     {
         public static readonly string DiscordInviteLink = @"https://discord.gg/BExRm22";
         
@@ -34,18 +35,25 @@ namespace MicSwitch.Modularity
             Off = "Beep750"
         };
 
-        public Point OverlayLocation { get; set; }
+        [Obsolete("Replaced with OverlayConfig")]
+        public Point? OverlayLocation { get; set; }
 
-        public Size OverlaySize { get; set; }
+        [Obsolete("Replaced with OverlayConfig")]
+        public Size? OverlaySize { get; set; }
 
-        public Rectangle OverlayBounds { get; set; }
+        [Obsolete("Replaced with OverlayConfig")]
+        public Rectangle? OverlayBounds { get; set; }
 
-        public float OverlayOpacity { get; set; }
+        [Obsolete("Replaced with OverlayConfig")]
+        public float? OverlayOpacity { get; set; }
 
-        public bool OverlayEnabled { get; set; } = true;
-        
+        [Obsolete("Replaced with OverlayVisibilityMode")]
+        public bool? OverlayEnabled { get; set; }
+
+        [Obsolete("Replaced with OverlayVisibilityMode")]
         public byte[] MutedMicrophoneIcon { get; set; }
         
+        [Obsolete("Replaced with OverlayVisibilityMode")]
         public byte[] MicrophoneIcon { get; set; }
 
         public int Version { get; set; } = 1;

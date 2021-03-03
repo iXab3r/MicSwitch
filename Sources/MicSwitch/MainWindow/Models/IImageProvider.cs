@@ -1,10 +1,10 @@
+using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Media;
-using PoeShared.Scaffolding;
 
 namespace MicSwitch.MainWindow.Models
 {
-    internal interface IImageProvider : IDisposableReactiveObject
+    internal interface IImageProvider : INotifyPropertyChanged
     {
         ImageSource MicrophoneImage { get; }
         Icon MicrophoneImageAsIcon { get; }
