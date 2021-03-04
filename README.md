@@ -60,9 +60,9 @@ Also it supports configurable mute/unmute sounds(similar to TeamSpeak/Ventrilo) 
 3. git submodule init
 5. git submodule update --checkout
 5. InitSymlinks.cmd
-6. dotnet build
+6. dotnet build Sources/MicSwitch
 
-That's it. Working version will be in **Sources/bin** folder
+That's it. Portable version will be in **bin** folder. Framework-dependent version
 
 ## Contacts
 - Feel free to contact me via PM in Discord *Xab3r#3780* or [Reddit](https://www.reddit.com/user/Xab3r) 
