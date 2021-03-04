@@ -17,6 +17,7 @@
                  xmlns:modularity="clr-namespace:MicSwitch.Modularity"
                  xmlns:st="http://schemas.spicytaco.io/"
                  xmlns:converters="http://schemas.kent.boogaart.com/converters"
+                 xmlns:ui="clr-namespace:PoeShared.UI;assembly=PoeShared.Wpf"
                  mc:Ignorable="d"
                  d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel}"
                  WindowState="{Binding WindowState, Mode=TwoWay}"
@@ -47,12 +48,12 @@
             <Style TargetType="{x:Type TextBlock}" x:Key="SettingsLabelStyle">
                 <Setter Property="TextAlignment" Value="Right" />
                 <Setter Property="VerticalAlignment" Value="Center" />
-                <Setter Property="IsHitTestVisible" Value="True"/>
+                <Setter Property="IsHitTestVisible" Value="True" />
             </Style>
             <Style TargetType="{x:Type Image}">
                 <Style.Triggers>
                     <Trigger Property="IsEnabled" Value="False">
-                        <Setter Property="Opacity" Value="0.66"></Setter>
+                        <Setter Property="Opacity" Value="0.66" />
                     </Trigger>
                 </Style.Triggers>
             </Style>
@@ -78,15 +79,15 @@
             </tb:TaskbarIcon>
 
             <st:AutoGrid Columns="120,*" ChildMargin="5" RowHeight="32">
-                <TextBlock  Style="{StaticResource SettingsLabelStyle}" st:AutoGrid.RowHeightOverride="40"
-                            Text="Microphone:" />
+                <TextBlock Style="{StaticResource SettingsLabelStyle}" st:AutoGrid.RowHeightOverride="40"
+                           Text="Microphone:" />
                 <st:StackPanel st:AutoGrid.RowHeightOverride="40">
                     <ComboBox st:StackPanel.Fill="Fill"
                               ItemsSource="{Binding Microphones}"
                               SelectedItem="{Binding MicrophoneLine}"
                               DisplayMemberPath="Name" />
                 </st:StackPanel>
-                
+
                 <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Mute:" />
                 <st:StackPanel>
                     <ToggleButton
@@ -143,11 +144,12 @@
                     <ContentPresenter Width="22" Height="22" Content="{Binding AudioSelectorWhenMuted}" />
                     <TextBlock Text="when un-muted " />
                     <ContentPresenter Width="22" Height="22" Content="{Binding AudioSelectorWhenUnmuted}" />
-                    <ContentControl Content="{Binding AddSoundCommand}" 
-                                    st:StackPanel.Fill="Fill"
-                                    MinWidth="90"
-                                    eye:CommandWrapperHelper.Icon="&#xf115;"
-                                    eye:CommandWrapperHelper.Text="Load..." />
+                    <ui:ButtonEx Command="{Binding AddSoundCommand}"
+                                 st:StackPanel.Fill="Fill"
+                                 MinWidth="90"
+                                 Icon="&#xf115;"
+                                 Content="Load..." 
+                                 Margin="0"/>
                 </st:StackPanel>
 
                 <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Show overlay:" />
@@ -171,7 +173,7 @@
                 </st:StackPanel>
 
                 <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Icon:"
-                           IsEnabled="{Binding ShowOverlaySettings}"/>
+                           IsEnabled="{Binding ShowOverlaySettings}" />
                 <st:StackPanel IsEnabled="{Binding ShowOverlaySettings}">
                     <TextBlock Text="when muted" />
                     <Border Width="22" Height="22" BorderBrush="{StaticResource SecondaryAccentBrush}" BorderThickness="1"
@@ -198,9 +200,10 @@
                             </i:EventTrigger>
                         </i:Interaction.Triggers>
                     </Border>
-                    <ContentControl Content="{Binding ResetMicrophoneIconsCommand}"
-                                    eye:CommandWrapperHelper.Icon="&#xf0e2;"
-                                    eye:CommandWrapperHelper.Text="Reset icons" />
+                    <ui:ButtonEx Command="{Binding ResetMicrophoneIconsCommand}"
+                                 Icon="&#xf0e2;"
+                                 Margin="0"
+                                 Content="Reset icons" />
                 </st:StackPanel>
 
                 <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Mute mode:" />
@@ -297,19 +300,20 @@
                 <DockPanel
                     Margin="5,5"
                     IsEnabled="{Binding ShowOverlaySettings}"
-                    Grid.ColumnSpan="2">
-                    <ContentControl Content="{Binding ResetOverlayPositionCommand}"
-                                    eye:CommandWrapperHelper.Icon="&#xf0e2;"
-                                    eye:CommandWrapperHelper.Text="Reset overlay" />
+                    Grid.ColumnSpan="2"
+                    st:AutoGrid.RowHeightOverride="40">
+                    <ui:ButtonEx Command="{Binding ResetOverlayPositionCommand}"
+                                 Icon="&#xf0e2;"
+                                 Content="Reset overlay" />
                     <Grid DockPanel.Dock="Right" Margin="5,0,0,0">
-                        <ContentControl Content="{Binding ToggleOverlayLockCommand}"
-                                        eye:CommandWrapperHelper.Icon="&#xf09c;"
-                                        Visibility="{Binding Overlay.IsLocked, Converter={StaticResource TrueToVisibleFalseToCollapsedConverter}}"
-                                        eye:CommandWrapperHelper.Text="Unlock overlay" />
-                        <ContentControl Content="{Binding ToggleOverlayLockCommand}"
-                                        eye:CommandWrapperHelper.Icon="&#xf023;"
-                                        Visibility="{Binding Overlay.IsLocked, Converter={StaticResource TrueToCollapsedFalseToVisibleConverter}}"
-                                        eye:CommandWrapperHelper.Text="Lock overlay" />
+                        <ui:ButtonEx Command="{Binding ToggleOverlayLockCommand}" Margin="0"
+                                     Icon="&#xf09c;"
+                                     Visibility="{Binding Overlay.IsLocked, Converter={StaticResource TrueToVisibleFalseToCollapsedConverter}}"
+                                     Content="Unlock overlay" />
+                        <ui:ButtonEx Command="{Binding ToggleOverlayLockCommand}" Margin="0"
+                                     Icon="&#xf023;"
+                                     Visibility="{Binding Overlay.IsLocked, Converter={StaticResource TrueToCollapsedFalseToVisibleConverter}}"
+                                     Content="Lock overlay" />
                     </Grid>
                 </DockPanel>
             </st:AutoGrid>
@@ -326,12 +330,10 @@
 
     <mah:MetroWindow.LeftWindowCommands>
         <mah:WindowCommands ShowSeparators="True">
-            <Button
-                FontFamily="{StaticResource FontAwesome}"
+            <ui:ButtonEx
                 Margin="5,0"
-                FontWeight="Bold"
                 ToolTip="Open logs/config folder"
-                Content="&#xF07C;"
+                Icon="&#xF07C;"
                 Command="{Binding OpenAppDataDirectoryCommand}" />
         </mah:WindowCommands>
     </mah:MetroWindow.LeftWindowCommands>
@@ -344,17 +346,15 @@
                 <TextBlock Margin="2.5,0,0,0" Text="USER-MODE" />
             </StackPanel>
             <StackPanel Orientation="Horizontal">
-                <ContentControl Content="{Binding ApplicationUpdater.CheckForUpdatesCommand}"
-                                ContentTemplate="{StaticResource CommandWrapperIcon}"
-                                ToolTip="Check for updates"
-                                Margin="5,0"
-                                eye:CommandWrapperHelper.Icon="&#xF0ED;" />
-                <ContentControl Content="{Binding ApplicationUpdater.RestartCommand}"
-                                ContentTemplate="{StaticResource CommandWrapperIcon}"
-                                ToolTip="Restart application"
-                                Margin="5,0"
-                                Visibility="{Binding IsDebugMode, Converter={StaticResource TrueToVisibleFalseToCollapsedConverter}}"
-                                eye:CommandWrapperHelper.Icon="&#xf021;" />
+                <ui:ButtonEx Command="{Binding ApplicationUpdater.CheckForUpdatesCommand}"
+                             ToolTip="Check for updates"
+                             Margin="5,0"
+                             Icon="&#xF0ED;" />
+                <ui:ButtonEx Command="{Binding ApplicationUpdater.RestartCommand}"
+                             ToolTip="Restart application"
+                             Margin="5,0"
+                             Visibility="{Binding IsDebugMode, Converter={StaticResource TrueToVisibleFalseToCollapsedConverter}}"
+                             Icon="&#xf021;" />
             </StackPanel>
         </mah:WindowCommands>
     </mah:MetroWindow.RightWindowCommands>
