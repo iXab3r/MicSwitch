@@ -26,7 +26,7 @@ Also it supports configurable mute/unmute sounds(similar to TeamSpeak/Ventrilo) 
 - After initial installation application will periodically check Github for updates
 
 ## Features
-- Multiple microphones support (useful for streamers)
+- Multiple microphones support (useful for streamers) - ALL microphones in your system could be muted/unmuted by a single key press
 - System-wide hotkeys (supports mouse XButtons)
 - Always-on-top configurable (scale, transparency) Overlay - could be disable if not needed
 - Mute/unmute audio notification (with custom audio files support)
@@ -34,16 +34,17 @@ Also it supports configurable mute/unmute sounds(similar to TeamSpeak/Ventrilo) 
 - Multiple hotkeys support
 - Auto-startup (could be Minimized by default)
 - Three Audio modes: Push-to-talk, Push-to-mute and Toggle mute
+- Overlay visibility could be linked to microphone state, i.e. it will be shown only when Muted/Unmuted
 - Auto-updates via Github
 
 ## Media
-![UI](https://i.imgur.com/oRcFrsS.png)
+![UI](https://i.imgur.com/Fz0nTZP.png)
 
 ### Overlay with configurable size/opacity
 ![Overlay with configurable size/opacity](https://i.imgur.com/1Jf1RrH.gif)
 
 ### Configurable Audio notification when microphone is muted/unmuted
-![Configurable Audio notification when microphone is muted/unmuted](https://i.imgur.com/JoB02HE.png) 
+![Configurable Audio notification when microphone is muted/unmuted](https://i.imgur.com/TmvJizg.png) 
 
 ### Customizable overlay/tray icons
 ![Customizable overlay/tray icons](https://i.imgur.com/Bq0yHnK.png)
