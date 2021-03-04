@@ -9,4 +9,4 @@ using System.Windows;
 [assembly: AssemblyProduct("MicSwitch")]
 [assembly: AssemblyVersion("0.0.0.0")]
 [assembly: AssemblyFileVersion("0.0.0.0")]
-[assembly: AssemblyMetadata("SquirrelAwareVersion", "0")]
+[assembly: AssemblyMetadata("SquirrelAwareVersion", "1")]

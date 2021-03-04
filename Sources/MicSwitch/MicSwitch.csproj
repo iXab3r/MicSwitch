@@ -50,12 +50,50 @@
     <ProjectReference Include="..\PoeShared\PoeShared.csproj" />
   </ItemGroup>
   <PropertyGroup>
+    <!-- trimming disabled due to following bug https://github.com/dotnet/sdk/issues/10517 -->
+    <!-- tested on .NET 5.0.103 -->
+    <!-- Windows OS Version:  10.0.19041 -->
+    <TrimMode>link</TrimMode>  
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-    <PublishTrimmed>true</PublishTrimmed>
-    <TrimMode>link</TrimMode>
+    <PublishTrimmed>false</PublishTrimmed>
+    <SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>
+    <PublishReadyToRun>false</PublishReadyToRun>
   </PropertyGroup>
   <ItemGroup>
-    <TrimmerRootDescriptor Include="TrimmerRoots.xml" />
+    <TrimmerRootAssembly Include="System" />
+    <TrimmerRootAssembly Include="System.Private.CoreLib" />
+    <TrimmerRootAssembly Include="System.Reflection" />
+    <TrimmerRootAssembly Include="System.Runtime" />
+    <TrimmerRootAssembly Include="System.Runtime.Extensions" />
+    <TrimmerRootAssembly Include="System.Diagnostics.Debug" />
+    <TrimmerRootAssembly Include="System.Diagnostics.Tracing" />
+    <TrimmerRootAssembly Include="PresentationFramework-SystemXmlLinq" />
+    <TrimmerRootAssembly Include="PresentationFramework" />
+    <TrimmerRootAssembly Include="WindowsBase" />
+    <TrimmerRootAssembly Include="System.Text.Json" />
+    <TrimmerRootAssembly Include="System.Xaml" />
+    <TrimmerRootAssembly Include="System.Xml.Linq" />
+    <TrimmerRootAssembly Include="System.Xml" />
+    <TrimmerRootAssembly Include="System.Xml.ReaderWriter" />
+    <TrimmerRootAssembly Include="System.Xml.Serialization" />
+    <TrimmerRootAssembly Include="System.Xml.XDocument" />
+    <TrimmerRootAssembly Include="System.Xml.XmlDocument" />
+    <TrimmerRootAssembly Include="System.Xml.XmlSerializer" />
+    <TrimmerRootAssembly Include="System.Xml.XPath" />
+    <TrimmerRootAssembly Include="System.Xml.XPath.XDocument" />
+    <TrimmerRootAssembly Include="System.Private.Xml" />
+    <TrimmerRootAssembly Include="System.Private.Xml.Linq" />
+    <TrimmerRootAssembly Include="System.Private.CoreLib" />
+    <TrimmerRootAssembly Include="System.Private.DataContractSerialization" />
+    <TrimmerRootAssembly Include="System.Private.Uri" />
+    <TrimmerRootAssembly Include="PresentationFramework-SystemCore" />
+    <TrimmerRootAssembly Include="PresentationFramework-SystemData" />
+    <TrimmerRootAssembly Include="PresentationFramework-SystemDrawing" />
+    <TrimmerRootAssembly Include="PresentationFramework-SystemXml" />
+    <TrimmerRootAssembly Include="PresentationFramework-SystemXmlLinq" />
+  </ItemGroup>
+  
+  <ItemGroup>
     <Resource Include="Resources\microphoneDisabled.png" />
     <Resource Include="Resources\microphoneEnabled.png" />
     <Resource Include="Resources\microphoneDisabled.ico" />
