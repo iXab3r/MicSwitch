@@ -18,9 +18,6 @@ Also it supports configurable mute/unmute sounds(similar to TeamSpeak/Ventrilo) 
 # Features / Bugfixes priority (click to vote or post feature/bug request)
 [![Requests](https://feathub.com/iXab3r/MicSwitch?format=svg)](https://feathub.com/iXab3r/MicSwitch)
 
-# Prerequisites
-- Microsoft .NET Framework 4.6.1 - [download](https://www.microsoft.com/ru-ru/download/details.aspx?id=49982)
-
 # Installation
 - You can download the latest version of installer here - [download](https://github.com/iXab3r/MicSwitch/releases/latest).
 - After initial installation application will periodically check Github for updates
