@@ -1,6 +1,5 @@
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Reactive.Linq;
 using DynamicData.Binding;
 using DynamicData;
 using log4net;

@@ -8,7 +8,6 @@
                  xmlns:blue="http://www.nuget.org/Blue.MVVM"
                  xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
                  xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-                 xmlns:eye="http://coderush.net/poeeye/"
                  xmlns:viewModels="clr-namespace:MicSwitch.MainWindow.ViewModels"
                  xmlns:fa="http://schemas.fontawesome.io/icons/"
                  xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
@@ -16,7 +15,6 @@
                  xmlns:gif="http://wpfanimatedgif.codeplex.com"
                  xmlns:modularity="clr-namespace:MicSwitch.Modularity"
                  xmlns:st="http://schemas.spicytaco.io/"
-                 xmlns:converters="http://schemas.kent.boogaart.com/converters"
                  xmlns:ui="clr-namespace:PoeShared.UI;assembly=PoeShared.Wpf"
                  mc:Ignorable="d"
                  d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel}"
@@ -176,7 +174,7 @@
                            IsEnabled="{Binding ShowOverlaySettings}" />
                 <st:StackPanel IsEnabled="{Binding ShowOverlaySettings}">
                     <TextBlock Text="when muted" />
-                    <Border Width="22" Height="22" BorderBrush="{StaticResource SecondaryAccentBrush}" BorderThickness="1"
+                    <Border Width="22" Height="22" BorderBrush="{DynamicResource SecondaryHueMidBrush}" BorderThickness="1"
                             Background="Transparent"
                             ToolTip="Click to select an icon">
                         <Image
@@ -189,7 +187,7 @@
                         </i:Interaction.Triggers>
                     </Border>
                     <TextBlock Text="when un-muted " />
-                    <Border Width="22" Height="22" BorderBrush="{StaticResource SecondaryAccentBrush}" BorderThickness="1"
+                    <Border Width="22" Height="22" BorderBrush="{DynamicResource SecondaryHueMidBrush}" BorderThickness="1"
                             Background="Transparent"
                             ToolTip="Click to select an icon">
                         <Image gif:ImageBehavior.RepeatBehavior="Forever"

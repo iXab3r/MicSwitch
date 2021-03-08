@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<linker>
+    <assembly fullname="System" />
+    <assembly fullname="System.Private.CoreLib" />
+    <assembly fullname="System.Reflection" />
+    <assembly fullname="System.Runtime" />
+    <assembly fullname="System.Runtime.Extensions" />
+    <assembly fullname="System.Diagnostics.Debug" />
+    <assembly fullname="System.Diagnostics.Tracing" />
+    <assembly fullname="PresentationFramework-SystemXmlLinq" />
+    <assembly fullname="PresentationFramework" />
+    <assembly fullname="WindowsBase" />
+    <assembly fullname="System.Text.Json" />
+    <assembly fullname="System.Xaml" />
+    <assembly fullname="System.Xml.Linq" />
+    <assembly fullname="System.Xml" />
+    <assembly fullname="System.Xml.ReaderWriter" />
+    <assembly fullname="System.Xml.Serialization" />
+    <assembly fullname="System.Xml.XDocument" />
+    <assembly fullname="System.Xml.XmlDocument" />
+    <assembly fullname="System.Xml.XmlSerializer" />
+    <assembly fullname="System.Xml.XPath" />
+    <assembly fullname="System.Xml.XPath.XDocument" />
+    <assembly fullname="System.Private.Xml" />
+    <assembly fullname="System.Private.Xml.Linq" />
+    <assembly fullname="System.Private.CoreLib" />
+    <assembly fullname="System.Private.DataContractSerialization" />
+    <assembly fullname="System.Private.Uri" />
+    <assembly fullname="PresentationFramework-SystemCore" />
+    <assembly fullname="PresentationFramework-SystemData" />
+    <assembly fullname="PresentationFramework-SystemDrawing" />
+    <assembly fullname="PresentationFramework-SystemXml" />
+    <assembly fullname="PresentationFramework-SystemXmlLinq" />
+</linker>

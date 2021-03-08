@@ -1,11 +1,8 @@
-using System;
 using System.Drawing;
-using System.IO;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Windows;
 using System.Windows.Interactivity;
-using System.Windows.Media.Imaging;
 using Hardcodet.Wpf.TaskbarNotification;
 using log4net;
 using PoeShared;

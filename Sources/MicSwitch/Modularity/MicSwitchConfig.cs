@@ -3,7 +3,6 @@ using System.Drawing;
 using MicSwitch.MainWindow.Models;
 using MicSwitch.Services;
 using PoeShared.Modularity;
-using PoeShared.Native;
 using Point = System.Windows.Point;
 using Size = System.Windows.Size;
 

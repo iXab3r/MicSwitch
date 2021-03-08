@@ -27,7 +27,6 @@ using PoeShared.Wpf.UI.ExceptionViewer;
 using ReactiveUI;
 using Unity;
 using Unity.Resolution;
-using Application = System.Windows.Forms.Application;
 
 namespace MicSwitch
 {
@@ -76,7 +75,7 @@ namespace MicSwitch
                 RxApp.TaskpoolScheduler = TaskPoolScheduler.Default;
                 Current.ShutdownMode = ShutdownMode.OnMainWindowClose;
                 Log.Debug($"New UI Scheduler: {RxApp.MainThreadScheduler}");
-                InitializeUpdateSettings();       
+                InitializeUpdateSettings();  
             }
             catch (Exception ex)
             {
@@ -109,7 +108,7 @@ namespace MicSwitch
         {
             var updateSourceProvider = container.Resolve<IUpdateSourceProvider>();
             Log.Debug($"Reconfiguring {nameof(UpdateSettingsConfig)}, current update source: {updateSourceProvider.UpdateSource}");
-            UpdateSettings.WellKnownUpdateSources.ForEach(x => updateSourceProvider.KnownSources.Add(x));
+            UpdateSettings.WellKnownUpdateSources.ForEach(x => updateSourceProvider.AddSource(x));
 
             if (!updateSourceProvider.UpdateSource.IsValid || !UpdateSettings.WellKnownUpdateSources.Contains(updateSourceProvider.UpdateSource))
             {

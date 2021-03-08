@@ -1,11 +1,9 @@
 using System;
-using System.Drawing;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
-using JetBrains.Annotations;
 using log4net;
 using MicSwitch.MainWindow.Models;
 using MicSwitch.Modularity;
@@ -83,11 +81,6 @@ namespace MicSwitch.MainWindow.ViewModels
                 .Where(x => !IsEnabled && !IsLocked)
                 .ObserveOn(uiScheduler)
                 .SubscribeSafe(() => LockWindowCommand.Execute(null), Log.HandleUiException)
-                .AddTo(Anchors);
-
-            this.WhenAnyValue(x => x.OverlayWindow)
-                .Where(x => x != null)
-                .SubscribeSafe(x => x.LogWndProc("MicOverlay").AddTo(Anchors), Log.HandleUiException)
                 .AddTo(Anchors);
 
             this.WhenAnyValue(x => x.OverlayVisibilityMode, x => x.Mute)

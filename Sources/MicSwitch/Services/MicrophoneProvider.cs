@@ -10,7 +10,6 @@ using log4net;
 using NAudio.CoreAudioApi.Interfaces;
 using NAudio.Utils;
 using PoeShared;
-using PoeShared.Modularity;
 using PoeShared.Scaffolding;
 
 namespace MicSwitch.Services

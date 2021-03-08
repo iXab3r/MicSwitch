@@ -2,23 +2,19 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Interop;
-using System.Windows.Media.Imaging;
 using DynamicData;
 using DynamicData.Binding;
-using JetBrains.Annotations;
 using log4net;
+using MaterialDesignColors;
+using MaterialDesignThemes.Wpf;
 using Microsoft.Win32;
-using Microsoft.Xaml.Behaviors.Input;
 using MicSwitch.MainWindow.Models;
 using MicSwitch.Modularity;
 using MicSwitch.Services;
@@ -379,6 +375,13 @@ namespace MicSwitch.MainWindow.ViewModels
                     Log.Debug("Overlay loaded successfully");
                 }, Log.HandleUiException)
                 .AddTo(Anchors);
+            
+            var theme = Theme.Create(
+                Theme.Light, 
+                primary: SwatchHelper.Lookup[(MaterialDesignColor)PrimaryColor.BlueGrey], 
+                accent: SwatchHelper.Lookup[(MaterialDesignColor) SecondaryColor.LightBlue]);
+            var paletteHelper = new PaletteHelper();
+            paletteHelper.SetTheme(theme);
         }
 
         private void ToggleOverlayCommandExecuted()
