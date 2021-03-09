@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reflection;
 using System.Threading;
@@ -17,6 +18,7 @@ using PoeShared.Modularity;
 using PoeShared.Native;
 using PoeShared.Prism;
 using PoeShared.Scaffolding;
+using PoeShared.Scaffolding.WPF;
 using PoeShared.UI.Hotkeys;
 using ReactiveUI;
 
@@ -116,6 +118,8 @@ namespace MicSwitch.Services
 
         private sealed class HookForm : Window
         {
+            private readonly CompositeDisposable anchors = new CompositeDisposable();
+
             public HookForm()
             {
                 var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
@@ -128,7 +132,7 @@ namespace MicSwitch.Services
                 this.Loaded += OnLoaded;
                 Log.Info("HookForm created");
 
-                this.LogWndProc("HookForm");
+                this.LogWndProc("HookForm").AddTo(anchors);
             }
 
             private void OnLoaded(object sender, RoutedEventArgs e)
@@ -142,6 +146,12 @@ namespace MicSwitch.Services
                 UnsafeNative.SetWindowExTransparent(hwnd);
                 UnsafeNative.SetWindowRgn(hwnd, Rectangle.Empty);
                 Log.Info("HookForm successfully initialized");
+            }
+
+            protected override void OnClosed(EventArgs e)
+            {
+                base.OnClosed(e);
+                anchors.Dispose();
             }
         }
     }

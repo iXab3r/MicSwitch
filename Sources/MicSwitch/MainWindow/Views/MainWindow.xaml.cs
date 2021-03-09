@@ -1,9 +1,11 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Reactive.Disposables;
 using System.Windows;
 using log4net;
 using PoeShared.Modularity;
 using PoeShared.Scaffolding;
+using PoeShared.Scaffolding.WPF;
 
 namespace MicSwitch.MainWindow.Views
 {
@@ -13,6 +15,7 @@ namespace MicSwitch.MainWindow.Views
     public partial class MainWindow 
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(MainWindow));
+        private readonly CompositeDisposable anchors = new CompositeDisposable();
 
         public MainWindow(IAppArguments appArguments)
         {
@@ -20,7 +23,7 @@ namespace MicSwitch.MainWindow.Views
             Log.Debug($"Initializing MainWindow for process {appArguments.ProcessId}");
             InitializeComponent();
 
-            this.LogWndProc("MainWindow");
+            this.LogWndProc("MainWindow").AddTo(anchors);
             sw.Step($"BAML loaded");
         }
         
@@ -37,6 +40,7 @@ namespace MicSwitch.MainWindow.Views
         private void OnClosed(object sender, EventArgs e)
         {
             Log.Debug($"MainWindow closed");
+            anchors.Dispose();
         }
 
         private void OnClosing(object sender, CancelEventArgs e)
