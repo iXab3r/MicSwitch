@@ -127,6 +127,8 @@ namespace MicSwitch.Services
                 Height = 0;
                 this.Loaded += OnLoaded;
                 Log.Info("HookForm created");
+
+                this.LogWndProc("HookForm");
             }
 
             private void OnLoaded(object sender, RoutedEventArgs e)

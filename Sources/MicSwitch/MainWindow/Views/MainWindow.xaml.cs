@@ -19,6 +19,8 @@ namespace MicSwitch.MainWindow.Views
             using var sw = new BenchmarkTimer("MainWindow", Log);
             Log.Debug($"Initializing MainWindow for process {appArguments.ProcessId}");
             InitializeComponent();
+
+            this.LogWndProc("MainWindow");
             sw.Step($"BAML loaded");
         }
         

@@ -83,6 +83,11 @@ namespace MicSwitch.MainWindow.ViewModels
                 .SubscribeSafe(() => LockWindowCommand.Execute(null), Log.HandleUiException)
                 .AddTo(Anchors);
 
+            this.WhenAnyValue(x => x.OverlayWindow)
+                .Where(x => x != null)
+                .SubscribeSafe(x => x.LogWndProc("MicOverlay").AddTo(Anchors), Log.HandleUiException)
+                .AddTo(Anchors);
+
             this.WhenAnyValue(x => x.OverlayVisibilityMode, x => x.Mute)
                 .Select(_ =>
                 {
