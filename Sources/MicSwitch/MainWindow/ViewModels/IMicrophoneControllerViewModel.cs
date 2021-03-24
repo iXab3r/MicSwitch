@@ -12,7 +12,19 @@ namespace MicSwitch.MainWindow.ViewModels
         
         MuteMode MuteMode { get; set; }
         
+        bool EnableAdvancedHotkeys { get; set; }
+        
         IHotkeyEditorViewModel Hotkey { get; }
+        
+        IHotkeyEditorViewModel HotkeyToggle { get; }
+        
+        IHotkeyEditorViewModel HotkeyMute { get; }
+        
+        IHotkeyEditorViewModel HotkeyUnmute { get; }
+        
+        IHotkeyEditorViewModel HotkeyPushToTalk { get; }
+        
+        IHotkeyEditorViewModel HotkeyPushToMute { get; }
         
         bool MicrophoneMuted { get; }
         

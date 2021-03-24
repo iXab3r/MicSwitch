@@ -56,9 +56,23 @@
                 </Style.Triggers>
             </Style>
             <Style TargetType="{x:Type Separator}">
-                <Setter Property="st:AutoGrid.RowHeightOverride" Value="7"/>
-                <Setter Property="Margin" Value="5,0"/>
+                <Setter Property="st:AutoGrid.RowHeightOverride" Value="7" />
+                <Setter Property="Margin" Value="5,0" />
             </Style>
+
+            <DataTemplate DataType="{x:Type viewModels:HotkeyEditorViewModel}">
+                <st:StackPanel Orientation="Horizontal" MarginBetweenChildren="5">
+                    <hotkeys:HotKeyBox st:StackPanel.Fill="Fill" HotKey="{Binding Key}" Background="Transparent" AcceptsTab="False" AcceptsReturn="False"
+                                       AcceptsMouseKeys="True" />
+                    <TextBlock Margin="10,0" Text="or" FontWeight="Bold" />
+                    <hotkeys:HotKeyBox st:StackPanel.Fill="Fill" HotKey="{Binding AlternativeKey}" Background="Transparent" AcceptsTab="False" AcceptsReturn="False"
+                                       AcceptsMouseKeys="True" />
+                    <CheckBox
+                        Content="Suppress"
+                        ToolTip="If enabled other applications will not react to pressed hotkey. May not work for mouse buttons of some special keys"
+                        IsChecked="{Binding SuppressKey}" />
+                </st:StackPanel>
+            </DataTemplate>
         </ResourceDictionary>
     </Window.Resources>
 
@@ -126,14 +140,14 @@
                     <TextBlock
                         MinWidth="45">
                         <TextBlock.Text>
-                            <Binding Path="MicrophoneController.MicrophoneVolume" StringFormat="{}{0:F1}%" Converter="{StaticResource DoubleToPercentConverter}"/>
+                            <Binding Path="MicrophoneController.MicrophoneVolume" StringFormat="{}{0:F1}%" Converter="{StaticResource DoubleToPercentConverter}" />
                         </TextBlock.Text>
                     </TextBlock>
                     <TextBlock Style="{StaticResource WarningIconTextBlock}" Margin="2.5,0,0,0"
                                Visibility="{Binding MicrophoneController.MicrophoneVolumeControlEnabled, Converter={StaticResource TrueToCollapsedFalseToVisibleConverter}}"
                                ToolTip="May be inaccurate because Volume control is disabled" />
                 </st:StackPanel>
-                
+
                 <Separator Grid.ColumnSpan="2" />
 
                 <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Notification:" />
@@ -147,10 +161,10 @@
                                  MinWidth="90"
                                  HorizontalContentAlignment="Left"
                                  Icon="&#xf115;"
-                                 Content="Load..." 
-                                 Margin="0"/>
+                                 Content="Load..."
+                                 Margin="0" />
                 </st:StackPanel>
-                
+
                 <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Notification volume:" />
                 <st:StackPanel>
                     <Slider Width="180"
@@ -161,11 +175,11 @@
                     <TextBlock
                         MinWidth="45">
                         <TextBlock.Text>
-                            <Binding Path="AudioNotificationVolume" StringFormat="{}{0:F1}%" Converter="{StaticResource DoubleToPercentConverter}"/>
+                            <Binding Path="AudioNotificationVolume" StringFormat="{}{0:F1}%" Converter="{StaticResource DoubleToPercentConverter}" />
                         </TextBlock.Text>
                     </TextBlock>
                 </st:StackPanel>
-                
+
                 <Separator Grid.ColumnSpan="2" />
 
                 <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Show overlay:" />
@@ -244,18 +258,34 @@
                 </st:StackPanel>
 
                 <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Hotkey:" />
-                <st:StackPanel>
-                    <hotkeys:HotKeyBox st:StackPanel.Fill="Fill" HotKey="{Binding MicrophoneController.Hotkey.Key}" Background="Transparent" AcceptsTab="False" AcceptsReturn="False"
-                                       AcceptsMouseKeys="True" />
-                    <TextBlock Margin="10,0" Text="or" FontWeight="Bold" />
-                    <hotkeys:HotKeyBox st:StackPanel.Fill="Fill" HotKey="{Binding MicrophoneController.Hotkey.AlternativeKey}" Background="Transparent" AcceptsTab="False" AcceptsReturn="False"
-                                       AcceptsMouseKeys="True" />
-                    <CheckBox
-                        Content="Suppress"
-                        ToolTip="If enabled other applications will not react to pressed hotkey. May not work for mouse buttons of some special keys"
-                        IsChecked="{Binding MicrophoneController.Hotkey.SuppressKey}" />
-                </st:StackPanel>
-                
+                <ContentPresenter Content="{Binding MicrophoneController.Hotkey}" />
+
+                <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Advanced hotkeys:" />
+                <CheckBox
+                    HorizontalAlignment="Left"
+                    IsChecked="{Binding MicrophoneController.EnableAdvancedHotkeys, Mode=TwoWay}" />
+
+                <st:AutoGrid RowHeightOverride="Auto"
+                             Margin="0"
+                             ColumnSpan="2"
+                             Columns="120,*" ChildMargin="5" RowHeight="32"
+                             Visibility="{Binding MicrophoneController.EnableAdvancedHotkeys, Converter={StaticResource TrueToVisibleFalseToCollapsedConverter}}">
+                    <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="for Toggle:" />
+                    <ContentControl Content="{Binding MicrophoneController.HotkeyToggle}" />
+
+                    <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="for Mute:" />
+                    <ContentControl Content="{Binding MicrophoneController.HotkeyMute}" />
+
+                    <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="for Unmute:" />
+                    <ContentControl Content="{Binding MicrophoneController.HotkeyUnmute}" />
+
+                    <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="for Push-to-Talk:" />
+                    <ContentControl Content="{Binding MicrophoneController.HotkeyPushToTalk}" />
+
+                    <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="for Push-to-Mute:" />
+                    <ContentControl Content="{Binding MicrophoneController.HotkeyPushToMute}" />
+                </st:AutoGrid>
+
                 <Separator Grid.ColumnSpan="2" />
 
                 <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Minimize on close:" />

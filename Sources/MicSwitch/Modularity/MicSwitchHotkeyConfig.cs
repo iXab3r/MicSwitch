@@ -19,6 +19,8 @@ namespace MicSwitch.Modularity
         
         public HotkeyConfig HotkeyForPushToMute { get; set; }
         
+        public bool EnableAdvancedHotkeys { get; set; }
+        
         public int Version { get; set; } = 1;
     }
 }

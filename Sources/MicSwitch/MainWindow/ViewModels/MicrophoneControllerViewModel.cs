@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -27,18 +28,22 @@ namespace MicSwitch.MainWindow.ViewModels
         private static readonly TimeSpan ConfigThrottlingTimeout = TimeSpan.FromMilliseconds(250);
 
         private readonly IMicrophoneControllerEx microphoneController;
+        private readonly IFactory<IHotkeyTracker> hotkeyTrackerFactory;
+        private readonly IFactory<IHotkeyEditorViewModel> hotkeyEditorFactory;
+        private readonly IConfigProvider<MicSwitchHotkeyConfig> hotkeyConfigProvider;
+        private readonly IScheduler uiScheduler;
 
         private MuteMode muteMode;
         private MicrophoneLineData microphoneLine;
         private bool microphoneVolumeControlEnabled;
+        private bool enableAdvancedHotkeys;
 
         public MicrophoneControllerViewModel(
             IMicrophoneControllerEx microphoneController,
             IMicrophoneProvider microphoneProvider,
             IComplexHotkeyTracker hotkeyTracker,
-            IHotkeyConverter hotkeyConverter,
             IFactory<IHotkeyTracker> hotkeyTrackerFactory,
-            IFactory<HotkeyEditorViewModel> hotkeyEditorFactory,
+            IFactory<IHotkeyEditorViewModel> hotkeyEditorFactory,
             IConfigProvider<MicSwitchConfig> configProvider,
             IConfigProvider<MicSwitchHotkeyConfig> hotkeyConfigProvider,
             [Dependency(WellKnownSchedulers.UI)] IScheduler uiScheduler)
@@ -52,9 +57,65 @@ namespace MicSwitch.MainWindow.ViewModels
             Microphones = microphones;
             
             this.microphoneController = microphoneController;
+            this.hotkeyTrackerFactory = hotkeyTrackerFactory;
+            this.hotkeyEditorFactory = hotkeyEditorFactory;
+            this.hotkeyConfigProvider = hotkeyConfigProvider;
+            this.uiScheduler = uiScheduler;
             MuteMicrophoneCommand = CommandWrapper.Create<bool>(MuteMicrophoneCommandExecuted);
-            Hotkey = hotkeyEditorFactory.Create();
+            Hotkey = PrepareHotkey(x => x.Hotkey, (config, hotkeyConfig) => config.Hotkey = hotkeyConfig);
+            HotkeyToggle = PrepareHotkey(x => x.HotkeyForToggle, (config, hotkeyConfig) => config.HotkeyForToggle = hotkeyConfig);
+            HotkeyMute = PrepareHotkey(x => x.HotkeyForMute, (config, hotkeyConfig) => config.HotkeyForMute = hotkeyConfig);
+            HotkeyUnmute = PrepareHotkey(x => x.HotkeyForUnmute, (config, hotkeyConfig) => config.HotkeyForUnmute = hotkeyConfig);
+            HotkeyPushToMute = PrepareHotkey(x => x.HotkeyForPushToMute, (config, hotkeyConfig) => config.HotkeyForPushToMute = hotkeyConfig);
+            HotkeyPushToTalk = PrepareHotkey(x => x.HotkeyForPushToTalk, (config, hotkeyConfig) => config.HotkeyForPushToTalk = hotkeyConfig);
 
+            PrepareTracker(HotkeyMode.Click, HotkeyToggle)
+                .ObservableForProperty(x => x.IsActive, skipInitial: true)
+                .SubscribeSafe(x =>
+                {
+                    Log.Debug($"[{x.Sender}] Toggling microphone state: {microphoneController}");
+                    microphoneController.Mute = !microphoneController.Mute;
+                }, Log.HandleUiException)
+                .AddTo(Anchors);    
+            
+            PrepareTracker(HotkeyMode.Hold, HotkeyMute)
+                .ObservableForProperty(x => x.IsActive, skipInitial: true)
+                .Where(x => x.Value)
+                .SubscribeSafe(x =>
+                {
+                    Log.Debug($"[{x.Sender}] Muting microphone: {microphoneController}");
+                    microphoneController.Mute = true;
+                }, Log.HandleUiException)
+                .AddTo(Anchors);   
+            
+            PrepareTracker(HotkeyMode.Hold, HotkeyUnmute)
+                .ObservableForProperty(x => x.IsActive, skipInitial: true)
+                .Where(x => x.Value)
+                .SubscribeSafe(x =>
+                {
+                    Log.Debug($"[{x.Sender}] Un-muting microphone: {microphoneController}");
+                    microphoneController.Mute = false;
+                }, Log.HandleUiException)
+                .AddTo(Anchors);   
+            
+            PrepareTracker(HotkeyMode.Hold, HotkeyPushToTalk)
+                .ObservableForProperty(x => x.IsActive, skipInitial: true)
+                .SubscribeSafe(x =>
+                {
+                    Log.Debug($"[{x.Sender}] Processing push-to-talk hotkey for microphone: {microphoneController}");
+                    microphoneController.Mute = !x.Value;
+                }, Log.HandleUiException)
+                .AddTo(Anchors);   
+            
+            PrepareTracker(HotkeyMode.Hold, HotkeyPushToMute)
+                .ObservableForProperty(x => x.IsActive, skipInitial: true)
+                .SubscribeSafe(x =>
+                {
+                    Log.Debug($"[{x.Sender}] Processing push-to-mute hotkey for microphone: {microphoneController}");
+                    microphoneController.Mute = x.Value;
+                }, Log.HandleUiException)
+                .AddTo(Anchors);
+            
             this.RaiseWhenSourceValue(x => x.MicrophoneVolume, microphoneController, x => x.VolumePercent, uiScheduler).AddTo(Anchors);
             this.RaiseWhenSourceValue(x => x.MicrophoneMuted, microphoneController, x => x.Mute, uiScheduler).AddTo(Anchors);
             
@@ -62,7 +123,7 @@ namespace MicSwitch.MainWindow.ViewModels
                 .DistinctUntilChanged()
                 .SubscribeSafe(x => microphoneController.LineId = x, Log.HandleUiException)
                 .AddTo(Anchors);
-            
+
             hotkeyConfigProvider.ListenTo(x => x.MuteMode)
                 .ObserveOn(uiScheduler)
                 .Subscribe(x =>
@@ -70,6 +131,11 @@ namespace MicSwitch.MainWindow.ViewModels
                     Log.Debug($"Mute mode loaded from config: {x}");
                     MuteMode = x;
                 })
+                .AddTo(Anchors);
+                
+            hotkeyConfigProvider.ListenTo(x => x.EnableAdvancedHotkeys)
+                .ObserveOn(uiScheduler)
+                .Subscribe(x => EnableAdvancedHotkeys = x)
                 .AddTo(Anchors);
             
             this.WhenAnyValue(x => x.MuteMode)
@@ -117,18 +183,9 @@ namespace MicSwitch.MainWindow.ViewModels
                 }, Log.HandleUiException)
                 .AddTo(Anchors);
             
-            hotkeyConfigProvider.ListenTo(x => x.Hotkey)
-                .Select(x => x ?? HotkeyConfig.Empty)
-                .ObserveOn(uiScheduler)
-                .SubscribeSafe(config =>
-                {
-                    Log.Debug($"Setting new hotkeys configuration: {config.DumpToTextRaw()}, current: {Hotkey.Properties}");
-                    Hotkey.Load(config);
-                }, Log.HandleException)
-                .AddTo(Anchors);
-            
              Observable.Merge(
                     this.ObservableForProperty(x => x.MuteMode, skipInitial: true).ToUnit(),
+                    this.ObservableForProperty(x => x.EnableAdvancedHotkeys, skipInitial: true).ToUnit(),
                     Hotkey.ObservableForProperty(x => x.Properties, skipInitial: true).ToUnit())
                 .Throttle(ConfigThrottlingTimeout)
                 .ObserveOn(uiScheduler)
@@ -137,6 +194,7 @@ namespace MicSwitch.MainWindow.ViewModels
                     var hotkeyConfig = hotkeyConfigProvider.ActualConfig.CloneJson();
                     hotkeyConfig.Hotkey = Hotkey.Properties;
                     hotkeyConfig.MuteMode = muteMode;
+                    hotkeyConfig.EnableAdvancedHotkeys = enableAdvancedHotkeys;
                     hotkeyConfigProvider.Save(hotkeyConfig);
                 }, Log.HandleUiException)
                 .AddTo(Anchors);
@@ -191,9 +249,25 @@ namespace MicSwitch.MainWindow.ViewModels
         
         public IHotkeyEditorViewModel Hotkey { get; }
         
+        public IHotkeyEditorViewModel HotkeyToggle { get; }
+        
+        public IHotkeyEditorViewModel HotkeyMute { get; }
+        
+        public IHotkeyEditorViewModel HotkeyUnmute { get; }
+        
+        public IHotkeyEditorViewModel HotkeyPushToTalk { get; }
+        
+        public IHotkeyEditorViewModel HotkeyPushToMute { get; }
+        
         public bool MicrophoneMuted
         {
             get => microphoneController.Mute ?? false;
+        }
+
+        public bool EnableAdvancedHotkeys
+        {
+            get => enableAdvancedHotkeys;
+            set => RaiseAndSetIfChanged(ref enableAdvancedHotkeys, value);
         }
         
         public MicrophoneLineData MicrophoneLine
@@ -216,10 +290,97 @@ namespace MicSwitch.MainWindow.ViewModels
         
         public CommandWrapper MuteMicrophoneCommand { get; }
 
+        private IHotkeyEditorViewModel PrepareHotkey(
+            Expression<Func<MicSwitchHotkeyConfig, HotkeyConfig>> fieldToMonitor,
+            Action<MicSwitchHotkeyConfig, HotkeyConfig> consumer)
+        {
+            return PrepareHotkey(
+                this,
+                fieldToMonitor,
+                consumer).AddTo(Anchors);
+        }
+
+        private IHotkeyTracker PrepareTracker(
+            HotkeyMode hotkeyMode,
+            IHotkeyEditorViewModel hotkeyEditor)
+        {
+            return PrepareTracker(
+                this,
+                hotkeyMode,
+                hotkeyEditor);
+        }
+
         private async Task MuteMicrophoneCommandExecuted(bool mute)
         {
             Log.Debug($"{(mute ? "Muting" : "Un-muting")} microphone {microphoneController.LineId}");
             microphoneController.Mute = mute;
+        }
+        
+        private static IHotkeyTracker PrepareTracker(
+            MicrophoneControllerViewModel owner,
+            HotkeyMode hotkeyMode, 
+            IHotkeyEditorViewModel hotkeyEditor)
+        {
+            var result = owner.hotkeyTrackerFactory.Create();
+            result.HotkeyMode = hotkeyMode;
+            Observable.Merge(
+                owner.WhenAnyValue(x => x.EnableAdvancedHotkeys).ToUnit(),
+                hotkeyEditor.WhenAnyValue(x => x.Key, x => x.AlternativeKey, x => x.SuppressKey).ToUnit())
+                .SubscribeSafe(x =>
+                {
+                    result.SuppressKey = hotkeyEditor.SuppressKey;
+                    result.Clear();
+                    if (!owner.EnableAdvancedHotkeys)
+                    {
+                        return;
+                    }
+                    
+                    if (hotkeyEditor.Key != null)
+                    {
+                        result.Add(hotkeyEditor.Key);
+                    }
+                    if (hotkeyEditor.AlternativeKey != null)
+                    {
+                        result.Add(hotkeyEditor.AlternativeKey);
+                    }
+
+                    if (result.Hotkeys.Any())
+                    {
+                        owner.EnableAdvancedHotkeys = true;
+                    }
+                }, Log.HandleUiException)
+                .AddTo(owner.Anchors);
+            return result.AddTo(owner.Anchors);
+        }
+
+        private static IHotkeyEditorViewModel PrepareHotkey(
+            MicrophoneControllerViewModel owner,
+            Expression<Func<MicSwitchHotkeyConfig, HotkeyConfig>> fieldToMonitor,
+            Action<MicSwitchHotkeyConfig, HotkeyConfig> consumer)
+        {
+            var result = owner.hotkeyEditorFactory.Create();
+            
+            owner.hotkeyConfigProvider.ListenTo(fieldToMonitor)
+                .Select(x => x ?? HotkeyConfig.Empty)
+                .ObserveOn(owner.uiScheduler)
+                .SubscribeSafe(config =>
+                {
+                    Log.Debug($"Setting new hotkeys configuration: {config.DumpToTextRaw()}, current: {result.Properties}");
+                    result.Load(config);
+                }, Log.HandleException)
+                .AddTo(owner.Anchors);
+            
+            result.ObservableForProperty(x => x.Properties, skipInitial: true)
+                .Throttle(ConfigThrottlingTimeout)
+                .SubscribeSafe(() =>
+                {
+                    var hotkeyConfig = owner.hotkeyConfigProvider.ActualConfig.CloneJson();
+                    consumer(hotkeyConfig, result.Properties);
+                    owner.hotkeyConfigProvider.Save(hotkeyConfig);
+                }, Log.HandleUiException)
+                .AddTo(owner.Anchors);
+            
+            return result;
         }
     }
 }
