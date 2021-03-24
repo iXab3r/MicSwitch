@@ -66,6 +66,7 @@ namespace MicSwitch.MainWindow.ViewModels
         private bool microphoneVolumeControlEnabled;
         private MuteMode muteMode;
         private string lastOpenedDirectory;
+        private float audioNotificationVolume;
 
         public MainWindowViewModel(
             IAppArguments appArguments,
@@ -162,6 +163,13 @@ namespace MicSwitch.MainWindow.ViewModels
                 })
                 .ToPropertyHelper(this, x => x.AudioNotification)
                 .AddTo(Anchors);
+
+            this.WhenAnyValue(x => x.AudioNotificationVolume)
+                .Subscribe(x =>
+                {
+                    AudioSelectorWhenUnmuted.Volume = AudioSelectorWhenMuted.Volume = x;
+                })
+                .AddTo(Anchors);
             
             this.ObservableForProperty(x => x.MicrophoneMuted, skipInitial: true)
                 .DistinctUntilChanged()
@@ -170,7 +178,7 @@ namespace MicSwitch.MainWindow.ViewModels
                 {
                     var notificationToPlay = (x.Value ? AudioNotification.On : AudioNotification.Off) ?? default(AudioNotificationType).ToString();
                     Log.Debug($"Playing notification {notificationToPlay} (cfg: {AudioNotification.DumpToTextRaw()})");
-                    audioNotificationsManager.PlayNotification(notificationToPlay);
+                    audioNotificationsManager.PlayNotification(notificationToPlay, audioNotificationVolume);
                 }, Log.HandleUiException)
                 .AddTo(Anchors);
 
@@ -221,13 +229,15 @@ namespace MicSwitch.MainWindow.ViewModels
             
             ActualizeConfig(configProvider, overlayConfigProvider);
 
-            configProvider.ListenTo(x => x.Notification)
+            Observable.Merge(configProvider.ListenTo(x => x.Notification).ToUnit(), configProvider.ListenTo(x => x.NotificationVolume).ToUnit())
+                .Select(_ => new { configProvider.ActualConfig.Notification, configProvider.ActualConfig.NotificationVolume })
                 .ObserveOn(uiScheduler)
                 .SubscribeSafe(cfg =>
                 {
-                    Log.Debug($"Applying new notification configuration: {cfg.DumpToTextRaw()} (current: {AudioNotification.DumpToTextRaw()})");
-                    AudioSelectorWhenMuted.SelectedValue = cfg.Off;
-                    AudioSelectorWhenUnmuted.SelectedValue = cfg.On;
+                    Log.Debug($"Applying new notification configuration: {cfg.DumpToTextRaw()} (current: {AudioNotification.DumpToTextRaw()}, volume: {AudioNotificationVolume})");
+                    AudioSelectorWhenMuted.SelectedValue = cfg.Notification.Off;
+                    AudioSelectorWhenUnmuted.SelectedValue = cfg.Notification.On;
+                    AudioNotificationVolume = cfg.NotificationVolume;
                 }, Log.HandleException)
                 .AddTo(Anchors);
             
@@ -343,6 +353,7 @@ namespace MicSwitch.MainWindow.ViewModels
                     this.ObservableForProperty(x => x.SuppressHotkey, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.MinimizeOnClose, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.MicrophoneVolumeControlEnabled, skipInitial: true).ToUnit(),
+                    this.ObservableForProperty(x => x.AudioNotificationVolume, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.StartMinimized, skipInitial: true).ToUnit())
                 .Throttle(ConfigThrottlingTimeout)
                 .ObserveOn(uiScheduler)
@@ -354,6 +365,7 @@ namespace MicSwitch.MainWindow.ViewModels
                     config.MicrophoneHotkeyAlt = hotkeyConverter.ConvertToString(HotkeyAlt);
                     config.MicrophoneLineId = MicrophoneLine;
                     config.Notification = AudioNotification;
+                    config.NotificationVolume = AudioNotificationVolume;
                     config.SuppressHotkey = SuppressHotkey;
                     config.StartMinimized = StartMinimized;
                     config.MinimizeOnClose = MinimizeOnClose;
@@ -658,6 +670,12 @@ namespace MicSwitch.MainWindow.ViewModels
         }
 
         public TwoStateNotification AudioNotification => audioNotificationSource.Value;
+
+        public float AudioNotificationVolume
+        {
+            get => audioNotificationVolume;
+            set => RaiseAndSetIfChanged(ref audioNotificationVolume, value);
+        }
 
         public IApplicationUpdaterViewModel ApplicationUpdater { get; }
 

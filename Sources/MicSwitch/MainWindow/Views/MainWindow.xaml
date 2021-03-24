@@ -149,6 +149,27 @@
                                  Content="Load..." 
                                  Margin="0"/>
                 </st:StackPanel>
+                
+                <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Notification Volume:" />
+                <st:StackPanel>
+                    <Slider Width="180"
+                            Value="{Binding AudioNotificationVolume}"
+                            Minimum="0" Maximum="1"
+                            Margin="5,4,5,0"
+                            TickFrequency="0.05" />
+                    <TextBlock
+                        MinWidth="45">
+                        <TextBlock.Text>
+                            <Binding Path="AudioNotificationVolume" StringFormat="{}{0:F1}%">
+                                <Binding.Converter>
+                                    <blue:MultiplyDoubleConverter MinValue="0"
+                                                                  Factor="100"
+                                                                  MaxValue="100" />
+                                </Binding.Converter>
+                            </Binding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </st:StackPanel>
 
                 <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Show overlay:" />
                 <st:StackPanel>

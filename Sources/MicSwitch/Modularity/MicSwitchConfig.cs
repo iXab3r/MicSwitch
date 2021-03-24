@@ -34,6 +34,8 @@ namespace MicSwitch.Modularity
             Off = "Beep750"
         };
 
+        public float NotificationVolume { get; set; } = 1;
+
         [Obsolete("Replaced with OverlayConfig")]
         public Point? OverlayLocation { get; set; }
 
