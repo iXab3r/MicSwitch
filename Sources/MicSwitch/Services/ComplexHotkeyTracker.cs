@@ -31,8 +31,7 @@ namespace MicSwitch.Services
 
         private readonly IHotkeyConverter hotkeyConverter;
         private readonly IConfigProvider<MicSwitchConfig> configProvider;
-        private readonly IFactory<IHotkeyTracker> hotkeyTrackerFactory;
-        private readonly Collection<IHotkeyTracker> trackers = new Collection<IHotkeyTracker>();
+        private readonly IHotkeyTracker hotkeyTracker;
         private bool isActive;
         private HookForm hookForm;
 
@@ -43,8 +42,9 @@ namespace MicSwitch.Services
         {
             this.hotkeyConverter = hotkeyConverter;
             this.configProvider = configProvider;
-            this.hotkeyTrackerFactory = hotkeyTrackerFactory;
+            this.hotkeyTracker = hotkeyTrackerFactory.Create();
             Log.Debug($"Scheduling HotkeyTracker initialization using background scheduler");
+            this.RaiseWhenSourceValue(x => x.IsActive, hotkeyTracker, x => x.IsActive).AddTo(Anchors);
             
             var bgThread = new Thread(x => Initialize())
             {
@@ -55,47 +55,34 @@ namespace MicSwitch.Services
             bgThread.Start();
         }
 
-        public bool IsActive
-        {
-            get => isActive;
-            private set => this.RaiseAndSetIfChanged(ref isActive, value);
-        }
+        public bool IsActive => hotkeyTracker.IsActive;
 
         private void Initialize()
         {
             Log.Debug($"Initializing HotkeyTracker");
-
-            var hotkey = hotkeyTrackerFactory.Create();
-            var hotkeyAlt = hotkeyTrackerFactory.Create();
-            trackers.Add(hotkey);
-            trackers.Add(hotkeyAlt);
 
             configProvider.WhenChanged
                 .SubscribeSafe(
                     () =>
                     {
                         var actualConfig = configProvider.ActualConfig;
+                        hotkeyTracker.Clear();
+                        
                         try
                         {
-                            hotkey.Hotkey = hotkeyConverter.ConvertFromString(actualConfig.MicrophoneHotkey);
-                            hotkeyAlt.Hotkey = hotkeyConverter.ConvertFromString(actualConfig.MicrophoneHotkeyAlt);
+                            hotkeyTracker.Add(hotkeyConverter.ConvertFromString(actualConfig.MicrophoneHotkey));
+                            hotkeyTracker.Add(hotkeyConverter.ConvertFromString(actualConfig.MicrophoneHotkeyAlt));
                         }
                         catch (Exception e)
                         {
                             Log.Error($"Failed to parse config hotkeys: {new { configProvider.ActualConfig.MicrophoneHotkey, configProvider.ActualConfig.MicrophoneHotkeyAlt }}", e);
-                            hotkey.Hotkey = HotkeyGesture.Empty;
-                            hotkeyAlt.Hotkey = HotkeyGesture.Empty;
                         }
 
-                        hotkey.HotkeyMode = hotkeyAlt.HotkeyMode = actualConfig.MuteMode == MuteMode.PushToMute || actualConfig.MuteMode == MuteMode.PushToTalk
+                        hotkeyTracker.HotkeyMode = actualConfig.MuteMode == MuteMode.PushToMute || actualConfig.MuteMode == MuteMode.PushToTalk
                             ? HotkeyMode.Hold
                             : HotkeyMode.Click;
-                        hotkey.SuppressKey = hotkeyAlt.SuppressKey = actualConfig.SuppressHotkey;
+                        hotkeyTracker.SuppressKey = actualConfig.SuppressHotkey;
                     }, Log.HandleUiException)
-                .AddTo(Anchors);
-
-            Observable.CombineLatest(trackers.Select(x => x.WhenAnyValue(y => y.IsActive)))
-                .SubscribeSafe(x => IsActive = x.Any(y => y == true), Log.HandleUiException)
                 .AddTo(Anchors);
 
             try
