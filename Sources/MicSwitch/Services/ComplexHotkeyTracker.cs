@@ -30,14 +30,13 @@ namespace MicSwitch.Services
         private static readonly Process CurrentProcess = Process.GetCurrentProcess();
 
         private readonly IHotkeyConverter hotkeyConverter;
-        private readonly IConfigProvider<MicSwitchConfig> configProvider;
+        private readonly IConfigProvider<MicSwitchHotkeyConfig> configProvider;
         private readonly IHotkeyTracker hotkeyTracker;
-        private bool isActive;
         private HookForm hookForm;
 
         public ComplexHotkeyTracker(
             [NotNull] IHotkeyConverter hotkeyConverter,
-            [NotNull] IConfigProvider<MicSwitchConfig> configProvider,
+            [NotNull] IConfigProvider<MicSwitchHotkeyConfig> configProvider,
             [NotNull] IFactory<IHotkeyTracker> hotkeyTrackerFactory)
         {
             this.hotkeyConverter = hotkeyConverter;
@@ -56,7 +55,7 @@ namespace MicSwitch.Services
         }
 
         public bool IsActive => hotkeyTracker.IsActive;
-
+        
         private void Initialize()
         {
             Log.Debug($"Initializing HotkeyTracker");
@@ -70,18 +69,18 @@ namespace MicSwitch.Services
                         
                         try
                         {
-                            hotkeyTracker.Add(hotkeyConverter.ConvertFromString(actualConfig.MicrophoneHotkey));
-                            hotkeyTracker.Add(hotkeyConverter.ConvertFromString(actualConfig.MicrophoneHotkeyAlt));
+                            hotkeyTracker.Add(hotkeyConverter.ConvertFromString(actualConfig.Hotkey.Key));
+                            hotkeyTracker.Add(hotkeyConverter.ConvertFromString(actualConfig.Hotkey.AlternativeKey));
                         }
                         catch (Exception e)
                         {
-                            Log.Error($"Failed to parse config hotkeys: {new { configProvider.ActualConfig.MicrophoneHotkey, configProvider.ActualConfig.MicrophoneHotkeyAlt }}", e);
+                            Log.Error($"Failed to parse config hotkeys: {configProvider.ActualConfig.Hotkey}", e);
                         }
 
                         hotkeyTracker.HotkeyMode = actualConfig.MuteMode == MuteMode.PushToMute || actualConfig.MuteMode == MuteMode.PushToTalk
                             ? HotkeyMode.Hold
                             : HotkeyMode.Click;
-                        hotkeyTracker.SuppressKey = actualConfig.SuppressHotkey;
+                        hotkeyTracker.SuppressKey = actualConfig.Hotkey.Suppress;
                     }, Log.HandleUiException)
                 .AddTo(Anchors);
 

@@ -45,6 +45,7 @@ namespace MicSwitch.MainWindow.ViewModels
         private readonly IWindowTracker mainWindowTracker;
         private readonly IConfigProvider<MicSwitchConfig> configProvider;
         private readonly IConfigProvider<MicSwitchOverlayConfig> overlayConfigProvider;
+        private readonly IConfigProvider<MicSwitchHotkeyConfig> hotkeyConfigProvider;
         private readonly IAudioNotificationsManager notificationsManager;
         private readonly IWindowViewController viewController;
 
@@ -80,6 +81,7 @@ namespace MicSwitch.MainWindow.ViewModels
             [Dependency(WellKnownWindows.MainWindow)] IWindowTracker mainWindowTracker,
             IConfigProvider<MicSwitchConfig> configProvider,
             IConfigProvider<MicSwitchOverlayConfig> overlayConfigProvider,
+            IConfigProvider<MicSwitchHotkeyConfig> hotkeyConfigProvider,
             IComplexHotkeyTracker hotkeyTracker,
             IMicrophoneProvider microphoneProvider,
             IImageProvider imageProvider,
@@ -94,6 +96,7 @@ namespace MicSwitch.MainWindow.ViewModels
             this.mainWindowTracker = mainWindowTracker;
             this.configProvider = configProvider;
             this.overlayConfigProvider = overlayConfigProvider;
+            this.hotkeyConfigProvider = hotkeyConfigProvider;
             this.notificationsManager = notificationsManager;
             this.viewController = viewController;
             this.microphoneController = microphoneController.AddTo(Anchors);
@@ -226,7 +229,8 @@ namespace MicSwitch.MainWindow.ViewModels
             SelectMutedMicrophoneIconCommand = CommandWrapper.Create(SelectMutedMicrophoneIconCommandExecuted);
             ResetMicrophoneIconsCommand = CommandWrapper.Create(ResetMicrophoneIconsCommandExecuted);
             AddSoundCommand = CommandWrapper.Create(AddSoundCommandExecuted);
-            
+
+            ActualizeConfig(configProvider, hotkeyConfigProvider);
             ActualizeConfig(configProvider, overlayConfigProvider);
 
             Observable.Merge(configProvider.ListenTo(x => x.Notification).ToUnit(), configProvider.ListenTo(x => x.NotificationVolume).ToUnit())
@@ -240,19 +244,14 @@ namespace MicSwitch.MainWindow.ViewModels
                     AudioNotificationVolume = cfg.NotificationVolume;
                 }, Log.HandleException)
                 .AddTo(Anchors);
-            
-            configProvider.ListenTo(x => x.MuteMode)
+
+            hotkeyConfigProvider.ListenTo(x => x.MuteMode)
                 .ObserveOn(uiScheduler)
-                .SubscribeSafe(x =>
+                .Subscribe(x =>
                 {
                     Log.Debug($"Mute mode loaded from config: {x}");
                     MuteMode = x;
-                }, Log.HandleException)
-                .AddTo(Anchors);
-            
-            configProvider.ListenTo(x => x.SuppressHotkey)
-                .ObserveOn(uiScheduler)
-                .SubscribeSafe(x => SuppressHotkey = x, Log.HandleException)
+                })
                 .AddTo(Anchors);
             
             configProvider.ListenTo(x => x.MinimizeOnClose)
@@ -285,33 +284,36 @@ namespace MicSwitch.MainWindow.ViewModels
                 }, Log.HandleUiException)
                 .AddTo(Anchors);
 
-            Observable.Merge(configProvider.ListenTo(x => x.MicrophoneHotkey), configProvider.ListenTo(x => x.MicrophoneHotkeyAlt))
-                .Select(x =>
+            hotkeyConfigProvider.ListenTo(x => x.Hotkey)
+                .Select(config =>
                 {
                     try
                     {
                         return new
                         {
-                            Hotkey = hotkeyConverter.ConvertFromString(configProvider.ActualConfig.MicrophoneHotkey ?? string.Empty),
-                            HotkeyAlt = hotkeyConverter.ConvertFromString(configProvider.ActualConfig.MicrophoneHotkeyAlt ?? string.Empty),
+                            Hotkey = hotkeyConverter.ConvertFromString(config.Key ?? string.Empty),
+                            HotkeyAlt = hotkeyConverter.ConvertFromString(config.AlternativeKey ?? string.Empty),
+                            config.Suppress
                         };
                     }
                     catch (Exception e)
                     {
-                        Log.Error($"Failed to parse config hotkeys: {new { configProvider.ActualConfig.MicrophoneHotkey, configProvider.ActualConfig.MicrophoneHotkeyAlt }}", e);
+                        Log.Error($"Failed to parse config hotkeys: {new {x = config}}", e);
                         return new
                         {
                             Hotkey = HotkeyGesture.Empty,
-                            HotkeyAlt = HotkeyGesture.Empty
+                            HotkeyAlt = HotkeyGesture.Empty,
+                            config.Suppress
                         };
                     }
                 })
                 .ObserveOn(uiScheduler)
-                .SubscribeSafe(cfg =>
+                .SubscribeSafe(config =>
                 {
-                    Log.Debug($"Setting new hotkeys configuration: {cfg.DumpToTextRaw()} (current: {hotkey}, alt: {hotkeyAlt})");
-                    Hotkey = cfg.Hotkey;
-                    HotkeyAlt = cfg.HotkeyAlt;
+                    Log.Debug($"Setting new hotkeys configuration: {config.DumpToTextRaw()} (current: {hotkey}, alt: {hotkeyAlt}, suppress: {suppressHotkey})");
+                    Hotkey = config.Hotkey;
+                    HotkeyAlt = config.HotkeyAlt;
+                    SuppressHotkey = config.Suppress;
                 }, Log.HandleException)
                 .AddTo(Anchors);
             
@@ -361,21 +363,21 @@ namespace MicSwitch.MainWindow.ViewModels
                 {
                     var config = configProvider.ActualConfig.CloneJson();
                     config.MuteMode = muteMode;
-                    config.MicrophoneHotkey = hotkeyConverter.ConvertToString(Hotkey);
-                    config.MicrophoneHotkeyAlt = hotkeyConverter.ConvertToString(HotkeyAlt);
                     config.MicrophoneLineId = MicrophoneLine;
                     config.Notification = AudioNotification;
                     config.NotificationVolume = AudioNotificationVolume;
-                    config.SuppressHotkey = SuppressHotkey;
                     config.StartMinimized = StartMinimized;
                     config.MinimizeOnClose = MinimizeOnClose;
-                    
-                    config.OverlayOpacity = null;
-                    config.OverlayLocation = null;
-                    config.OverlaySize = null;
-                    config.OverlayEnabled = null;
-                    config.OverlayBounds = null;
                     configProvider.Save(config);
+
+                    var hotkeyConfig = hotkeyConfigProvider.ActualConfig.CloneJson();
+                    hotkeyConfig.Hotkey = new HotkeyConfig
+                    {
+                        Key = hotkeyConverter.ConvertToString(Hotkey),
+                        AlternativeKey = hotkeyConverter.ConvertToString(HotkeyAlt),
+                        Suppress = suppressHotkey
+                    };
+                    hotkeyConfigProvider.Save(hotkeyConfig);
                 }, Log.HandleUiException)
                 .AddTo(Anchors);
 
@@ -711,10 +713,43 @@ namespace MicSwitch.MainWindow.ViewModels
             var notification = notificationsManager.AddFromFile(new FileInfo(op.FileName));
             Log.Debug($"Added notification {notification}, list of notifications: {notificationsManager.Notifications.JoinStrings(", ")}");
         }
+
+        private static void ActualizeConfig(IConfigProvider<MicSwitchConfig> mainConfigProvider, IConfigProvider<MicSwitchHotkeyConfig> hotkeyConfigProvider)
+        {
+            Log.Debug($"Actualizing configuration format of {hotkeyConfigProvider}");
+
+            var mainConfig = mainConfigProvider.ActualConfig.CloneJson();
+            if (mainConfig.SuppressHotkey == null)
+            {
+                Log.Debug("Main configuration is up-to-date");
+                return;
+            } 
+            
+            Log.Warn($"Main configuration is obsolete, converting to a newer format: { new { mainConfig.MicrophoneHotkey, mainConfig.MicrophoneHotkeyAlt, mainConfig.SuppressHotkey } }");
+            var config = hotkeyConfigProvider.ActualConfig.CloneJson();
+            config.Hotkey = new HotkeyConfig()
+            {
+                Key = mainConfig.MicrophoneHotkey,
+                AlternativeKey = mainConfig.MicrophoneHotkeyAlt,
+                Suppress = mainConfig.SuppressHotkey ?? true
+            };
+            if (mainConfig.MuteMode != null)
+            {
+                config.MuteMode = mainConfig.MuteMode.Value;
+            }
+            hotkeyConfigProvider.Save(config);
+            
+            mainConfig.MicrophoneHotkey = null;
+            mainConfig.MicrophoneHotkeyAlt = null;
+            mainConfig.SuppressHotkey = null;
+            mainConfig.MuteMode = null;
+            mainConfigProvider.Save(mainConfig);
+            Log.Debug("Config format updated successfully");
+        }
         
         private static void ActualizeConfig(IConfigProvider<MicSwitchConfig> mainConfigProvider, IConfigProvider<MicSwitchOverlayConfig> overlayConfigProvider)
         {
-            Log.Debug("Actualizing obsolete configuration format");
+            Log.Debug($"Actualizing configuration format of {overlayConfigProvider}");
 
             var mainConfig = mainConfigProvider.ActualConfig.CloneJson();
             if (mainConfig.OverlayBounds == null)
