@@ -12,6 +12,7 @@ using System.Windows.Threading;
 using log4net;
 using MicSwitch.MainWindow.Models;
 using MicSwitch.MainWindow.ViewModels;
+using MicSwitch.Modularity;
 using MicSwitch.Prism;
 using MicSwitch.Services;
 using PoeShared;
@@ -95,11 +96,14 @@ namespace MicSwitch
             container.AddNewExtension<NativeRegistrations>();
             container.AddNewExtension<WpfCommonRegistrations>();
             container.AddNewExtension<UpdaterRegistrations>();
+
+            container.RegisterType<IHotkeyEditorViewModel, HotkeyEditorViewModel>();
             
             container.RegisterSingleton<IMicrophoneControllerEx, ComplexMicrophoneController>();
             container.RegisterSingleton<IMicrophoneProvider, MicrophoneProvider>();
             container.RegisterSingleton<IMicSwitchOverlayViewModel, MicSwitchOverlayViewModel>();
             container.RegisterSingleton<IComplexHotkeyTracker, ComplexHotkeyTracker>();
+            container.RegisterSingleton<IMicrophoneControllerViewModel, MicrophoneControllerViewModel>();
             container.RegisterSingleton<IMainWindowViewModel, MainWindowViewModel>();
             container.RegisterSingleton<IImageProvider, ImageProvider>();
         }
@@ -213,14 +217,21 @@ namespace MicSwitch
             Log.Info($"Application startup detected, PID: {Process.GetCurrentProcess().Id}");
             
             SingleInstanceValidationRoutine(true);
+
+            sw.Step("Actualizing configuration format");
+            var hotkeyConfigProvider = container.Resolve<IConfigProvider<MicSwitchHotkeyConfig>>();
+            var overlayConfigProvider = container.Resolve<IConfigProvider<MicSwitchOverlayConfig>>();
+            var configProvider = container.Resolve<IConfigProvider<MicSwitchConfig>>();
+            ActualizeConfig(configProvider, hotkeyConfigProvider);
+            ActualizeConfig(configProvider, overlayConfigProvider);
+            
             sw.Step("Registering overlay");
             var micSwitchOverlayDependencyName = "MicSwitchOverlayAllWindows";
             container.RegisterOverlayController(micSwitchOverlayDependencyName, micSwitchOverlayDependencyName);
             var matcher = new RegexStringMatcher().AddToWhitelist(".*");
             container.RegisterWindowTracker(micSwitchOverlayDependencyName, matcher);
             var overlayController = container.Resolve<IOverlayWindowController>(micSwitchOverlayDependencyName);
-            var overlayViewModelFactory =
-                container.Resolve<IFactory<IMicSwitchOverlayViewModel, IOverlayWindowController>>();
+            var overlayViewModelFactory = container.Resolve<IFactory<IMicSwitchOverlayViewModel, IOverlayWindowController>>();
             var overlayViewModel = overlayViewModelFactory.Create(overlayController).AddTo(Anchors);
             
             var mainWindow = container.Resolve<MainWindow.Views.MainWindow>();
@@ -264,6 +275,85 @@ namespace MicSwitch
 
             Log.Warn("Shutting down...");
             Environment.Exit(0);
+        }
+        
+        private static void ActualizeConfig(IConfigProvider<MicSwitchConfig> mainConfigProvider, IConfigProvider<MicSwitchHotkeyConfig> hotkeyConfigProvider)
+        {
+            Log.Debug($"Actualizing configuration format of {hotkeyConfigProvider}");
+
+            var mainConfig = mainConfigProvider.ActualConfig.CloneJson();
+            if (mainConfig.SuppressHotkey == null)
+            {
+                Log.Debug("Main configuration is up-to-date");
+                return;
+            } 
+            
+            Log.Warn($"Main configuration is obsolete, converting to a newer format: { new { mainConfig.MicrophoneHotkey, mainConfig.MicrophoneHotkeyAlt, mainConfig.SuppressHotkey } }");
+            var config = hotkeyConfigProvider.ActualConfig.CloneJson();
+            config.Hotkey = new HotkeyConfig()
+            {
+                Key = mainConfig.MicrophoneHotkey,
+                AlternativeKey = mainConfig.MicrophoneHotkeyAlt,
+                Suppress = mainConfig.SuppressHotkey ?? true
+            };
+            if (mainConfig.MuteMode != null)
+            {
+                config.MuteMode = mainConfig.MuteMode.Value;
+            }
+            hotkeyConfigProvider.Save(config);
+            
+            mainConfig.MicrophoneHotkey = null;
+            mainConfig.MicrophoneHotkeyAlt = null;
+            mainConfig.SuppressHotkey = null;
+            mainConfig.MuteMode = null;
+            mainConfigProvider.Save(mainConfig);
+            Log.Debug("Config format updated successfully");
+        }
+        
+        private static void ActualizeConfig(IConfigProvider<MicSwitchConfig> mainConfigProvider, IConfigProvider<MicSwitchOverlayConfig> overlayConfigProvider)
+        {
+            Log.Debug($"Actualizing configuration format of {overlayConfigProvider}");
+
+            var mainConfig = mainConfigProvider.ActualConfig.CloneJson();
+            if (mainConfig.OverlayBounds == null)
+            {
+                Log.Debug("Main configuration is up-to-date");
+                return;
+            }
+
+            Log.Warn($"Main configuration is obsolete, converting to a newer format: { new { mainConfig.OverlayBounds, mainConfig.OverlayEnabled } }");
+            var config = overlayConfigProvider.ActualConfig.CloneJson();
+            if (mainConfig.OverlayBounds != null)
+            {
+                config.OverlayBounds = mainConfig.OverlayBounds.Value;
+            }
+            if (mainConfig.OverlayEnabled != null)
+            {
+                config.OverlayVisibilityMode = mainConfig.OverlayEnabled == false ? OverlayVisibilityMode.Never : OverlayVisibilityMode.Always;
+            }
+            if (mainConfig.OverlayOpacity != null)
+            {
+                config.OverlayOpacity = mainConfig.OverlayOpacity.Value;
+            }
+            if (mainConfig.MicrophoneIcon != null)
+            {
+                config.MicrophoneIcon = mainConfig.MicrophoneIcon;
+            }
+            if (mainConfig.MutedMicrophoneIcon != null)
+            {
+                config.MutedMicrophoneIcon = mainConfig.MutedMicrophoneIcon;
+            }
+            overlayConfigProvider.Save(config);
+            
+            mainConfig.OverlayBounds = null;
+            mainConfig.OverlayEnabled = null;
+            mainConfig.OverlayOpacity = null;
+            mainConfig.OverlayLocation = null;
+            mainConfig.OverlaySize = null;
+            mainConfig.MicrophoneIcon = null;
+            mainConfig.MutedMicrophoneIcon = null;
+            mainConfigProvider.Save(mainConfig);
+            Log.Debug("Config format updated successfully");
         }
     }
 }

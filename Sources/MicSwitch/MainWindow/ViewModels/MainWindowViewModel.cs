@@ -1,23 +1,18 @@
 ﻿using System;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using DynamicData;
-using DynamicData.Binding;
 using log4net;
 using MaterialDesignColors;
 using MaterialDesignThemes.Wpf;
 using Microsoft.Win32;
 using MicSwitch.MainWindow.Models;
 using MicSwitch.Modularity;
-using MicSwitch.Services;
 using PoeShared;
 using PoeShared.Audio.Services;
 using PoeShared.Audio.ViewModels;
@@ -28,10 +23,10 @@ using PoeShared.Scaffolding;
 using PoeShared.Scaffolding.WPF;
 using PoeShared.Services;
 using PoeShared.Squirrel.Updater;
-using PoeShared.UI.Hotkeys;
 using ReactiveUI;
 using Unity;
 using Application = System.Windows.Application;
+#pragma warning disable 1998
 
 namespace MicSwitch.MainWindow.ViewModels
 {
@@ -45,35 +40,27 @@ namespace MicSwitch.MainWindow.ViewModels
         private readonly IWindowTracker mainWindowTracker;
         private readonly IConfigProvider<MicSwitchConfig> configProvider;
         private readonly IConfigProvider<MicSwitchOverlayConfig> overlayConfigProvider;
-        private readonly IConfigProvider<MicSwitchHotkeyConfig> hotkeyConfigProvider;
         private readonly IAudioNotificationsManager notificationsManager;
         private readonly IWindowViewController viewController;
 
         private readonly IStartupManager startupManager;
         private readonly IAppArguments appArguments;
-        private readonly IMicrophoneControllerEx microphoneController;
         private readonly ObservableAsPropertyHelper<TwoStateNotification> audioNotificationSource;
 
-        private HotkeyGesture hotkey;
-        private HotkeyGesture hotkeyAlt;
-        private bool suppressHotkey;
-        private MicrophoneLineData microphoneLine;
         private bool showInTaskbar;
         private Visibility trayIconVisibility = Visibility.Visible;
         private WindowState windowState;
         private bool startMinimized;
         private Visibility visibility;
         private bool minimizeOnClose;
-        private bool microphoneVolumeControlEnabled;
-        private MuteMode muteMode;
         private string lastOpenedDirectory;
         private float audioNotificationVolume;
 
         public MainWindowViewModel(
             IAppArguments appArguments,
             IFactory<IStartupManager, StartupManagerArgs> startupManagerFactory,
-            IMicrophoneControllerEx microphoneController,
             IMicSwitchOverlayViewModel overlay,
+            IMicrophoneControllerViewModel microphoneControllerViewModel,
             IOverlayWindowController overlayWindowController,
             IAudioNotificationsManager audioNotificationsManager,
             IFactory<IAudioNotificationSelectorViewModel> audioSelectorFactory,
@@ -81,25 +68,20 @@ namespace MicSwitch.MainWindow.ViewModels
             [Dependency(WellKnownWindows.MainWindow)] IWindowTracker mainWindowTracker,
             IConfigProvider<MicSwitchConfig> configProvider,
             IConfigProvider<MicSwitchOverlayConfig> overlayConfigProvider,
-            IConfigProvider<MicSwitchHotkeyConfig> hotkeyConfigProvider,
-            IComplexHotkeyTracker hotkeyTracker,
-            IMicrophoneProvider microphoneProvider,
             IImageProvider imageProvider,
             IAudioNotificationsManager notificationsManager,
             IWindowViewController viewController,
-            IHotkeyConverter hotkeyConverter,
             [Dependency(WellKnownSchedulers.UI)] IScheduler uiScheduler)
         {
             Title = $"{(appArguments.IsDebugMode ? "[D]" : "")} {appArguments.AppName} v{appArguments.Version}";
 
             this.appArguments = appArguments;
+            this.MicrophoneController = microphoneControllerViewModel.AddTo(Anchors);
             this.mainWindowTracker = mainWindowTracker;
             this.configProvider = configProvider;
             this.overlayConfigProvider = overlayConfigProvider;
-            this.hotkeyConfigProvider = hotkeyConfigProvider;
             this.notificationsManager = notificationsManager;
             this.viewController = viewController;
-            this.microphoneController = microphoneController.AddTo(Anchors);
             ApplicationUpdater = appUpdater.AddTo(Anchors);
             ImageProvider = imageProvider;
             AudioSelectorWhenMuted = audioSelectorFactory.Create().AddTo(Anchors);
@@ -118,43 +100,7 @@ namespace MicSwitch.MainWindow.ViewModels
 
             this.RaiseWhenSourceValue(x => x.IsActive, mainWindowTracker, x => x.IsActive, uiScheduler).AddTo(Anchors);
             this.RaiseWhenSourceValue(x => x.RunAtLogin, startupManager, x => x.IsRegistered, uiScheduler).AddTo(Anchors);
-            this.RaiseWhenSourceValue(x => x.MicrophoneVolume, microphoneController, x => x.VolumePercent, uiScheduler).AddTo(Anchors);
-            this.RaiseWhenSourceValue(x => x.MicrophoneMuted, microphoneController, x => x.Mute, uiScheduler).AddTo(Anchors);
             this.RaiseWhenSourceValue(x => x.ShowOverlaySettings, Overlay, x => x.OverlayVisibilityMode).AddTo(Anchors);
-
-            microphoneProvider.Microphones
-                .ToObservableChangeSet()
-                .ObserveOn(uiScheduler)
-                .Bind(out var microphones)
-                .SubscribeToErrors(Log.HandleUiException)
-                .AddTo(Anchors);
-            Microphones = microphones;
-            
-            this.WhenAnyValue(x => x.MuteMode)
-                .ObserveOn(uiScheduler)
-                .SubscribeSafe(newMuteMode =>
-                {
-                    switch (newMuteMode)
-                    {
-                        case MuteMode.PushToTalk:
-                            Log.Debug($"{newMuteMode} mute mode is enabled, un-muting microphone");
-                            MuteMicrophoneCommand.Execute(true);
-                            break;
-                        case MuteMode.PushToMute:
-                            MuteMicrophoneCommand.Execute(false);
-                            Log.Debug($"{newMuteMode} mute mode is enabled, muting microphone");
-                            break;
-                        default:
-                           Log.Debug($"{newMuteMode} enabled, mic action is not needed");
-                           break;
-                    }
-                }, Log.HandleUiException)
-                .AddTo(Anchors);  
-
-            this.WhenAnyValue(x => x.MicrophoneLine)
-                .DistinctUntilChanged()
-                .SubscribeSafe(x => microphoneController.LineId = x, Log.HandleUiException)
-                .AddTo(Anchors);
 
             audioNotificationSource = Observable.Merge(
                     AudioSelectorWhenMuted.ObservableForProperty(x => x.SelectedValue, skipInitial: true),
@@ -174,9 +120,9 @@ namespace MicSwitch.MainWindow.ViewModels
                 })
                 .AddTo(Anchors);
             
-            this.ObservableForProperty(x => x.MicrophoneMuted, skipInitial: true)
+            MicrophoneController.ObservableForProperty(x => x.MicrophoneMuted, skipInitial: true)
                 .DistinctUntilChanged()
-                .Where(x => !MicrophoneLine.IsEmpty)
+                .Where(x => !MicrophoneController.MicrophoneLine.IsEmpty)
                 .SubscribeSafe(x =>
                 {
                     var notificationToPlay = (x.Value ? AudioNotification.On : AudioNotification.Off) ?? default(AudioNotificationType).ToString();
@@ -185,30 +131,6 @@ namespace MicSwitch.MainWindow.ViewModels
                 }, Log.HandleUiException)
                 .AddTo(Anchors);
 
-           hotkeyTracker
-                .WhenAnyValue(x => x.IsActive)
-                .Skip(1)
-                .ObserveOn(uiScheduler)
-                .SubscribeSafe(async isActive =>
-                {
-                    Log.Debug($"Handling hotkey press (isActive: {isActive}), mute mode: {muteMode}");
-                    switch (muteMode)
-                    {
-                        case MuteMode.PushToTalk:
-                            await MuteMicrophoneCommandExecuted(!isActive);
-                            break;
-                        case MuteMode.PushToMute:
-                            await MuteMicrophoneCommandExecuted(isActive);
-                            break;
-                        case MuteMode.ToggleMute:
-                            await MuteMicrophoneCommandExecuted(!MicrophoneMuted);
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException(nameof(muteMode), muteMode, @"Unsupported mute mode");
-                    }
-                }, Log.HandleUiException)
-                .AddTo(Anchors);
-            
             this.WhenAnyValue(x => x.WindowState)
                 .SubscribeSafe(x => ShowInTaskbar = x != WindowState.Minimized, Log.HandleUiException)
                 .AddTo(Anchors);
@@ -224,14 +146,10 @@ namespace MicSwitch.MainWindow.ViewModels
             OpenAppDataDirectoryCommand = CommandWrapper.Create(OpenAppDataDirectory);
             ResetOverlayPositionCommand = CommandWrapper.Create(ResetOverlayPositionCommandExecuted);
             RunAtLoginToggleCommand = CommandWrapper.Create<bool>(RunAtLoginCommandExecuted);
-            MuteMicrophoneCommand = CommandWrapper.Create<bool>(MuteMicrophoneCommandExecuted);
             SelectMicrophoneIconCommand = CommandWrapper.Create(SelectMicrophoneIconCommandExecuted);
             SelectMutedMicrophoneIconCommand = CommandWrapper.Create(SelectMutedMicrophoneIconCommandExecuted);
             ResetMicrophoneIconsCommand = CommandWrapper.Create(ResetMicrophoneIconsCommandExecuted);
             AddSoundCommand = CommandWrapper.Create(AddSoundCommandExecuted);
-
-            ActualizeConfig(configProvider, hotkeyConfigProvider);
-            ActualizeConfig(configProvider, overlayConfigProvider);
 
             Observable.Merge(configProvider.ListenTo(x => x.Notification).ToUnit(), configProvider.ListenTo(x => x.NotificationVolume).ToUnit())
                 .Select(_ => new { configProvider.ActualConfig.Notification, configProvider.ActualConfig.NotificationVolume })
@@ -244,79 +162,12 @@ namespace MicSwitch.MainWindow.ViewModels
                     AudioNotificationVolume = cfg.NotificationVolume;
                 }, Log.HandleException)
                 .AddTo(Anchors);
-
-            hotkeyConfigProvider.ListenTo(x => x.MuteMode)
-                .ObserveOn(uiScheduler)
-                .Subscribe(x =>
-                {
-                    Log.Debug($"Mute mode loaded from config: {x}");
-                    MuteMode = x;
-                })
-                .AddTo(Anchors);
             
             configProvider.ListenTo(x => x.MinimizeOnClose)
                 .ObserveOn(uiScheduler)
                 .SubscribeSafe(x => MinimizeOnClose = x, Log.HandleException)
                 .AddTo(Anchors);
-            
-            configProvider.ListenTo(x => x.VolumeControlEnabled)
-                .ObserveOn(uiScheduler)
-                .SubscribeSafe(x => MicrophoneVolumeControlEnabled = x, Log.HandleException)
-                .AddTo(Anchors);
-            
-            Observable.Merge(
-                    configProvider.ListenTo(x => x.MicrophoneLineId).ToUnit(),
-                    Microphones.ToObservableChangeSet().ToUnit())
-                .Select(_ => configProvider.ActualConfig.MicrophoneLineId)
-                .ObserveOn(uiScheduler)
-                .SubscribeSafe(configLineId =>
-                {
-                    Log.Debug($"Microphone line configuration changed, lineId: {configLineId}, known lines: {Microphones.DumpToTextRaw()}");
 
-                    var micLine = Microphones.FirstOrDefault(line => line.Equals(configLineId));
-                    if (micLine.IsEmpty)
-                    {
-                        Log.Debug($"Selecting first one of available microphone lines, known lines: {Microphones.DumpToTextRaw()}");
-                        micLine = Microphones.FirstOrDefault();
-                    }
-                    MicrophoneLine = micLine;
-                    MuteMicrophoneCommand.ResetError();
-                }, Log.HandleUiException)
-                .AddTo(Anchors);
-
-            hotkeyConfigProvider.ListenTo(x => x.Hotkey)
-                .Select(config =>
-                {
-                    try
-                    {
-                        return new
-                        {
-                            Hotkey = hotkeyConverter.ConvertFromString(config.Key ?? string.Empty),
-                            HotkeyAlt = hotkeyConverter.ConvertFromString(config.AlternativeKey ?? string.Empty),
-                            config.Suppress
-                        };
-                    }
-                    catch (Exception e)
-                    {
-                        Log.Error($"Failed to parse config hotkeys: {new {x = config}}", e);
-                        return new
-                        {
-                            Hotkey = HotkeyGesture.Empty,
-                            HotkeyAlt = HotkeyGesture.Empty,
-                            config.Suppress
-                        };
-                    }
-                })
-                .ObserveOn(uiScheduler)
-                .SubscribeSafe(config =>
-                {
-                    Log.Debug($"Setting new hotkeys configuration: {config.DumpToTextRaw()} (current: {hotkey}, alt: {hotkeyAlt}, suppress: {suppressHotkey})");
-                    Hotkey = config.Hotkey;
-                    HotkeyAlt = config.HotkeyAlt;
-                    SuppressHotkey = config.Suppress;
-                }, Log.HandleException)
-                .AddTo(Anchors);
-            
             viewController
                 .WhenLoaded
                 .Take(1)
@@ -347,14 +198,9 @@ namespace MicSwitch.MainWindow.ViewModels
                 .AddTo(Anchors);
 
             Observable.Merge(
-                    this.ObservableForProperty(x => x.MicrophoneLine, skipInitial: true).ToUnit(),
-                    this.ObservableForProperty(x => x.MuteMode, skipInitial: true).ToUnit(),
+                    microphoneControllerViewModel.ObservableForProperty(x => x.MuteMode, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.AudioNotification, skipInitial: true).ToUnit(),
-                    this.ObservableForProperty(x => x.HotkeyAlt, skipInitial: true).ToUnit(),
-                    this.ObservableForProperty(x => x.Hotkey, skipInitial: true).ToUnit(),
-                    this.ObservableForProperty(x => x.SuppressHotkey, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.MinimizeOnClose, skipInitial: true).ToUnit(),
-                    this.ObservableForProperty(x => x.MicrophoneVolumeControlEnabled, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.AudioNotificationVolume, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.StartMinimized, skipInitial: true).ToUnit())
                 .Throttle(ConfigThrottlingTimeout)
@@ -362,22 +208,11 @@ namespace MicSwitch.MainWindow.ViewModels
                 .SubscribeSafe(() =>
                 {
                     var config = configProvider.ActualConfig.CloneJson();
-                    config.MuteMode = muteMode;
-                    config.MicrophoneLineId = MicrophoneLine;
                     config.Notification = AudioNotification;
                     config.NotificationVolume = AudioNotificationVolume;
                     config.StartMinimized = StartMinimized;
                     config.MinimizeOnClose = MinimizeOnClose;
                     configProvider.Save(config);
-
-                    var hotkeyConfig = hotkeyConfigProvider.ActualConfig.CloneJson();
-                    hotkeyConfig.Hotkey = new HotkeyConfig
-                    {
-                        Key = hotkeyConverter.ConvertToString(Hotkey),
-                        AlternativeKey = hotkeyConverter.ConvertToString(HotkeyAlt),
-                        Suppress = suppressHotkey
-                    };
-                    hotkeyConfigProvider.Save(hotkeyConfig);
                 }, Log.HandleUiException)
                 .AddTo(Anchors);
 
@@ -398,7 +233,101 @@ namespace MicSwitch.MainWindow.ViewModels
             paletteHelper.SetTheme(theme);
         }
 
-        private void ToggleOverlayCommandExecuted()
+        public bool IsElevated => appArguments.IsElevated;
+
+        public ICommand ToggleOverlayLockCommand { get; }
+        
+        public ICommand ResetOverlayPositionCommand { get; }
+
+        public ICommand ExitAppCommand { get; }
+
+        public ICommand ShowAppCommand { get; }
+        
+        public ICommand SelectMutedMicrophoneIconCommand { get; }
+        
+        public ICommand SelectMicrophoneIconCommand { get; }
+        
+        public ICommand ResetMicrophoneIconsCommand { get; }
+
+        public CommandWrapper OpenAppDataDirectoryCommand { get; }
+        
+        public CommandWrapper RunAtLoginToggleCommand { get; }
+
+        public IMicSwitchOverlayViewModel Overlay { get; }
+
+        public IAudioNotificationSelectorViewModel AudioSelectorWhenUnmuted { get; }
+
+        public IAudioNotificationSelectorViewModel AudioSelectorWhenMuted { get; }
+
+        public IMicrophoneControllerViewModel MicrophoneController { get; }
+
+        public bool IsActive => mainWindowTracker.IsActive;
+
+        public bool RunAtLogin => startupManager.IsRegistered;
+
+        public WindowState WindowState
+        {
+            get => windowState;
+            set => this.RaiseAndSetIfChanged(ref windowState, value);
+        }
+
+        public bool ShowOverlaySettings => Overlay.OverlayVisibilityMode != OverlayVisibilityMode.Never;
+        
+        public Visibility Visibility
+        {
+            get => visibility;
+            set => this.RaiseAndSetIfChanged(ref visibility, value);
+        }
+
+        public bool StartMinimized
+        {
+            get => startMinimized;
+            set => this.RaiseAndSetIfChanged(ref startMinimized, value);
+        }
+
+        public bool MinimizeOnClose
+        {
+            get => minimizeOnClose;
+            set => RaiseAndSetIfChanged(ref minimizeOnClose, value);
+        }
+
+        public Visibility TrayIconVisibility
+        {
+            get => trayIconVisibility;
+            set => this.RaiseAndSetIfChanged(ref trayIconVisibility, value);
+        }
+
+        public bool ShowInTaskbar
+        {
+            get => showInTaskbar;
+            set => this.RaiseAndSetIfChanged(ref showInTaskbar, value);
+        }
+
+        public string Title { get; }
+        
+        public IImageProvider ImageProvider { get; }
+        
+        public CommandWrapper AddSoundCommand { get; }
+        
+        public string LastOpenedDirectory
+        {
+            get => lastOpenedDirectory;
+            private set => RaiseAndSetIfChanged(ref lastOpenedDirectory, value);
+        }
+
+        public TwoStateNotification AudioNotification => audioNotificationSource.Value;
+
+        public float AudioNotificationVolume
+        {
+            get => audioNotificationVolume;
+            set => RaiseAndSetIfChanged(ref audioNotificationVolume, value);
+        }
+
+        public IApplicationUpdaterViewModel ApplicationUpdater { get; }
+
+        public bool IsDebugMode => appArguments.IsDebugMode;
+        
+        private async Task ToggleOverlayCommandExecuted()
         {
             if (Overlay.IsLocked && Overlay.UnlockWindowCommand.CanExecute(null))
             {
@@ -410,14 +339,14 @@ namespace MicSwitch.MainWindow.ViewModels
             }
         }
 
-        private void ExitAppCommandExecuted()
+        private async Task ExitAppCommandExecuted()
         {
             Log.Debug("Closing application");
             configProvider.Save(configProvider.ActualConfig);
             Application.Current.Shutdown();
         }
 
-        private void ShowAppCommandExecuted()
+        private async Task ShowAppCommandExecuted()
         {
             if (Visibility != Visibility.Visible)
             {
@@ -476,38 +405,6 @@ namespace MicSwitch.MainWindow.ViewModels
             overlayConfigProvider.Save(config);
         }
 
-        private static async Task<byte[]> SelectIcon()
-        {
-            Log.Info($"Showing OpenFileDialog to user");
-
-            var initialDirectory = string.Empty;
-            var op = new OpenFileDialog
-            {
-                Title = "Select an icon", 
-                InitialDirectory = !string.IsNullOrEmpty(initialDirectory) && Directory.Exists(initialDirectory) 
-                    ? initialDirectory
-                    : Environment.GetFolderPath(Environment.SpecialFolder.CommonPictures),
-                CheckPathExists = true,
-                Multiselect = false,
-                Filter = "All supported graphics|*.jpg;*.jpeg;*.png;*.bmp;*.gif|All files|*.*"
-            };
-
-            if (op.ShowDialog() != true)
-            {
-                Log.Info("User cancelled OpenFileDialog");
-                return null;
-            }
-
-            Log.Debug($"Opening image {op.FileName}");
-            return await File.ReadAllBytesAsync(op.FileName);
-        }
-
-        private async Task MuteMicrophoneCommandExecuted(bool mute)
-        {
-            Log.Debug($"{(mute ? "Muting" : "Un-muting")} microphone {microphoneController.LineId}");
-            microphoneController.Mute = mute;
-        }
-
         private async Task RunAtLoginCommandExecuted(bool runAtLogin)
         {
             if (runAtLogin)
@@ -534,161 +431,18 @@ namespace MicSwitch.MainWindow.ViewModels
             }
         }
 
-        private void ResetOverlayPositionCommandExecuted()
+        private async Task ResetOverlayPositionCommandExecuted()
         {
             Log.Debug($"Resetting overlay position, current size: {Overlay.NativeBounds}");
             Overlay.ResetToDefault();
         }
 
-        public bool IsElevated => appArguments.IsElevated;
-
-        public ReadOnlyObservableCollection<MicrophoneLineData> Microphones { get; }
-
-        public ICommand ToggleOverlayLockCommand { get; }
-        
-        public ICommand ResetOverlayPositionCommand { get; }
-
-        public ICommand ExitAppCommand { get; }
-
-        public ICommand ShowAppCommand { get; }
-        
-        public ICommand SelectMutedMicrophoneIconCommand { get; }
-        
-        public ICommand SelectMicrophoneIconCommand { get; }
-        
-        public ICommand ResetMicrophoneIconsCommand { get; }
-
-        public CommandWrapper OpenAppDataDirectoryCommand { get; }
-        
-        public CommandWrapper RunAtLoginToggleCommand { get; }
-
-        public CommandWrapper MuteMicrophoneCommand { get; }
-        
-        public IMicSwitchOverlayViewModel Overlay { get; }
-
-        public IAudioNotificationSelectorViewModel AudioSelectorWhenUnmuted { get; }
-
-        public IAudioNotificationSelectorViewModel AudioSelectorWhenMuted { get; }
-
-        public bool IsActive => mainWindowTracker.IsActive;
-
-        public bool RunAtLogin => startupManager.IsRegistered;
-
-        public WindowState WindowState
-        {
-            get => windowState;
-            set => this.RaiseAndSetIfChanged(ref windowState, value);
-        }
-
-        public bool ShowOverlaySettings => Overlay.OverlayVisibilityMode != OverlayVisibilityMode.Never;
-        
-        public Visibility Visibility
-        {
-            get => visibility;
-            set => this.RaiseAndSetIfChanged(ref visibility, value);
-        }
-
-        public bool StartMinimized
-        {
-            get => startMinimized;
-            set => this.RaiseAndSetIfChanged(ref startMinimized, value);
-        }
-
-        public bool MinimizeOnClose
-        {
-            get => minimizeOnClose;
-            set => RaiseAndSetIfChanged(ref minimizeOnClose, value);
-        }
-
-        public Visibility TrayIconVisibility
-        {
-            get => trayIconVisibility;
-            set => this.RaiseAndSetIfChanged(ref trayIconVisibility, value);
-        }
-
-        public bool ShowInTaskbar
-        {
-            get => showInTaskbar;
-            set => this.RaiseAndSetIfChanged(ref showInTaskbar, value);
-        }
-
-        public HotkeyGesture Hotkey
-        {
-            get => hotkey;
-            set => this.RaiseAndSetIfChanged(ref hotkey, value);
-        }
-
-        public HotkeyGesture HotkeyAlt
-        {
-            get => hotkeyAlt;
-            set => this.RaiseAndSetIfChanged(ref hotkeyAlt, value);
-        }
-
-        public string Title { get; }
-
-        public MuteMode MuteMode
-        {
-            get => muteMode;
-            set => RaiseAndSetIfChanged(ref muteMode, value);
-        }
-
-        public MicrophoneLineData MicrophoneLine
-        {
-            get => microphoneLine;
-            set => this.RaiseAndSetIfChanged(ref microphoneLine, value);
-        }
-
-        public double MicrophoneVolume
-        {
-            get => microphoneController.VolumePercent ?? 0;
-            set => microphoneController.VolumePercent = value;
-        }
-
-        public bool MicrophoneVolumeControlEnabled
-        {
-            get => microphoneVolumeControlEnabled;
-            set => RaiseAndSetIfChanged(ref microphoneVolumeControlEnabled, value);
-        }
-
-        public bool MicrophoneMuted
-        {
-            get => microphoneController.Mute ?? false;
-        }
-        
-        public IImageProvider ImageProvider { get; }
-
-        public bool SuppressHotkey
-        {
-            get => suppressHotkey;
-            set => this.RaiseAndSetIfChanged(ref suppressHotkey, value);
-        }
-        
-        public CommandWrapper AddSoundCommand { get; }
-        
-        public string LastOpenedDirectory
-        {
-            get => lastOpenedDirectory;
-            private set => RaiseAndSetIfChanged(ref lastOpenedDirectory, value);
-        }
-
-        public TwoStateNotification AudioNotification => audioNotificationSource.Value;
-
-        public float AudioNotificationVolume
-        {
-            get => audioNotificationVolume;
-            set => RaiseAndSetIfChanged(ref audioNotificationVolume, value);
-        }
-
-        public IApplicationUpdaterViewModel ApplicationUpdater { get; }
-
-        public bool IsDebugMode => appArguments.IsDebugMode;
-
         private async Task OpenAppDataDirectory()
         {
             await Task.Run(() => Process.Start(ExplorerExecutablePath, appArguments.AppDataDirectory));
         }
-        
-        private void AddSoundCommandExecuted()
+
+        private async Task AddSoundCommandExecuted()
         {
             Log.Info($"Showing OpenFileDialog to user");
 
@@ -714,83 +468,30 @@ namespace MicSwitch.MainWindow.ViewModels
             Log.Debug($"Added notification {notification}, list of notifications: {notificationsManager.Notifications.JoinStrings(", ")}");
         }
 
-        private static void ActualizeConfig(IConfigProvider<MicSwitchConfig> mainConfigProvider, IConfigProvider<MicSwitchHotkeyConfig> hotkeyConfigProvider)
+        private static async Task<byte[]> SelectIcon()
         {
-            Log.Debug($"Actualizing configuration format of {hotkeyConfigProvider}");
+            Log.Info($"Showing OpenFileDialog to user");
 
-            var mainConfig = mainConfigProvider.ActualConfig.CloneJson();
-            if (mainConfig.SuppressHotkey == null)
+            var initialDirectory = string.Empty;
+            var op = new OpenFileDialog
             {
-                Log.Debug("Main configuration is up-to-date");
-                return;
-            } 
-            
-            Log.Warn($"Main configuration is obsolete, converting to a newer format: { new { mainConfig.MicrophoneHotkey, mainConfig.MicrophoneHotkeyAlt, mainConfig.SuppressHotkey } }");
-            var config = hotkeyConfigProvider.ActualConfig.CloneJson();
-            config.Hotkey = new HotkeyConfig()
-            {
-                Key = mainConfig.MicrophoneHotkey,
-                AlternativeKey = mainConfig.MicrophoneHotkeyAlt,
-                Suppress = mainConfig.SuppressHotkey ?? true
+                Title = "Select an icon", 
+                InitialDirectory = !string.IsNullOrEmpty(initialDirectory) && Directory.Exists(initialDirectory) 
+                    ? initialDirectory
+                    : Environment.GetFolderPath(Environment.SpecialFolder.CommonPictures),
+                CheckPathExists = true,
+                Multiselect = false,
+                Filter = "All supported graphics|*.jpg;*.jpeg;*.png;*.bmp;*.gif|All files|*.*"
             };
-            if (mainConfig.MuteMode != null)
-            {
-                config.MuteMode = mainConfig.MuteMode.Value;
-            }
-            hotkeyConfigProvider.Save(config);
-            
-            mainConfig.MicrophoneHotkey = null;
-            mainConfig.MicrophoneHotkeyAlt = null;
-            mainConfig.SuppressHotkey = null;
-            mainConfig.MuteMode = null;
-            mainConfigProvider.Save(mainConfig);
-            Log.Debug("Config format updated successfully");
-        }
-        
-        private static void ActualizeConfig(IConfigProvider<MicSwitchConfig> mainConfigProvider, IConfigProvider<MicSwitchOverlayConfig> overlayConfigProvider)
-        {
-            Log.Debug($"Actualizing configuration format of {overlayConfigProvider}");
 
-            var mainConfig = mainConfigProvider.ActualConfig.CloneJson();
-            if (mainConfig.OverlayBounds == null)
+            if (op.ShowDialog() != true)
             {
-                Log.Debug("Main configuration is up-to-date");
-                return;
+                Log.Info("User cancelled OpenFileDialog");
+                return null;
             }
 
-            Log.Warn($"Main configuration is obsolete, converting to a newer format: { new { mainConfig.OverlayBounds, mainConfig.OverlayEnabled } }");
-            var config = overlayConfigProvider.ActualConfig.CloneJson();
-            if (mainConfig.OverlayBounds != null)
-            {
-                config.OverlayBounds = mainConfig.OverlayBounds.Value;
-            }
-            if (mainConfig.OverlayEnabled != null)
-            {
-                config.OverlayVisibilityMode = mainConfig.OverlayEnabled == false ? OverlayVisibilityMode.Never : OverlayVisibilityMode.Always;
-            }
-            if (mainConfig.OverlayOpacity != null)
-            {
-                config.OverlayOpacity = mainConfig.OverlayOpacity.Value;
-            }
-            if (mainConfig.MicrophoneIcon != null)
-            {
-                config.MicrophoneIcon = mainConfig.MicrophoneIcon;
-            }
-            if (mainConfig.MutedMicrophoneIcon != null)
-            {
-                config.MutedMicrophoneIcon = mainConfig.MutedMicrophoneIcon;
-            }
-            overlayConfigProvider.Save(config);
-            
-            mainConfig.OverlayBounds = null;
-            mainConfig.OverlayEnabled = null;
-            mainConfig.OverlayOpacity = null;
-            mainConfig.OverlayLocation = null;
-            mainConfig.OverlaySize = null;
-            mainConfig.MicrophoneIcon = null;
-            mainConfig.MutedMicrophoneIcon = null;
-            mainConfigProvider.Save(mainConfig);
-            Log.Debug("Config format updated successfully");
+            Log.Debug($"Opening image {op.FileName}");
+            return await File.ReadAllBytesAsync(op.FileName);
         }
     }
 }

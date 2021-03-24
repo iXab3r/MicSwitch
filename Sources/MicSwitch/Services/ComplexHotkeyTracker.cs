@@ -1,7 +1,6 @@
 using System;
 using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reflection;
@@ -12,7 +11,6 @@ using JetBrains.Annotations;
 using log4net;
 using MicSwitch.MainWindow.Models;
 using MicSwitch.Modularity;
-using Mono.Collections.Generic;
 using PoeShared;
 using PoeShared.Modularity;
 using PoeShared.Native;
@@ -20,7 +18,6 @@ using PoeShared.Prism;
 using PoeShared.Scaffolding;
 using PoeShared.Scaffolding.WPF;
 using PoeShared.UI.Hotkeys;
-using ReactiveUI;
 
 namespace MicSwitch.Services
 {
@@ -61,26 +58,26 @@ namespace MicSwitch.Services
             Log.Debug($"Initializing HotkeyTracker");
 
             configProvider.WhenChanged
+                .Select(x => new { Hotkey = x.Hotkey ?? HotkeyConfig.Empty, x.MuteMode })
                 .SubscribeSafe(
-                    () =>
+                    config =>
                     {
-                        var actualConfig = configProvider.ActualConfig;
                         hotkeyTracker.Clear();
-                        
+
                         try
                         {
-                            hotkeyTracker.Add(hotkeyConverter.ConvertFromString(actualConfig.Hotkey.Key));
-                            hotkeyTracker.Add(hotkeyConverter.ConvertFromString(actualConfig.Hotkey.AlternativeKey));
+                            hotkeyTracker.Add(hotkeyConverter.ConvertFromString(config.Hotkey.Key));
+                            hotkeyTracker.Add(hotkeyConverter.ConvertFromString(config.Hotkey.AlternativeKey));
                         }
                         catch (Exception e)
                         {
-                            Log.Error($"Failed to parse config hotkeys: {configProvider.ActualConfig.Hotkey}", e);
+                            Log.Error($"Failed to parse config hotkeys: {config.Hotkey}", e);
                         }
 
-                        hotkeyTracker.HotkeyMode = actualConfig.MuteMode == MuteMode.PushToMute || actualConfig.MuteMode == MuteMode.PushToTalk
+                        hotkeyTracker.HotkeyMode = config.MuteMode == MuteMode.PushToMute || config.MuteMode == MuteMode.PushToTalk
                             ? HotkeyMode.Hold
                             : HotkeyMode.Click;
-                        hotkeyTracker.SuppressKey = actualConfig.Hotkey.Suppress;
+                        hotkeyTracker.SuppressKey = config.Hotkey.Suppress;
                     }, Log.HandleUiException)
                 .AddTo(Anchors);
 

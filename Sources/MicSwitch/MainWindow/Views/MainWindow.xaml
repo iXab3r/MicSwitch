@@ -85,8 +85,8 @@
                            Text="Microphone:" />
                 <st:StackPanel st:AutoGrid.RowHeightOverride="40">
                     <ComboBox st:StackPanel.Fill="Fill"
-                              ItemsSource="{Binding Microphones}"
-                              SelectedItem="{Binding MicrophoneLine}"
+                              ItemsSource="{Binding MicrophoneController.Microphones}"
+                              SelectedItem="{Binding MicrophoneController.MicrophoneLine}"
                               DisplayMemberPath="Name" />
                 </st:StackPanel>
 
@@ -95,16 +95,16 @@
                     <CheckBox
                         ToolTip="Microphone mute is system-wide"
                         HorizontalAlignment="Left"
-                        Command="{Binding MuteMicrophoneCommand}"
+                        Command="{Binding MicrophoneController.MuteMicrophoneCommand}"
                         CommandParameter="{Binding IsChecked, RelativeSource={RelativeSource Self}}"
-                        IsChecked="{Binding MicrophoneMuted, Mode=OneWay}" />
+                        IsChecked="{Binding MicrophoneController.MicrophoneMuted, Mode=OneWay}" />
                     <fa:FontAwesome Icon="Warning"
                                     Margin="5,0"
-                                    Visibility="{Binding MuteMicrophoneCommand.Error, Converter={StaticResource NullToCollapsedConverter}}"
+                                    Visibility="{Binding MicrophoneController.MuteMicrophoneCommand.Error, Converter={StaticResource NullToCollapsedConverter}}"
                                     Foreground="{StaticResource NegativeBrush}"
                                     HorizontalAlignment="Left"
                                     VerticalAlignment="Center"
-                                    ToolTip="{Binding MuteMicrophoneCommand.Error}"
+                                    ToolTip="{Binding MicrophoneController.MuteMicrophoneCommand.Error}"
                                     FontSize="18" />
                 </st:StackPanel>
 
@@ -113,12 +113,12 @@
                     <CheckBox
                         ToolTip="If enabled application will set microphone(s) volume to specified value"
                         HorizontalAlignment="Left"
-                        IsChecked="{Binding MicrophoneVolumeControlEnabled}" />
+                        IsChecked="{Binding MicrophoneController.MicrophoneVolumeControlEnabled}" />
 
                     <Slider Width="180"
-                            IsEnabled="{Binding MicrophoneVolumeControlEnabled}"
-                            Visibility="{Binding MicrophoneVolumeControlEnabled, Converter={StaticResource TrueToVisibleFalseToCollapsedConverter}}"
-                            Value="{Binding MicrophoneVolume}"
+                            IsEnabled="{Binding MicrophoneController.MicrophoneVolumeControlEnabled}"
+                            Visibility="{Binding MicrophoneController.MicrophoneVolumeControlEnabled, Converter={StaticResource TrueToVisibleFalseToCollapsedConverter}}"
+                            Value="{Binding MicrophoneController.MicrophoneVolume}"
                             Minimum="0" Maximum="1"
                             Margin="5,4,5,0"
                             TickFrequency="0.1" />
@@ -126,11 +126,11 @@
                     <TextBlock
                         MinWidth="45">
                         <TextBlock.Text>
-                            <Binding Path="MicrophoneVolume" StringFormat="{}{0:F1}%" Converter="{StaticResource DoubleToPercentConverter}"/>
+                            <Binding Path="MicrophoneController.MicrophoneVolume" StringFormat="{}{0:F1}%" Converter="{StaticResource DoubleToPercentConverter}"/>
                         </TextBlock.Text>
                     </TextBlock>
                     <TextBlock Style="{StaticResource WarningIconTextBlock}" Margin="2.5,0,0,0"
-                               Visibility="{Binding MicrophoneVolumeControlEnabled, Converter={StaticResource TrueToCollapsedFalseToVisibleConverter}}"
+                               Visibility="{Binding MicrophoneController.MicrophoneVolumeControlEnabled, Converter={StaticResource TrueToCollapsedFalseToVisibleConverter}}"
                                ToolTip="May be inaccurate because Volume control is disabled" />
                 </st:StackPanel>
                 
@@ -229,31 +229,31 @@
                     <RadioButton
                         VerticalContentAlignment="Center"
                         ToolTip="Toggle Mute state on Hotkey press"
-                        IsChecked="{Binding MuteMode, Converter={StaticResource EqualToTrueConverter}, ConverterParameter={x:Static models:MuteMode.ToggleMute}}"
+                        IsChecked="{Binding MicrophoneController.MuteMode, Converter={StaticResource EqualToTrueConverter}, ConverterParameter={x:Static models:MuteMode.ToggleMute}}"
                         Content="Toggle" />
                     <RadioButton
                         VerticalContentAlignment="Center"
                         ToolTip="Unmute microphone while Hotkey is held"
-                        IsChecked="{Binding MuteMode, Converter={StaticResource EqualToTrueConverter}, ConverterParameter={x:Static models:MuteMode.PushToTalk}}"
+                        IsChecked="{Binding MicrophoneController.MuteMode, Converter={StaticResource EqualToTrueConverter}, ConverterParameter={x:Static models:MuteMode.PushToTalk}}"
                         Content="Push-To-Talk" />
                     <RadioButton
                         VerticalContentAlignment="Center"
                         ToolTip="Mute microphone while Hotkey is held"
-                        IsChecked="{Binding MuteMode, Converter={StaticResource EqualToTrueConverter}, ConverterParameter={x:Static models:MuteMode.PushToMute}}"
+                        IsChecked="{Binding MicrophoneController.MuteMode, Converter={StaticResource EqualToTrueConverter}, ConverterParameter={x:Static models:MuteMode.PushToMute}}"
                         Content="Push-To-Mute" />
                 </st:StackPanel>
 
                 <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Hotkey:" />
                 <st:StackPanel>
-                    <hotkeys:HotKeyBox st:StackPanel.Fill="Fill" HotKey="{Binding Hotkey}" Background="Transparent" AcceptsTab="False" AcceptsReturn="False"
+                    <hotkeys:HotKeyBox st:StackPanel.Fill="Fill" HotKey="{Binding MicrophoneController.Hotkey.Key}" Background="Transparent" AcceptsTab="False" AcceptsReturn="False"
                                        AcceptsMouseKeys="True" />
                     <TextBlock Margin="10,0" Text="or" FontWeight="Bold" />
-                    <hotkeys:HotKeyBox st:StackPanel.Fill="Fill" HotKey="{Binding HotkeyAlt}" Background="Transparent" AcceptsTab="False" AcceptsReturn="False"
+                    <hotkeys:HotKeyBox st:StackPanel.Fill="Fill" HotKey="{Binding MicrophoneController.Hotkey.AlternativeKey}" Background="Transparent" AcceptsTab="False" AcceptsReturn="False"
                                        AcceptsMouseKeys="True" />
                     <CheckBox
                         Content="Suppress"
                         ToolTip="If enabled other applications will not react to pressed hotkey. May not work for mouse buttons of some special keys"
-                        IsChecked="{Binding SuppressHotkey}" />
+                        IsChecked="{Binding MicrophoneController.Hotkey.SuppressKey}" />
                 </st:StackPanel>
                 
                 <Separator Grid.ColumnSpan="2" />

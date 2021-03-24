@@ -8,15 +8,6 @@ using Size = System.Windows.Size;
 
 namespace MicSwitch.Modularity
 {
-    internal sealed class MicSwitchHotkeyConfig : IPoeEyeConfigVersioned
-    {
-        public HotkeyConfig Hotkey { get; set; }
-
-        public MuteMode MuteMode { get; set; } = MuteMode.ToggleMute;
-        
-        public int Version { get; set; } = 1;
-    }
-    
     internal sealed class MicSwitchConfig : IPoeEyeConfigVersioned
     {
         public static readonly string DiscordInviteLink = @"https://discord.gg/BExRm22";
@@ -29,6 +20,14 @@ namespace MicSwitch.Modularity
         
         public bool VolumeControlEnabled { get; set; } = false;
 
+        public TwoStateNotification Notification { get; set; } = new TwoStateNotification
+        {
+            On = "Beep300",
+            Off = "Beep750"
+        };
+
+        public float NotificationVolume { get; set; } = 1;
+        
         [Obsolete("Replaced with MicSwitchHotkeyConfig")]
         public MuteMode? MuteMode { get; set; }
         
@@ -40,14 +39,6 @@ namespace MicSwitch.Modularity
 
         [Obsolete("Replaced with MicSwitchHotkeyConfig")]
         public string MicrophoneHotkeyAlt { get; set; }
-
-        public TwoStateNotification Notification { get; set; } = new TwoStateNotification
-        {
-            On = "Beep300",
-            Off = "Beep750"
-        };
-
-        public float NotificationVolume { get; set; } = 1;
 
         [Obsolete("Replaced with OverlayConfig")]
         public Point? OverlayLocation { get; set; }
