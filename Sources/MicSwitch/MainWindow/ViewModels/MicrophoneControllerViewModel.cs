@@ -37,6 +37,7 @@ namespace MicSwitch.MainWindow.ViewModels
         private MicrophoneLineData microphoneLine;
         private bool microphoneVolumeControlEnabled;
         private bool enableAdvancedHotkeys;
+        private MicrophoneState initialMicrophoneState;
 
         public MicrophoneControllerViewModel(
             IMicrophoneControllerEx microphoneController,
@@ -135,25 +136,39 @@ namespace MicSwitch.MainWindow.ViewModels
                 
             hotkeyConfigProvider.ListenTo(x => x.EnableAdvancedHotkeys)
                 .ObserveOn(uiScheduler)
-                .Subscribe(x => EnableAdvancedHotkeys = x)
+                .Subscribe(x => EnableAdditionalHotkeys = x)
                 .AddTo(Anchors);
             
-            this.WhenAnyValue(x => x.MuteMode)
+            hotkeyConfigProvider.ListenTo(x => x.InitialMicrophoneState)
                 .ObserveOn(uiScheduler)
-                .SubscribeSafe(newMuteMode =>
+                .Subscribe(x => InitialMicrophoneState = x)
+                .AddTo(Anchors);
+            
+            this.WhenAnyValue(x => x.MuteMode, x => x.InitialMicrophoneState)
+                .ObserveOn(uiScheduler)
+                .SubscribeSafe(_ =>
                 {
-                    switch (newMuteMode)
+                    Log.Debug($"Processing muteMode: {muteMode}, {microphoneController}.Mute: {microphoneController.Mute}");
+                    switch (muteMode)
                     {
                         case MuteMode.PushToTalk:
-                            Log.Debug($"{newMuteMode} mute mode is enabled, un-muting microphone");
+                            Log.Debug($"{muteMode} mute mode is enabled, un-muting microphone");
                             microphoneController.Mute = true;
                             break;
                         case MuteMode.PushToMute:
                             microphoneController.Mute = false;
-                            Log.Debug($"{newMuteMode} mute mode is enabled, muting microphone");
+                            Log.Debug($"{muteMode} mute mode is enabled, muting microphone");
+                            break;
+                        case MuteMode.ToggleMute when initialMicrophoneState == MicrophoneState.Mute:
+                            Log.Debug($"{muteMode} enabled, muting microphone");
+                            microphoneController.Mute = true;
+                            break;
+                        case MuteMode.ToggleMute when initialMicrophoneState == MicrophoneState.Unmute:
+                            Log.Debug($"{muteMode} enabled, un-muting microphone");
+                            microphoneController.Mute = false;
                             break;
                         default:
-                            Log.Debug($"{newMuteMode} enabled, mic action is not needed");
+                            Log.Debug($"{muteMode} enabled, action is not needed");
                             break;
                     }
                 }, Log.HandleUiException)
@@ -185,7 +200,8 @@ namespace MicSwitch.MainWindow.ViewModels
             
              Observable.Merge(
                     this.ObservableForProperty(x => x.MuteMode, skipInitial: true).ToUnit(),
-                    this.ObservableForProperty(x => x.EnableAdvancedHotkeys, skipInitial: true).ToUnit(),
+                    this.ObservableForProperty(x => x.EnableAdditionalHotkeys, skipInitial: true).ToUnit(),
+                    this.ObservableForProperty(x => x.InitialMicrophoneState, skipInitial: true).ToUnit(),
                     Hotkey.ObservableForProperty(x => x.Properties, skipInitial: true).ToUnit())
                 .Throttle(ConfigThrottlingTimeout)
                 .ObserveOn(uiScheduler)
@@ -195,6 +211,7 @@ namespace MicSwitch.MainWindow.ViewModels
                     hotkeyConfig.Hotkey = Hotkey.Properties;
                     hotkeyConfig.MuteMode = muteMode;
                     hotkeyConfig.EnableAdvancedHotkeys = enableAdvancedHotkeys;
+                    hotkeyConfig.InitialMicrophoneState = initialMicrophoneState;
                     hotkeyConfigProvider.Save(hotkeyConfig);
                 }, Log.HandleUiException)
                 .AddTo(Anchors);
@@ -264,7 +281,7 @@ namespace MicSwitch.MainWindow.ViewModels
             get => microphoneController.Mute ?? false;
         }
 
-        public bool EnableAdvancedHotkeys
+        public bool EnableAdditionalHotkeys
         {
             get => enableAdvancedHotkeys;
             set => RaiseAndSetIfChanged(ref enableAdvancedHotkeys, value);
@@ -274,6 +291,12 @@ namespace MicSwitch.MainWindow.ViewModels
         {
             get => microphoneLine;
             set => this.RaiseAndSetIfChanged(ref microphoneLine, value);
+        }
+
+        public MicrophoneState InitialMicrophoneState
+        {
+            get => initialMicrophoneState;
+            set => RaiseAndSetIfChanged(ref initialMicrophoneState, value);
         }
 
         public double MicrophoneVolume
@@ -324,13 +347,13 @@ namespace MicSwitch.MainWindow.ViewModels
             var result = owner.hotkeyTrackerFactory.Create();
             result.HotkeyMode = hotkeyMode;
             Observable.Merge(
-                owner.WhenAnyValue(x => x.EnableAdvancedHotkeys).ToUnit(),
+                owner.WhenAnyValue(x => x.EnableAdditionalHotkeys).ToUnit(),
                 hotkeyEditor.WhenAnyValue(x => x.Key, x => x.AlternativeKey, x => x.SuppressKey).ToUnit())
                 .SubscribeSafe(x =>
                 {
                     result.SuppressKey = hotkeyEditor.SuppressKey;
                     result.Clear();
-                    if (!owner.EnableAdvancedHotkeys)
+                    if (!owner.EnableAdditionalHotkeys)
                     {
                         return;
                     }
@@ -346,7 +369,7 @@ namespace MicSwitch.MainWindow.ViewModels
 
                     if (result.Hotkeys.Any())
                     {
-                        owner.EnableAdvancedHotkeys = true;
+                        owner.EnableAdditionalHotkeys = true;
                     }
                 }, Log.HandleUiException)
                 .AddTo(owner.Anchors);

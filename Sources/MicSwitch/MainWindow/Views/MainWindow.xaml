@@ -43,9 +43,8 @@
                 <Setter Property="Orientation" Value="Horizontal" />
                 <Setter Property="MarginBetweenChildren" Value="5" />
             </Style>
-            <Style TargetType="{x:Type TextBlock}" x:Key="SettingsLabelStyle">
+            <Style TargetType="{x:Type TextBlock}" x:Key="SettingsLabelStyle" BasedOn="{StaticResource DefaultTextBlockStyleKey}">
                 <Setter Property="TextAlignment" Value="Right" />
-                <Setter Property="VerticalAlignment" Value="Center" />
                 <Setter Property="IsHitTestVisible" Value="True" />
             </Style>
             <Style TargetType="{x:Type Image}">
@@ -247,7 +246,7 @@
                         Content="Toggle" />
                     <RadioButton
                         VerticalContentAlignment="Center"
-                        ToolTip="Unmute microphone while Hotkey is held"
+                        ToolTip="Un-mute microphone while Hotkey is held"
                         IsChecked="{Binding MicrophoneController.MuteMode, Converter={StaticResource EqualToTrueConverter}, ConverterParameter={x:Static models:MuteMode.PushToTalk}}"
                         Content="Push-To-Talk" />
                     <RadioButton
@@ -256,27 +255,47 @@
                         IsChecked="{Binding MicrophoneController.MuteMode, Converter={StaticResource EqualToTrueConverter}, ConverterParameter={x:Static models:MuteMode.PushToMute}}"
                         Content="Push-To-Mute" />
                 </st:StackPanel>
+                
+                <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Initial state:"
+                           IsEnabled="{Binding MicrophoneController.MuteMode, Converter={StaticResource EqualToTrueConverter}, ConverterParameter={x:Static models:MuteMode.ToggleMute}}"/>
+                <st:StackPanel IsEnabled="{Binding MicrophoneController.MuteMode, Converter={StaticResource EqualToTrueConverter}, ConverterParameter={x:Static models:MuteMode.ToggleMute}}">
+                    <RadioButton
+                        VerticalContentAlignment="Center"
+                        ToolTip="Do not change microphone state on app startup"
+                        IsChecked="{Binding MicrophoneController.InitialMicrophoneState, Converter={StaticResource EqualToTrueConverter}, ConverterParameter={x:Static models:MicrophoneState.Any}}"
+                        Content="Do not change" />
+                    <RadioButton
+                        VerticalContentAlignment="Center"
+                        ToolTip="Mute microphones on app startup"
+                        IsChecked="{Binding MicrophoneController.InitialMicrophoneState, Converter={StaticResource EqualToTrueConverter}, ConverterParameter={x:Static models:MicrophoneState.Mute}}"
+                        Content="Mute" />
+                    <RadioButton
+                        VerticalContentAlignment="Center"
+                        ToolTip="Un-mute microphones on app startup"
+                        IsChecked="{Binding MicrophoneController.InitialMicrophoneState, Converter={StaticResource EqualToTrueConverter}, ConverterParameter={x:Static models:MicrophoneState.Unmute}}"
+                        Content="Un-mute" />
+                </st:StackPanel>
 
                 <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Hotkey:" />
                 <ContentPresenter Content="{Binding MicrophoneController.Hotkey}" />
 
-                <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Advanced hotkeys:" />
+                <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Additional hotkeys:" />
                 <CheckBox
                     HorizontalAlignment="Left"
-                    IsChecked="{Binding MicrophoneController.EnableAdvancedHotkeys, Mode=TwoWay}" />
+                    IsChecked="{Binding MicrophoneController.EnableAdditionalHotkeys, Mode=TwoWay}" />
 
                 <st:AutoGrid RowHeightOverride="Auto"
                              Margin="0"
                              ColumnSpan="2"
                              Columns="120,*" ChildMargin="5" RowHeight="32"
-                             Visibility="{Binding MicrophoneController.EnableAdvancedHotkeys, Converter={StaticResource TrueToVisibleFalseToCollapsedConverter}}">
+                             Visibility="{Binding MicrophoneController.EnableAdditionalHotkeys, Converter={StaticResource TrueToVisibleFalseToCollapsedConverter}}">
                     <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="for Toggle:" />
                     <ContentControl Content="{Binding MicrophoneController.HotkeyToggle}" />
 
                     <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="for Mute:" />
                     <ContentControl Content="{Binding MicrophoneController.HotkeyMute}" />
 
-                    <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="for Unmute:" />
+                    <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="for Un-mute:" />
                     <ContentControl Content="{Binding MicrophoneController.HotkeyUnmute}" />
 
                     <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="for Push-to-Talk:" />

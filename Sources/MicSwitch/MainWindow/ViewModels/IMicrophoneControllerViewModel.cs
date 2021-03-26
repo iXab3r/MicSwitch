@@ -12,7 +12,7 @@ namespace MicSwitch.MainWindow.ViewModels
         
         MuteMode MuteMode { get; set; }
         
-        bool EnableAdvancedHotkeys { get; set; }
+        bool EnableAdditionalHotkeys { get; set; }
         
         IHotkeyEditorViewModel Hotkey { get; }
         
@@ -33,6 +33,8 @@ namespace MicSwitch.MainWindow.ViewModels
         double MicrophoneVolume { get; set; }
         
         bool MicrophoneVolumeControlEnabled { get; set; }
+        
+        MicrophoneState InitialMicrophoneState { get; set; }
         
         CommandWrapper MuteMicrophoneCommand { get; }
     }
