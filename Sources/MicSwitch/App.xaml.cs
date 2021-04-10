@@ -224,6 +224,7 @@ namespace MicSwitch
             var configProvider = container.Resolve<IConfigProvider<MicSwitchConfig>>();
             ActualizeConfig(configProvider, hotkeyConfigProvider);
             ActualizeConfig(configProvider, overlayConfigProvider);
+            ActualizeConfig(configProvider);
             
             sw.Step("Registering overlay");
             var micSwitchOverlayDependencyName = "MicSwitchOverlayAllWindows";
@@ -275,6 +276,24 @@ namespace MicSwitch
 
             Log.Warn("Shutting down...");
             Environment.Exit(0);
+        }
+
+        private static void ActualizeConfig(IConfigProvider<MicSwitchConfig> mainConfigProvider)
+        {
+            Log.Debug($"Actualizing configuration format of {mainConfigProvider}");
+            var config = mainConfigProvider.ActualConfig.CloneJson();
+            if (config.Notification != null)
+            {
+                config.Notifications = new TwoStateNotification
+                {
+                    // initial configuration contained reversed values
+                    Off = config.Notification.Value.On,
+                    On = config.Notification.Value.Off
+                };
+                config.Notification = null;
+            }
+            mainConfigProvider.Save(config);
+            Log.Debug("Config format updated successfully");
         }
         
         private static void ActualizeConfig(IConfigProvider<MicSwitchConfig> mainConfigProvider, IConfigProvider<MicSwitchHotkeyConfig> hotkeyConfigProvider)

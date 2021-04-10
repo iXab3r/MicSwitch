@@ -2,6 +2,7 @@
 using System.Drawing;
 using MicSwitch.MainWindow.Models;
 using MicSwitch.Services;
+using Newtonsoft.Json;
 using PoeShared.Modularity;
 using Point = System.Windows.Point;
 using Size = System.Windows.Size;
@@ -20,7 +21,10 @@ namespace MicSwitch.Modularity
         
         public bool VolumeControlEnabled { get; set; } = false;
 
-        public TwoStateNotification Notification { get; set; } = new TwoStateNotification
+        [Obsolete("Replaced with Notifications")]
+        public TwoStateNotification? Notification { get; set; }
+        
+        public TwoStateNotification Notifications { get; set; } = new TwoStateNotification
         {
             On = "Beep300",
             Off = "Beep750"

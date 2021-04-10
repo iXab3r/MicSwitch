@@ -123,9 +123,9 @@ namespace MicSwitch.MainWindow.ViewModels
             MicrophoneController.ObservableForProperty(x => x.MicrophoneMuted, skipInitial: true)
                 .DistinctUntilChanged()
                 .Where(x => !MicrophoneController.MicrophoneLine.IsEmpty)
-                .SubscribeSafe(x =>
+                .SubscribeSafe(isMuted =>
                 {
-                    var notificationToPlay = (x.Value ? AudioNotification.On : AudioNotification.Off) ?? default(AudioNotificationType).ToString();
+                    var notificationToPlay = (isMuted.Value ? AudioNotification.Off : AudioNotification.On) ?? default(AudioNotificationType).ToString();
                     Log.Debug($"Playing notification {notificationToPlay} (cfg: {AudioNotification.DumpToTextRaw()})");
                     audioNotificationsManager.PlayNotification(notificationToPlay, audioNotificationVolume);
                 }, Log.HandleUiException)
@@ -151,14 +151,14 @@ namespace MicSwitch.MainWindow.ViewModels
             ResetMicrophoneIconsCommand = CommandWrapper.Create(ResetMicrophoneIconsCommandExecuted);
             AddSoundCommand = CommandWrapper.Create(AddSoundCommandExecuted);
 
-            Observable.Merge(configProvider.ListenTo(x => x.Notification).ToUnit(), configProvider.ListenTo(x => x.NotificationVolume).ToUnit())
-                .Select(_ => new { configProvider.ActualConfig.Notification, configProvider.ActualConfig.NotificationVolume })
+            Observable.Merge(configProvider.ListenTo(x => x.Notifications).ToUnit(), configProvider.ListenTo(x => x.NotificationVolume).ToUnit())
+                .Select(_ => new { configProvider.ActualConfig.Notifications, configProvider.ActualConfig.NotificationVolume })
                 .ObserveOn(uiScheduler)
                 .SubscribeSafe(cfg =>
                 {
                     Log.Debug($"Applying new notification configuration: {cfg.DumpToTextRaw()} (current: {AudioNotification.DumpToTextRaw()}, volume: {AudioNotificationVolume})");
-                    AudioSelectorWhenMuted.SelectedValue = cfg.Notification.Off;
-                    AudioSelectorWhenUnmuted.SelectedValue = cfg.Notification.On;
+                    AudioSelectorWhenMuted.SelectedValue = cfg.Notifications.Off;
+                    AudioSelectorWhenUnmuted.SelectedValue = cfg.Notifications.On;
                     AudioNotificationVolume = cfg.NotificationVolume;
                 }, Log.HandleException)
                 .AddTo(Anchors);
@@ -208,7 +208,7 @@ namespace MicSwitch.MainWindow.ViewModels
                 .SubscribeSafe(() =>
                 {
                     var config = configProvider.ActualConfig.CloneJson();
-                    config.Notification = AudioNotification;
+                    config.Notifications = AudioNotification;
                     config.NotificationVolume = AudioNotificationVolume;
                     config.StartMinimized = StartMinimized;
                     config.MinimizeOnClose = MinimizeOnClose;
