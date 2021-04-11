@@ -1,5 +1,5 @@
 ![](https://img.shields.io/github/release-date/iXab3r/MicSwitch.svg) ![](https://img.shields.io/github/downloads/iXab3r/MicSwitch/total.svg) ![](https://img.shields.io/github/last-commit/iXab3r/MicSwitch.svg)
-[![Discord Chat](https://img.shields.io/discord/513749321162686471.svg)](https://discord.gg/pFHHebM)  
+[![Discord Chat](https://img.shields.io/discord/513749321162686471.svg)](https://discord.gg/BExRm22)  
 
 # Intro
 There are dozens of different audio chat apps like Discord, TeamSpeak, Ventrilo, Skype, in-game audio chats, etc. And all of them have DIFFERENT ways of handling push-to-talk and always-on microphone functionality. I bet many of you know how distracting it could be when someone forgets to turn off a microphone. I will try to explain what I mean using a feature matrix.
