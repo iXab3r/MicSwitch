@@ -79,6 +79,7 @@
         <DockPanel>
             <tb:TaskbarIcon Visibility="{Binding TrayIconVisibility, Mode=TwoWay}"
                             ToolTipText="{Binding Title}"
+                            LeftClickCommand="{Binding MicrophoneController.MuteMicrophoneCommand}"
                             DoubleClickCommand="{Binding ShowAppCommand}">
                 <tb:TaskbarIcon.ContextMenu>
                     <ContextMenu>

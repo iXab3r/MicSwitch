@@ -62,7 +62,7 @@ namespace MicSwitch.MainWindow.ViewModels
             this.hotkeyEditorFactory = hotkeyEditorFactory;
             this.hotkeyConfigProvider = hotkeyConfigProvider;
             this.uiScheduler = uiScheduler;
-            MuteMicrophoneCommand = CommandWrapper.Create<bool>(MuteMicrophoneCommandExecuted);
+            MuteMicrophoneCommand = CommandWrapper.Create<object>(MuteMicrophoneCommandExecuted);
             Hotkey = PrepareHotkey(x => x.Hotkey, (config, hotkeyConfig) => config.Hotkey = hotkeyConfig);
             HotkeyToggle = PrepareHotkey(x => x.HotkeyForToggle, (config, hotkeyConfig) => config.HotkeyForToggle = hotkeyConfig);
             HotkeyMute = PrepareHotkey(x => x.HotkeyForMute, (config, hotkeyConfig) => config.HotkeyForMute = hotkeyConfig);
@@ -333,9 +333,14 @@ namespace MicSwitch.MainWindow.ViewModels
                 hotkeyEditor);
         }
 
-        private async Task MuteMicrophoneCommandExecuted(bool mute)
+        private async Task MuteMicrophoneCommandExecuted(object arg)
         {
-            Log.Debug($"{(mute ? "Muting" : "Un-muting")} microphone {microphoneController.LineId}");
+            var mute = arg switch
+            {
+                bool argBool => argBool,
+                _ => !microphoneController.Mute
+            };
+            Log.Debug($"{(mute == true ? "Muting" : "Un-muting")} microphone {microphoneController.LineId}");
             microphoneController.Mute = mute;
         }
         
