@@ -21,6 +21,7 @@ using PoeShared.Native;
 using PoeShared.Native.Scaffolding;
 using PoeShared.Prism;
 using PoeShared.Scaffolding;
+using PoeShared.Services;
 using PoeShared.Squirrel.Prism;
 using PoeShared.Squirrel.Updater;
 using PoeShared.Wpf.Scaffolding;
@@ -77,6 +78,12 @@ namespace MicSwitch
                 Current.ShutdownMode = ShutdownMode.OnMainWindowClose;
                 Log.Debug($"New UI Scheduler: {RxApp.MainThreadScheduler}");
                 InitializeUpdateSettings();  
+                
+                Log.Debug("Initializing housekeeping");
+                var cleanupService = container.Resolve<IFolderCleanerService>();
+                cleanupService.AddDirectory(new DirectoryInfo(Path.Combine(appArguments.AppDataDirectory, "logs"))).AddTo(Anchors);
+                cleanupService.CleanupTimeout = TimeSpan.FromHours(12);
+                cleanupService.FileTimeToLive = TimeSpan.FromDays(14);
             }
             catch (Exception ex)
             {
