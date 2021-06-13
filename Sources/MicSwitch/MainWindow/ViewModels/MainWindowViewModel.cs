@@ -123,12 +123,23 @@ namespace MicSwitch.MainWindow.ViewModels
             MicrophoneController.ObservableForProperty(x => x.MicrophoneMuted, skipInitial: true)
                 .DistinctUntilChanged()
                 .Where(x => !MicrophoneController.MicrophoneLine.IsEmpty)
-                .SubscribeSafe(isMuted =>
+                .Select(isMuted => (isMuted.Value ? AudioNotification.Off : AudioNotification.On) ?? default(AudioNotificationType).ToString())
+                .Where(notificationToPlay => !string.IsNullOrEmpty(notificationToPlay))
+                .Select(notificationToPlay => Observable.FromAsync(async token =>
                 {
-                    var notificationToPlay = (isMuted.Value ? AudioNotification.Off : AudioNotification.On) ?? default(AudioNotificationType).ToString();
-                    Log.Debug($"Playing notification {notificationToPlay} (cfg: {AudioNotification.DumpToTextRaw()})");
-                    audioNotificationsManager.PlayNotification(notificationToPlay, audioNotificationVolume);
-                }, Log.HandleUiException)
+                    Log.Debug($"Playing notification {notificationToPlay}, volume: {audioNotificationVolume}");
+                    try
+                    {
+                        await audioNotificationsManager.PlayNotification(notificationToPlay, audioNotificationVolume, token);
+                        Log.Debug($"Played notification {notificationToPlay}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Debug($"Failed to play notification {notificationToPlay}", ex);
+                    }
+                }))
+                .Switch()
+                .SubscribeToErrors(Log.HandleUiException)
                 .AddTo(Anchors);
 
             this.WhenAnyValue(x => x.WindowState)
