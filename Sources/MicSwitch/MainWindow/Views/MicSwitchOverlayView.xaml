@@ -58,6 +58,7 @@
                   Opacity="{Binding Opacity}">
                 <Viewbox>
                     <Image
+                        RenderOptions.BitmapScalingMode="Fant"
                         gif:ImageBehavior.RepeatBehavior="Forever"
                         gif:ImageBehavior.AnimatedSource="{Binding MicrophoneImage}" />
                 </Viewbox>

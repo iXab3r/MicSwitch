@@ -43,7 +43,7 @@ namespace MicSwitch.MainWindow.ViewModels
             this.configProvider = configProvider;
             this.imageProvider = imageProvider;
             OverlayMode = OverlayMode.Transparent;
-            MinSize = new Size(40, 40);
+            MinSize = new Size(20, 20);
             MaxSize = new Size(300, 300);
             DefaultSize = new Size(120, 120);
             SizeToContent = SizeToContent.Manual;
