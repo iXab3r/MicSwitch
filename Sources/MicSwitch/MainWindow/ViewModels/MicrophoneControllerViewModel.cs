@@ -12,6 +12,7 @@ using MicSwitch.MainWindow.Models;
 using MicSwitch.Modularity;
 using MicSwitch.Services;
 using PoeShared;
+using PoeShared.Audio.Models;
 using PoeShared.Modularity;
 using PoeShared.Prism;
 using PoeShared.Scaffolding;

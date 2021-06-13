@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using MicSwitch.MainWindow.Models;
 using MicSwitch.Services;
+using PoeShared.Audio.Models;
 using PoeShared.Scaffolding;
 using PoeShared.Scaffolding.WPF;
 

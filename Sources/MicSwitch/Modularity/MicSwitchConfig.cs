@@ -3,6 +3,7 @@ using System.Drawing;
 using MicSwitch.MainWindow.Models;
 using MicSwitch.Services;
 using Newtonsoft.Json;
+using PoeShared.Audio.Models;
 using PoeShared.Modularity;
 using Point = System.Windows.Point;
 using Size = System.Windows.Size;
@@ -16,6 +17,8 @@ namespace MicSwitch.Modularity
         public bool StartMinimized { get; set; }
 
         public MicrophoneLineData MicrophoneLineId { get; set; }
+        
+        public string OutputDeviceId { get; set; }
         
         public bool MinimizeOnClose { get; set; } = true;
         

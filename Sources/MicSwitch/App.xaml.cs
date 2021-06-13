@@ -107,7 +107,6 @@ namespace MicSwitch
             container.RegisterType<IHotkeyEditorViewModel, HotkeyEditorViewModel>();
             
             container.RegisterSingleton<IMicrophoneControllerEx, ComplexMicrophoneController>();
-            container.RegisterSingleton<IMicrophoneProvider, MicrophoneProvider>();
             container.RegisterSingleton<IMicSwitchOverlayViewModel, MicSwitchOverlayViewModel>();
             container.RegisterSingleton<IComplexHotkeyTracker, ComplexHotkeyTracker>();
             container.RegisterSingleton<IMicrophoneControllerViewModel, MicrophoneControllerViewModel>();

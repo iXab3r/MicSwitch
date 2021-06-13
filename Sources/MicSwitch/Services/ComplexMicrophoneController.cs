@@ -5,6 +5,7 @@ using ReactiveUI;
 using System.Reactive.Linq;
 using log4net;
 using PoeShared;
+using PoeShared.Audio.Models;
 using PoeShared.Prism;
 using PoeShared.Scaffolding;
 

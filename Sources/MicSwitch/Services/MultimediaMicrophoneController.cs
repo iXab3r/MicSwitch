@@ -4,6 +4,7 @@ using log4net;
 using MicSwitch.Modularity;
 using NAudio.CoreAudioApi;
 using PoeShared;
+using PoeShared.Audio.Models;
 using PoeShared.Modularity;
 using PoeShared.Scaffolding;
 using ReactiveUI;

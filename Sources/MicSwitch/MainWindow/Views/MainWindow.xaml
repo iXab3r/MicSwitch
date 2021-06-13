@@ -180,6 +180,11 @@
                         </TextBlock.Text>
                     </TextBlock>
                 </st:StackPanel>
+                
+                <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Output device:" />
+                <st:StackPanel>
+                    <ContentControl st:StackPanel.Fill="Fill" Content="{Binding WaveOutDeviceSelector}"/>
+                </st:StackPanel>
 
                 <Separator Grid.ColumnSpan="2" />
 

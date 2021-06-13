@@ -62,6 +62,7 @@ namespace MicSwitch.MainWindow.ViewModels
             IMicSwitchOverlayViewModel overlay,
             IMicrophoneControllerViewModel microphoneControllerViewModel,
             IOverlayWindowController overlayWindowController,
+            IWaveOutDeviceSelectorViewModel waveOutDeviceSelector,
             IAudioNotificationsManager audioNotificationsManager,
             IFactory<IAudioNotificationSelectorViewModel> audioSelectorFactory,
             IApplicationUpdaterViewModel appUpdater,
@@ -83,6 +84,7 @@ namespace MicSwitch.MainWindow.ViewModels
             this.notificationsManager = notificationsManager;
             this.viewController = viewController;
             ApplicationUpdater = appUpdater.AddTo(Anchors);
+            WaveOutDeviceSelector = waveOutDeviceSelector;
             ImageProvider = imageProvider;
             AudioSelectorWhenMuted = audioSelectorFactory.Create().AddTo(Anchors);
             AudioSelectorWhenUnmuted = audioSelectorFactory.Create().AddTo(Anchors);
@@ -130,7 +132,7 @@ namespace MicSwitch.MainWindow.ViewModels
                     Log.Debug($"Playing notification {notificationToPlay}, volume: {audioNotificationVolume}");
                     try
                     {
-                        await audioNotificationsManager.PlayNotification(notificationToPlay, audioNotificationVolume, token);
+                        await audioNotificationsManager.PlayNotification(notificationToPlay, audioNotificationVolume, waveOutDeviceSelector.SelectedItem, token);
                         Log.Debug($"Played notification {notificationToPlay}");
                     }
                     catch (Exception ex)
@@ -178,6 +180,11 @@ namespace MicSwitch.MainWindow.ViewModels
                 .ObserveOn(uiScheduler)
                 .SubscribeSafe(x => MinimizeOnClose = x, Log.HandleException)
                 .AddTo(Anchors);
+            
+            configProvider.ListenTo(x => x.OutputDeviceId)
+                .ObserveOn(uiScheduler)
+                .SubscribeSafe(x => WaveOutDeviceSelector.SelectById(x), Log.HandleException)
+                .AddTo(Anchors);
 
             viewController
                 .WhenLoaded
@@ -210,6 +217,7 @@ namespace MicSwitch.MainWindow.ViewModels
 
             Observable.Merge(
                     microphoneControllerViewModel.ObservableForProperty(x => x.MuteMode, skipInitial: true).ToUnit(),
+                    waveOutDeviceSelector.ObservableForProperty(x => x.SelectedItem, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.AudioNotification, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.MinimizeOnClose, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.AudioNotificationVolume, skipInitial: true).ToUnit(),
@@ -223,6 +231,7 @@ namespace MicSwitch.MainWindow.ViewModels
                     config.NotificationVolume = AudioNotificationVolume;
                     config.StartMinimized = StartMinimized;
                     config.MinimizeOnClose = MinimizeOnClose;
+                    config.OutputDeviceId = waveOutDeviceSelector.SelectedItem?.Id;
                     configProvider.Save(config);
                 }, Log.HandleUiException)
                 .AddTo(Anchors);
@@ -315,6 +324,8 @@ namespace MicSwitch.MainWindow.ViewModels
         }
 
         public string Title { get; }
+
+        public IWaveOutDeviceSelectorViewModel WaveOutDeviceSelector { get; }
         
         public IImageProvider ImageProvider { get; }
         

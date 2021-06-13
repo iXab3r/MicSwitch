@@ -1,3 +1,4 @@
+using PoeShared.Audio.Models;
 using PoeShared.Scaffolding;
 
 namespace MicSwitch.Services
