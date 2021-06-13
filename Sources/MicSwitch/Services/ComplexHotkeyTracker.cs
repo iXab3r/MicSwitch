@@ -17,7 +17,7 @@ using PoeShared.Native;
 using PoeShared.Prism;
 using PoeShared.Scaffolding;
 using PoeShared.Scaffolding.WPF;
-using PoeShared.UI.Hotkeys;
+using PoeShared.UI;
 
 namespace MicSwitch.Services
 {

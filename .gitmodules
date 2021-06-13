@@ -5,3 +5,6 @@
 [submodule "Submodules/DeploymentTools"]
 	path = Submodules/DeploymentTools
 	url = https://github.com/iXab3r/DeploymentTools.git
+[submodule "Submodules/PropertyBinder"]
+	path = Submodules/PropertyBinder
+	url = https://github.com/iXab3r/PropertyBinder.git

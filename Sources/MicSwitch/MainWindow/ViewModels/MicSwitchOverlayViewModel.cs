@@ -49,8 +49,9 @@ namespace MicSwitch.MainWindow.ViewModels
             SizeToContent = SizeToContent.Manual;
             TargetAspectRatio = MinSize.Width / MinSize.Height;
             IsUnlockable = true;
-            Title = "MicSwitch";
+            Title = string.Empty;
             IsEnabled = true;
+            EnableHeader = false;
 
             this.WhenAnyValue(x => x.IsLocked)
                 .SubscribeSafe(isLocked => OverlayMode = isLocked ? OverlayMode.Transparent : OverlayMode.Layered, Log.HandleUiException)

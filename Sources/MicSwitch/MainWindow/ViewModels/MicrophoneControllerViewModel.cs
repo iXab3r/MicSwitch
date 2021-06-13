@@ -16,7 +16,7 @@ using PoeShared.Modularity;
 using PoeShared.Prism;
 using PoeShared.Scaffolding;
 using PoeShared.Scaffolding.WPF;
-using PoeShared.UI.Hotkeys;
+using PoeShared.UI;
 using ReactiveUI;
 using Unity;
 

@@ -110,7 +110,7 @@ namespace MicSwitch.MainWindow.ViewModels
                     On = AudioSelectorWhenUnmuted.SelectedValue,
                     Off = AudioSelectorWhenMuted.SelectedValue
                 })
-                .ToPropertyHelper(this, x => x.AudioNotification)
+                .ToProperty(this, x => x.AudioNotification)
                 .AddTo(Anchors);
 
             this.WhenAnyValue(x => x.AudioNotificationVolume)

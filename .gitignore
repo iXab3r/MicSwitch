@@ -222,5 +222,6 @@ ModelManifest.xml
 Sources/PoeShared
 
 /Sources/PoeShared
+/Sources/PropertyBinder*
 /Sources/PoeShared*
 *.binlog

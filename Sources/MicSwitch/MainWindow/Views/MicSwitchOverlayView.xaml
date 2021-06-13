@@ -1,8 +1,10 @@
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:eye="http://coderush.net/poeeye/"
-                    xmlns:viewModels="clr-namespace:MicSwitch.MainWindow.ViewModels"
-                    xmlns:gif="http://wpfanimatedgif.codeplex.com">
+<eye:SharedResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:eye="http://coderush.net/poeeye/"
+                              xmlns:viewModels="clr-namespace:MicSwitch.MainWindow.ViewModels"
+                              xmlns:gif="http://wpfanimatedgif.codeplex.com"
+                              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+                              xmlns:st="http://schemas.spicytaco.io/">
 
     <DataTemplate DataType="{x:Type viewModels:MicSwitchOverlayViewModel}">
         <Grid Focusable="False">
@@ -12,12 +14,45 @@
             </Grid.RowDefinitions>
             <Grid Grid.Row="0" Grid.RowSpan="2" x:Name="OverlayMainPanel"
                   Background="{StaticResource OverlayBackgroundBrushKey}" Opacity="0.01"
-                  ToolTip="Double-click to lock overlay" Cursor="SizeAll"
+                  Cursor="SizeAll"
                   Visibility="{Binding IsLocked, Converter={StaticResource TrueToCollapsedFalseToVisibleConverter}}"
                   eye:EnableDragHelper.EnableDrag="{Binding IsLocked, Converter={StaticResource NotConverter}}">
                 <Grid.InputBindings>
                     <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding ToggleLockStateCommand}" />
                 </Grid.InputBindings>
+                
+                <materialDesign:PopupEx
+                    x:Name="SettingsPopup"
+                    PlacementTarget="{Binding ElementName=OverlayMainPanel}"
+                    Placement="Bottom"
+                    StaysOpen="False"
+                    IsOpen="{Binding ElementName=OverlayMainPanel, Path=IsMouseOver, Mode=OneWay}"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch">
+                    <Border
+                        BorderThickness="1"
+                        BorderBrush="{StaticResource OverlayBorderBrushKey}"
+                        Background="{StaticResource OverlayBackgroundBrushKey}"
+                        Width="120">
+                        <st:StackPanel Orientation="Vertical" MarginBetweenChildren="5">
+                            <DockPanel Margin="0,3" LastChildFill="True">
+                                <TextBlock DockPanel.Dock="Left" MinWidth="50"
+                                           TextAlignment="Right"
+                                           Text="Opacity:" />
+                                <Slider DockPanel.Dock="Left"
+                                        Value="{Binding Opacity}"
+                                        Minimum="0.1"
+                                        TickFrequency="0.1"
+                                        IsSnapToTickEnabled="True"
+                                        Margin="5,0"
+                                        Maximum="1" />
+                            </DockPanel>
+                            <eye:ButtonEx Content="Lock overlay" 
+                                          Foreground="{StaticResource OverlayForegroundBrushKey}"
+                                          Command="{Binding LockWindowCommand}"/>
+                        </st:StackPanel>
+                    </Border>
+                </materialDesign:PopupEx>
             </Grid>
             <Grid Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Top" IsHitTestVisible="False"
                   Opacity="{Binding Opacity}">
@@ -32,26 +67,7 @@
                 <Border Background="{StaticResource OverlayTitleBackgroundBrushKey}"
                         BorderBrush="{StaticResource OverlayBorderBrushKey}"
                         eye:EnableDragHelper.EnableDrag="True" />
-                <Border
-                    BorderThickness="1"
-                    Margin="3">
-                    <StackPanel Orientation="Vertical">
-                        <DockPanel Margin="0,3" LastChildFill="True">
-                            <TextBlock DockPanel.Dock="Left" MinWidth="50"
-                                       TextAlignment="Right"
-                                       Text="Opacity:" />
-
-                            <Slider DockPanel.Dock="Left"
-                                    Value="{Binding Opacity}"
-                                    Minimum="0.1"
-                                    TickFrequency="0.1"
-                                    IsSnapToTickEnabled="True"
-                                    Margin="5,0"
-                                    Maximum="1" />
-                        </DockPanel>
-                    </StackPanel>
-                </Border>
             </Grid>
         </Grid>
     </DataTemplate>
-</ResourceDictionary>
+</eye:SharedResourceDictionary>

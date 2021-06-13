@@ -4,7 +4,6 @@
                  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                  xmlns:tb="http://www.hardcodet.net/taskbar"
-                 xmlns:hotkeys="clr-namespace:PoeShared.UI.Hotkeys;assembly=PoeShared.Wpf"
                  xmlns:blue="http://www.nuget.org/Blue.MVVM"
                  xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
                  xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
@@ -15,7 +14,7 @@
                  xmlns:gif="http://wpfanimatedgif.codeplex.com"
                  xmlns:modularity="clr-namespace:MicSwitch.Modularity"
                  xmlns:st="http://schemas.spicytaco.io/"
-                 xmlns:ui="clr-namespace:PoeShared.UI;assembly=PoeShared.Wpf"
+                 xmlns:eye="clr-namespace:PoeShared.UI;assembly=PoeShared.Wpf"
                  mc:Ignorable="d"
                  d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel}"
                  WindowState="{Binding WindowState, Mode=TwoWay}"
@@ -38,7 +37,7 @@
                  Icon="{Binding ImageProvider.MicrophoneImage}">
 
     <Window.Resources>
-        <ResourceDictionary>
+        <eye:SharedResourceDictionary>
             <Style TargetType="{x:Type st:StackPanel}">
                 <Setter Property="Orientation" Value="Horizontal" />
                 <Setter Property="MarginBetweenChildren" Value="5" />
@@ -61,18 +60,18 @@
 
             <DataTemplate DataType="{x:Type viewModels:HotkeyEditorViewModel}">
                 <st:StackPanel Orientation="Horizontal" MarginBetweenChildren="5">
-                    <hotkeys:HotKeyBox st:StackPanel.Fill="Fill" HotKey="{Binding Key}" Background="Transparent" AcceptsTab="False" AcceptsReturn="False"
-                                       AcceptsMouseKeys="True" />
+                    <eye:HotKeyBox st:StackPanel.Fill="Fill" HotKey="{Binding Key}" Background="Transparent" AcceptsTab="False" AcceptsReturn="False"
+                                   AcceptsMouseKeys="True" />
                     <TextBlock Margin="10,0" Text="or" FontWeight="Bold" />
-                    <hotkeys:HotKeyBox st:StackPanel.Fill="Fill" HotKey="{Binding AlternativeKey}" Background="Transparent" AcceptsTab="False" AcceptsReturn="False"
-                                       AcceptsMouseKeys="True" />
+                    <eye:HotKeyBox st:StackPanel.Fill="Fill" HotKey="{Binding AlternativeKey}" Background="Transparent" AcceptsTab="False" AcceptsReturn="False"
+                                   AcceptsMouseKeys="True" />
                     <CheckBox
                         Content="Suppress"
-                        ToolTip="If enabled other applications will not react to pressed hotkey. May not work for mouse buttons of some special keys"
+                        ToolTip="If enabled other applications will not react to pressed hotkey. May not work for mouse buttons or special keys"
                         IsChecked="{Binding SuppressKey}" />
                 </st:StackPanel>
             </DataTemplate>
-        </ResourceDictionary>
+        </eye:SharedResourceDictionary>
     </Window.Resources>
 
     <Grid>
@@ -153,16 +152,18 @@
                 <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Notification:" />
                 <st:StackPanel>
                     <TextBlock Text="when muted" />
-                    <ContentPresenter Width="22" Height="22" Content="{Binding AudioSelectorWhenMuted}" />
+                    <ContentPresenter Width="22" Height="22" Content="{Binding AudioSelectorWhenMuted}"
+                                      ContentTemplate="{StaticResource AudioNotificationSelectorButtonTemplate}" />
                     <TextBlock Text="when un-muted " />
-                    <ContentPresenter Width="22" Height="22" Content="{Binding AudioSelectorWhenUnmuted}" />
-                    <ui:ButtonEx Command="{Binding AddSoundCommand}"
-                                 st:StackPanel.Fill="Fill"
-                                 MinWidth="90"
-                                 HorizontalContentAlignment="Left"
-                                 Icon="&#xf115;"
-                                 Content="Load..."
-                                 Margin="0" />
+                    <ContentPresenter Width="22" Height="22" Content="{Binding AudioSelectorWhenUnmuted}"
+                                      ContentTemplate="{StaticResource AudioNotificationSelectorButtonTemplate}" />
+                    <eye:ButtonEx Command="{Binding AddSoundCommand}"
+                                  st:StackPanel.Fill="Fill"
+                                  MinWidth="90"
+                                  HorizontalContentAlignment="Left"
+                                  Icon="&#xf115;"
+                                  Content="Load..."
+                                  Margin="0" />
                 </st:StackPanel>
 
                 <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Notification volume:" />
@@ -208,6 +209,7 @@
                     <TextBlock Text="when muted" />
                     <Border Width="22" Height="22" BorderBrush="{DynamicResource SecondaryHueMidBrush}" BorderThickness="1"
                             Background="Transparent"
+                            Cursor="Hand"
                             ToolTip="Click to select an icon">
                         <Image
                             gif:ImageBehavior.RepeatBehavior="Forever"
@@ -221,6 +223,7 @@
                     <TextBlock Text="when un-muted " />
                     <Border Width="22" Height="22" BorderBrush="{DynamicResource SecondaryHueMidBrush}" BorderThickness="1"
                             Background="Transparent"
+                            Cursor="Hand"
                             ToolTip="Click to select an icon">
                         <Image gif:ImageBehavior.RepeatBehavior="Forever"
                                gif:ImageBehavior.AnimatedSource="{Binding ImageProvider.StreamingMicrophoneImage}" />
@@ -230,10 +233,10 @@
                             </i:EventTrigger>
                         </i:Interaction.Triggers>
                     </Border>
-                    <ui:ButtonEx Command="{Binding ResetMicrophoneIconsCommand}"
-                                 Icon="&#xf0e2;"
-                                 Margin="0"
-                                 Content="Reset icons" />
+                    <eye:ButtonEx Command="{Binding ResetMicrophoneIconsCommand}"
+                                  Icon="&#xf0e2;"
+                                  Margin="0"
+                                  Content="Reset icons" />
                 </st:StackPanel>
 
                 <Separator Grid.ColumnSpan="2" />
@@ -256,10 +259,11 @@
                         IsChecked="{Binding MicrophoneController.MuteMode, Converter={StaticResource EqualToTrueConverter}, ConverterParameter={x:Static models:MuteMode.PushToMute}}"
                         Content="Push-To-Mute" />
                 </st:StackPanel>
-                
+
                 <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Initial state:"
-                           IsEnabled="{Binding MicrophoneController.MuteMode, Converter={StaticResource EqualToTrueConverter}, ConverterParameter={x:Static models:MuteMode.ToggleMute}}"/>
-                <st:StackPanel IsEnabled="{Binding MicrophoneController.MuteMode, Converter={StaticResource EqualToTrueConverter}, ConverterParameter={x:Static models:MuteMode.ToggleMute}}">
+                           IsEnabled="{Binding MicrophoneController.MuteMode, Converter={StaticResource EqualToTrueConverter}, ConverterParameter={x:Static models:MuteMode.ToggleMute}}" />
+                <st:StackPanel
+                    IsEnabled="{Binding MicrophoneController.MuteMode, Converter={StaticResource EqualToTrueConverter}, ConverterParameter={x:Static models:MuteMode.ToggleMute}}">
                     <RadioButton
                         VerticalContentAlignment="Center"
                         ToolTip="Do not change microphone state on app startup"
@@ -368,18 +372,18 @@
                     IsEnabled="{Binding ShowOverlaySettings}"
                     Grid.ColumnSpan="2"
                     st:AutoGrid.RowHeightOverride="40">
-                    <ui:ButtonEx Command="{Binding ResetOverlayPositionCommand}"
-                                 Icon="&#xf0e2;"
-                                 Content="Reset overlay" />
+                    <eye:ButtonEx Command="{Binding ResetOverlayPositionCommand}"
+                                  Icon="&#xf0e2;"
+                                  Content="Reset overlay" />
                     <Grid DockPanel.Dock="Right" Margin="5,0,0,0">
-                        <ui:ButtonEx Command="{Binding ToggleOverlayLockCommand}" Margin="0"
-                                     Icon="&#xf09c;"
-                                     Visibility="{Binding Overlay.IsLocked, Converter={StaticResource TrueToVisibleFalseToCollapsedConverter}}"
-                                     Content="Unlock overlay" />
-                        <ui:ButtonEx Command="{Binding ToggleOverlayLockCommand}" Margin="0"
-                                     Icon="&#xf023;"
-                                     Visibility="{Binding Overlay.IsLocked, Converter={StaticResource TrueToCollapsedFalseToVisibleConverter}}"
-                                     Content="Lock overlay" />
+                        <eye:ButtonEx Command="{Binding ToggleOverlayLockCommand}" Margin="0"
+                                      Icon="&#xf09c;"
+                                      Visibility="{Binding Overlay.IsLocked, Converter={StaticResource TrueToVisibleFalseToCollapsedConverter}}"
+                                      Content="Unlock overlay" />
+                        <eye:ButtonEx Command="{Binding ToggleOverlayLockCommand}" Margin="0"
+                                      Icon="&#xf023;"
+                                      Visibility="{Binding Overlay.IsLocked, Converter={StaticResource TrueToCollapsedFalseToVisibleConverter}}"
+                                      Content="Lock overlay" />
                     </Grid>
                 </DockPanel>
             </st:AutoGrid>
@@ -396,7 +400,7 @@
 
     <mah:MetroWindow.LeftWindowCommands>
         <mah:WindowCommands ShowSeparators="True">
-            <ui:ButtonEx
+            <eye:ButtonEx
                 Margin="5,0"
                 ToolTip="Open logs/config folder"
                 Icon="&#xF07C;"
@@ -412,15 +416,15 @@
                 <TextBlock Margin="2.5,0,0,0" Text="USER-MODE" />
             </StackPanel>
             <StackPanel Orientation="Horizontal">
-                <ui:ButtonEx Command="{Binding ApplicationUpdater.CheckForUpdatesCommand}"
-                             ToolTip="Check for updates"
-                             Margin="5,0"
-                             Icon="&#xF0ED;" />
-                <ui:ButtonEx Command="{Binding ApplicationUpdater.RestartCommand}"
-                             ToolTip="Restart application"
-                             Margin="5,0"
-                             Visibility="{Binding IsDebugMode, Converter={StaticResource TrueToVisibleFalseToCollapsedConverter}}"
-                             Icon="&#xf021;" />
+                <eye:ButtonEx Command="{Binding ApplicationUpdater.CheckForUpdatesCommand}"
+                              ToolTip="Check for updates"
+                              Margin="5,0"
+                              Icon="&#xF0ED;" />
+                <eye:ButtonEx Command="{Binding ApplicationUpdater.RestartCommand}"
+                              ToolTip="Restart application"
+                              Margin="5,0"
+                              Visibility="{Binding IsDebugMode, Converter={StaticResource TrueToVisibleFalseToCollapsedConverter}}"
+                              Icon="&#xf021;" />
             </StackPanel>
         </mah:WindowCommands>
     </mah:MetroWindow.RightWindowCommands>

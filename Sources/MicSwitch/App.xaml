@@ -1,17 +1,18 @@
 ﻿<Application x:Class="MicSwitch.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:eye="http://coderush.net/poeeye/">
     <Application.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/controls.buttons.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/styles/themes/light.blue.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/PoeShared.Wpf;component/Themes/Generic.shared.xaml" />
+        <eye:SharedResourceDictionary>
+            <eye:SharedResourceDictionary.MergedDictionaries>
+                <eye:SharedResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/controls.buttons.xaml" />
+                <eye:SharedResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/styles/themes/light.blue.xaml" />
+                <eye:SharedResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
+                <eye:SharedResourceDictionary Source="pack://application:,,,/PoeShared.Wpf;component/Themes/Generic.shared.xaml" />
                 
-                <ResourceDictionary Source="Themes/Converters.xaml" />
-                <ResourceDictionary Source="MainWindow/Views/MicSwitchOverlayView.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
+                <eye:SharedResourceDictionary Source="Themes/Converters.xaml" />
+                <eye:SharedResourceDictionary Source="MainWindow/Views/MicSwitchOverlayView.xaml" />
+            </eye:SharedResourceDictionary.MergedDictionaries>
+        </eye:SharedResourceDictionary>
     </Application.Resources>
 </Application>

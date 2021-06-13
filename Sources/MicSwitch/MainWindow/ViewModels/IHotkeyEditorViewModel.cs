@@ -1,6 +1,6 @@
 using MicSwitch.MainWindow.Models;
 using PoeShared.Scaffolding;
-using PoeShared.UI.Hotkeys;
+using PoeShared.UI;
 
 namespace MicSwitch.MainWindow.ViewModels
 {

@@ -4,7 +4,7 @@ using log4net;
 using MicSwitch.MainWindow.Models;
 using PoeShared;
 using PoeShared.Scaffolding;
-using PoeShared.UI.Hotkeys;
+using PoeShared.UI;
 using ReactiveUI;
 
 namespace MicSwitch.MainWindow.ViewModels
