@@ -287,7 +287,8 @@
                 </st:StackPanel>
 
                 <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Hotkey:" />
-                <ContentPresenter Content="{Binding MicrophoneController.Hotkey}" />
+                <ContentPresenter Content="{Binding MicrophoneController.Hotkey}" 
+                                  st:AutoGrid.RowHeightOverride="40"/>
 
                 <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Additional hotkeys:" />
                 <CheckBox
