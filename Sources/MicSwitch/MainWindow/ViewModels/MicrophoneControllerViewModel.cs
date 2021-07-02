@@ -145,6 +145,31 @@ namespace MicSwitch.MainWindow.ViewModels
                 .Subscribe(x => InitialMicrophoneState = x)
                 .AddTo(Anchors);
             
+            configProvider.ListenTo(x => x.VolumeControlEnabled)
+                .ObserveOn(uiScheduler)
+                .SubscribeSafe(x => MicrophoneVolumeControlEnabled = x, Log.HandleException)
+                .AddTo(Anchors);
+            
+            Observable.Merge(
+                    configProvider.ListenTo(x => x.MicrophoneLineId).ToUnit(),
+                    Microphones.ToObservableChangeSet().ToUnit())
+                .Select(_ => configProvider.ActualConfig.MicrophoneLineId)
+                .ObserveOn(uiScheduler)
+                .SubscribeSafe(configLineId =>
+                {
+                    Log.Debug($"Microphone line configuration changed, lineId: {configLineId}, known lines: {Microphones.DumpToTextRaw()}");
+
+                    var micLine = Microphones.FirstOrDefault(line => line.Equals(configLineId));
+                    if (micLine.IsEmpty)
+                    {
+                        Log.Debug($"Selecting first one of available microphone lines, known lines: {Microphones.DumpToTextRaw()}");
+                        micLine = Microphones.FirstOrDefault();
+                    }
+                    MicrophoneLine = micLine;
+                    MuteMicrophoneCommand.ResetError();
+                }, Log.HandleUiException)
+                .AddTo(Anchors);
+            
             this.WhenAnyValue(x => x.MuteMode, x => x.InitialMicrophoneState)
                 .ObserveOn(uiScheduler)
                 .SubscribeSafe(_ =>
@@ -228,31 +253,6 @@ namespace MicSwitch.MainWindow.ViewModels
                      config.MicrophoneLineId = microphoneLine;
                      config.VolumeControlEnabled = microphoneVolumeControlEnabled;
                      configProvider.Save(config);
-                 }, Log.HandleUiException)
-                 .AddTo(Anchors);
-            
-             configProvider.ListenTo(x => x.VolumeControlEnabled)
-                 .ObserveOn(uiScheduler)
-                 .SubscribeSafe(x => MicrophoneVolumeControlEnabled = x, Log.HandleException)
-                 .AddTo(Anchors);
-            
-             Observable.Merge(
-                     configProvider.ListenTo(x => x.MicrophoneLineId).ToUnit(),
-                     Microphones.ToObservableChangeSet().ToUnit())
-                 .Select(_ => configProvider.ActualConfig.MicrophoneLineId)
-                 .ObserveOn(uiScheduler)
-                 .SubscribeSafe(configLineId =>
-                 {
-                     Log.Debug($"Microphone line configuration changed, lineId: {configLineId}, known lines: {Microphones.DumpToTextRaw()}");
-
-                     var micLine = Microphones.FirstOrDefault(line => line.Equals(configLineId));
-                     if (micLine.IsEmpty)
-                     {
-                         Log.Debug($"Selecting first one of available microphone lines, known lines: {Microphones.DumpToTextRaw()}");
-                         micLine = Microphones.FirstOrDefault();
-                     }
-                     MicrophoneLine = micLine;
-                     MuteMicrophoneCommand.ResetError();
                  }, Log.HandleUiException)
                  .AddTo(Anchors);
         }
