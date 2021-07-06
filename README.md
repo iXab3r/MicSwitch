@@ -69,10 +69,10 @@ Probably not going to happen in the nearest future because in it's core MicSwitc
 Migrating to something cross-platform like Avalon, Xamarin is an option, but not a cheap one, unfortunately I don't have so much spare time to do it now.
 
 Meanwhile you could take a look at
-###MacOS
+### MacOS
 **MuteKey** (thanks to benpeter for finding it): https://apps.apple.com/us/app/mutekey/id1509590766?mt=12
 
-###Linux
+### Linux
 ???
 
 ## Contacts
