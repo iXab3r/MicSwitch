@@ -70,7 +70,7 @@ Migrating to something cross-platform like Avalon, Xamarin is an option, but not
 
 Meanwhile you could take a look at
 ###MacOS
-**MuteKey**: https://apps.apple.com/us/app/mutekey/id1509590766?mt=12
+**MuteKey** (thanks to benpeter for finding it): https://apps.apple.com/us/app/mutekey/id1509590766?mt=12
 
 ###Linux
 ???
