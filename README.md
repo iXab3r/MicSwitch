@@ -64,6 +64,17 @@ Also it supports configurable mute/unmute sounds(similar to TeamSpeak/Ventrilo) 
 
 That's it. Portable version will be in **bin** folder. Framework-dependent version
 
+## Linux/MacOS Support ?
+Probably not going to happen in the nearest future because in it's core MicSwitch is a WPF application, technology that Microsoft does not want to port at all.
+Migrating to something cross-platform like Avalon, Xamarin is an option, but not a cheap one, unfortunately I don't have so much spare time to do it now.
+
+Meanwhile you could take a look at
+###MacOS
+**MuteKey**: https://apps.apple.com/us/app/mutekey/id1509590766?mt=12
+
+###Linux
+???
+
 ## Contacts
 - Feel free to contact me via PM in Discord *Xab3r#3780* or [Reddit](https://www.reddit.com/user/Xab3r) 
 - [Discord chat](https://discord.gg/BExRm22 "Discord chat")
