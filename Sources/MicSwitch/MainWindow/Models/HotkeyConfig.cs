@@ -8,6 +8,8 @@ namespace MicSwitch.MainWindow.Models
         
         public string AlternativeKey { get; set; }
 
+        public bool IgnoreModifiers { get; set; } = false;
+
         public bool Suppress { get; set; } = true;
     }
 }

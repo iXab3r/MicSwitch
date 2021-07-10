@@ -1,16 +1,19 @@
 using System;
 using System.Reactive.Linq;
+using System.Windows.Input;
 using log4net;
 using MicSwitch.MainWindow.Models;
 using PoeShared;
 using PoeShared.Scaffolding;
 using PoeShared.UI;
+using PropertyBinder;
 using ReactiveUI;
 
 namespace MicSwitch.MainWindow.ViewModels
 {
     internal sealed class HotkeyEditorViewModel : DisposableReactiveObject, IHotkeyEditorViewModel
     {
+        private static readonly Binder<HotkeyEditorViewModel> Binder = new();
         private static readonly ILog Log = LogManager.GetLogger(typeof(HotkeyEditorViewModel));
 
         private readonly IHotkeyConverter hotkeyConverter;
@@ -18,14 +21,39 @@ namespace MicSwitch.MainWindow.ViewModels
         private HotkeyGesture key;
         private bool suppressKey;
         private HotkeyConfig properties;
+        private bool ignoreModifiers;
+        private bool hasModifiers;
+        private bool isMouse;
+
+        static HotkeyEditorViewModel()
+        {
+            Binder
+                .Bind(x => x.Key != null && x.Key.ModifierKeys != ModifierKeys.None || x.AlternativeKey != null && x.AlternativeKey.ModifierKeys != ModifierKeys.None)
+                .To(x => x.HasModifiers);
+            Binder.BindIf(x => x.HasModifiers, x => false).To(x => x.IgnoreModifiers);
+        }
 
         public HotkeyEditorViewModel(IHotkeyConverter hotkeyConverter)
         {
             this.hotkeyConverter = hotkeyConverter;
-            this.WhenAnyValue(x => x.Key, x => x.AlternativeKey, x => x.SuppressKey)
+            this.WhenAnyValue(x => x.Key, x => x.AlternativeKey, x => x.SuppressKey, x => x.IgnoreModifiers)
                 .Select(x => SaveToHotkeyConfig())
                 .SubscribeSafe(x => Properties = x, Log.HandleUiException)
                 .AddTo(Anchors);
+            
+            Binder.Attach(this).AddTo(Anchors);
+        }
+
+        public bool HasModifiers
+        {
+            get => hasModifiers;
+            private set => RaiseAndSetIfChanged(ref hasModifiers, value);
+        }
+
+        public bool IsMouse
+        {
+            get => isMouse;
+            private set => RaiseAndSetIfChanged(ref isMouse, value);
         }
 
         public HotkeyConfig Properties
@@ -52,13 +80,20 @@ namespace MicSwitch.MainWindow.ViewModels
             set => RaiseAndSetIfChanged(ref suppressKey, value);
         }
 
+        public bool IgnoreModifiers
+        {
+            get => ignoreModifiers;
+            set => RaiseAndSetIfChanged(ref ignoreModifiers, value);
+        }
+
         private HotkeyConfig SaveToHotkeyConfig()
         {
             return new()
             {
                 Key = hotkeyConverter.ConvertToString(key ?? HotkeyGesture.Empty),
                 AlternativeKey = hotkeyConverter.ConvertToString(alternativeKey ?? HotkeyGesture.Empty),
-                Suppress = suppressKey
+                Suppress = suppressKey,
+                IgnoreModifiers = ignoreModifiers
             };
         }
 
@@ -69,6 +104,7 @@ namespace MicSwitch.MainWindow.ViewModels
                 Key = hotkeyConverter.ConvertFromString(config.Key ?? string.Empty);
                 AlternativeKey = hotkeyConverter.ConvertFromString(config.AlternativeKey ?? string.Empty);
                 SuppressKey = config.Suppress;
+                IgnoreModifiers = config.IgnoreModifiers;
             }
             catch (Exception e)
             {

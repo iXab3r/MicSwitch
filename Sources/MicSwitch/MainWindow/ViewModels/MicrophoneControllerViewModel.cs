@@ -358,6 +358,8 @@ namespace MicSwitch.MainWindow.ViewModels
                 .SubscribeSafe(x =>
                 {
                     result.SuppressKey = hotkeyEditor.SuppressKey;
+                    result.IgnoreModifiers = hotkeyEditor.IgnoreModifiers;
+                    
                     result.Clear();
                     if (!owner.EnableAdditionalHotkeys)
                     {

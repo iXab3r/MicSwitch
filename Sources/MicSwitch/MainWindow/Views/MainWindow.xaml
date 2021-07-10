@@ -35,7 +35,6 @@
                  RenderOptions.EdgeMode="Aliased"
                  Title="{Binding Title}" Width="500" SizeToContent="Height"
                  Icon="{Binding ImageProvider.MicrophoneImage}">
-
     <Window.Resources>
         <eye:SharedResourceDictionary>
             <Style TargetType="{x:Type st:StackPanel}">
@@ -57,20 +56,6 @@
                 <Setter Property="st:AutoGrid.RowHeightOverride" Value="7" />
                 <Setter Property="Margin" Value="5,0" />
             </Style>
-
-            <DataTemplate DataType="{x:Type viewModels:HotkeyEditorViewModel}">
-                <st:StackPanel Orientation="Horizontal" MarginBetweenChildren="5">
-                    <eye:HotKeyBox st:StackPanel.Fill="Fill" HotKey="{Binding Key}" Background="Transparent" AcceptsTab="False" AcceptsReturn="False"
-                                   AcceptsMouseKeys="True" />
-                    <TextBlock Margin="10,0" Text="or" FontWeight="Bold" />
-                    <eye:HotKeyBox st:StackPanel.Fill="Fill" HotKey="{Binding AlternativeKey}" Background="Transparent" AcceptsTab="False" AcceptsReturn="False"
-                                   AcceptsMouseKeys="True" />
-                    <CheckBox
-                        Content="Suppress"
-                        ToolTip="If enabled other applications will not react to pressed hotkey. May not work for mouse buttons or special keys"
-                        IsChecked="{Binding SuppressKey}" />
-                </st:StackPanel>
-            </DataTemplate>
         </eye:SharedResourceDictionary>
     </Window.Resources>
 
@@ -288,7 +273,7 @@
 
                 <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Hotkey:" />
                 <ContentPresenter Content="{Binding MicrophoneController.Hotkey}" 
-                                  st:AutoGrid.RowHeightOverride="40"/>
+                                  st:AutoGrid.RowHeightOverride="50"/>
 
                 <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Additional hotkeys:" />
                 <CheckBox
@@ -298,7 +283,7 @@
                 <st:AutoGrid RowHeightOverride="Auto"
                              Margin="0"
                              ColumnSpan="2"
-                             Columns="120,*" ChildMargin="5" RowHeight="32"
+                             Columns="120,*" ChildMargin="5" RowHeight="50"
                              Visibility="{Binding MicrophoneController.EnableAdditionalHotkeys, Converter={StaticResource TrueToVisibleFalseToCollapsedConverter}}">
                     <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="for Toggle:" />
                     <ContentControl Content="{Binding MicrophoneController.HotkeyToggle}" />

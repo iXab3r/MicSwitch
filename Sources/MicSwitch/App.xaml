@@ -11,6 +11,7 @@
                 <eye:SharedResourceDictionary Source="pack://application:,,,/PoeShared.Wpf;component/Themes/Generic.shared.xaml" />
                 
                 <eye:SharedResourceDictionary Source="Themes/Converters.xaml" />
+                <eye:SharedResourceDictionary Source="MainWindow/Views/HotkeyEditorView.xaml" />
                 <eye:SharedResourceDictionary Source="MainWindow/Views/MicSwitchOverlayView.xaml" />
             </eye:SharedResourceDictionary.MergedDictionaries>
         </eye:SharedResourceDictionary>

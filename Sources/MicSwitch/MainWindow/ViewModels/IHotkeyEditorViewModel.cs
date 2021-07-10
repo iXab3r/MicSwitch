@@ -13,6 +13,8 @@ namespace MicSwitch.MainWindow.ViewModels
         HotkeyGesture AlternativeKey { get; set; }
         
         bool SuppressKey { get; set; }
+        
+        bool IgnoreModifiers { get; set; }
 
         void Load(HotkeyConfig properties);
     }

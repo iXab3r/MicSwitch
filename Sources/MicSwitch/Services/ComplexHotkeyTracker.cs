@@ -58,12 +58,13 @@ namespace MicSwitch.Services
             Log.Debug($"Initializing HotkeyTracker");
 
             configProvider.WhenChanged
-                .Select(x => new { Hotkey = x.Hotkey ?? HotkeyConfig.Empty, x.MuteMode })
+                .Select(x => new { Hotkey = x.Hotkey ?? HotkeyConfig.Empty, x.MuteMode, x.Hotkey?.IgnoreModifiers })
                 .SubscribeSafe(
                     config =>
                     {
+                        hotkeyTracker.IgnoreModifiers = config.IgnoreModifiers ?? false;
+                        
                         hotkeyTracker.Clear();
-
                         try
                         {
                             hotkeyTracker.Add(hotkeyConverter.ConvertFromString(config.Hotkey.Key));
