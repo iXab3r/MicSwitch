@@ -29,7 +29,7 @@ namespace MicSwitch.Services
             this.microphoneProvider = microphoneProvider;
             this.WhenAnyValue(x => x.LineId)
                 .Where(x => !x.IsEmpty)
-                .SubscribeSafe(InitializeLine, Log.HandleUiException)
+                .SubscribeSafe(InitializeLine, Log.HandleException)
                 .AddTo(Anchors);
 
             this.WhenAnyValue(x => x.MixerControl)
