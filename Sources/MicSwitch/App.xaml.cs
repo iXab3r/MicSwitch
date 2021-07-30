@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reflection;
+using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -22,6 +23,7 @@ using PoeShared.Native.Scaffolding;
 using PoeShared.Prism;
 using PoeShared.Scaffolding;
 using PoeShared.Services;
+using PoeShared.Squirrel.Core;
 using PoeShared.Squirrel.Prism;
 using PoeShared.Squirrel.Updater;
 using PoeShared.UI;
@@ -41,6 +43,7 @@ namespace MicSwitch
         private readonly UnityContainer container = new UnityContainer();
         private readonly IAppArguments appArguments;
 
+        [SupportedOSPlatform("windows")]
         public App()
         {
             try
@@ -77,7 +80,11 @@ namespace MicSwitch
                 RxApp.TaskpoolScheduler = TaskPoolScheduler.Default;
                 Current.ShutdownMode = ShutdownMode.OnMainWindowClose;
                 Log.Debug($"New UI Scheduler: {RxApp.MainThreadScheduler}");
-                InitializeUpdateSettings();  
+                InitializeUpdateSettings();
+
+                Log.Debug("Initializing updater to handle initial events");
+                using var updateModel = container.Resolve<IApplicationUpdaterModel>();
+                updateModel.HandleSquirrelEvents();
                 
                 Log.Debug("Initializing housekeeping");
                 var cleanupService = container.Resolve<IFolderCleanerService>();
