@@ -428,7 +428,6 @@
                 <eye:ButtonEx Command="{Binding ApplicationUpdater.RestartCommand}"
                               ToolTip="Restart application"
                               Margin="5,0"
-                              Visibility="{Binding IsDebugMode, Converter={StaticResource TrueToVisibleFalseToCollapsedConverter}}"
                               Icon="&#xf021;" />
             </StackPanel>
         </mah:WindowCommands>

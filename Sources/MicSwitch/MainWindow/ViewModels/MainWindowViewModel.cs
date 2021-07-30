@@ -48,6 +48,7 @@ namespace MicSwitch.MainWindow.ViewModels
 
         private readonly IStartupManager startupManager;
         private readonly IAppArguments appArguments;
+        private readonly IApplicationAccessor applicationAccessor;
         private readonly ObservableAsPropertyHelper<TwoStateNotification> audioNotificationSource;
 
         private bool showInTaskbar;
@@ -65,6 +66,7 @@ namespace MicSwitch.MainWindow.ViewModels
         
         public MainWindowViewModel(
             IAppArguments appArguments,
+            IApplicationAccessor applicationAccessor,
             IFactory<IStartupManager, StartupManagerArgs> startupManagerFactory,
             IMicSwitchOverlayViewModel overlay,
             IMicrophoneControllerViewModel microphoneControllerViewModel,
@@ -84,6 +86,7 @@ namespace MicSwitch.MainWindow.ViewModels
             Title = $"{(appArguments.IsDebugMode ? "[D]" : "")} {appArguments.AppName} v{appArguments.Version}";
 
             this.appArguments = appArguments;
+            this.applicationAccessor = applicationAccessor;
             this.MicrophoneController = microphoneControllerViewModel.AddTo(Anchors);
             this.mainWindowTracker = mainWindowTracker;
             this.configProvider = configProvider;
@@ -378,8 +381,6 @@ namespace MicSwitch.MainWindow.ViewModels
             get => lastOpenedDirectory;
             private set => RaiseAndSetIfChanged(ref lastOpenedDirectory, value);
         }
-        
-        
 
         public double Width
         {
@@ -452,8 +453,8 @@ namespace MicSwitch.MainWindow.ViewModels
 
         private void HandleWindowClosing(IViewController viewController, CancelEventArgs args)
         {
-            Log.Info($"Main window is closing(cancel: {args.Cancel}), {nameof(Visibility)}: {Visibility}, {nameof(MicSwitchConfig.MinimizeOnClose)}: {configProvider.ActualConfig.MinimizeOnClose}");
-            if (MinimizeOnClose)
+            Log.Info($"Main window is closing(cancel: {args.Cancel}), {nameof(Visibility)}: {Visibility}, {nameof(MicSwitchConfig.MinimizeOnClose)}: {configProvider.ActualConfig.MinimizeOnClose}, {nameof(applicationAccessor.IsExiting)}: {applicationAccessor.IsExiting}");
+            if (MinimizeOnClose && !applicationAccessor.IsExiting)
             {
                 Log.Info("Cancelling main window closure (will be ignored during app shutdown)");
                 args.Cancel = true;
