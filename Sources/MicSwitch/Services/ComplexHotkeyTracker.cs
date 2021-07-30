@@ -11,6 +11,7 @@ using JetBrains.Annotations;
 using log4net;
 using MicSwitch.MainWindow.Models;
 using MicSwitch.Modularity;
+using PInvoke;
 using PoeShared;
 using PoeShared.Modularity;
 using PoeShared.Native;
@@ -103,6 +104,7 @@ namespace MicSwitch.Services
         private sealed class HookForm : Window
         {
             private readonly CompositeDisposable anchors = new CompositeDisposable();
+            private const int HWND_MESSAGE = -3;
 
             public HookForm()
             {
@@ -136,6 +138,15 @@ namespace MicSwitch.Services
             {
                 base.OnClosed(e);
                 anchors.Dispose();
+            }
+            
+            protected override void OnSourceInitialized(EventArgs e)
+            {
+                base.OnSourceInitialized(e);
+                if (PresentationSource.FromVisual(this) is HwndSource hwndSource)
+                {
+                    User32.SetParent(hwndSource.Handle, (IntPtr)HWND_MESSAGE);
+                }
             }
         }
     }

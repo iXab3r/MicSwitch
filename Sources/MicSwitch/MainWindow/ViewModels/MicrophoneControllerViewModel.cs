@@ -359,6 +359,7 @@ namespace MicSwitch.MainWindow.ViewModels
                 {
                     result.SuppressKey = hotkeyEditor.SuppressKey;
                     result.IgnoreModifiers = hotkeyEditor.IgnoreModifiers;
+                    result.HandleApplicationKeys = true;
                     
                     result.Clear();
                     if (!owner.EnableAdditionalHotkeys)
