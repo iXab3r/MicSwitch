@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
@@ -26,6 +27,8 @@ using PoeShared.Squirrel.Updater;
 using ReactiveUI;
 using Unity;
 using Application = System.Windows.Application;
+using Size = System.Windows.Size;
+
 #pragma warning disable 1998
 
 namespace MicSwitch.MainWindow.ViewModels
@@ -55,7 +58,11 @@ namespace MicSwitch.MainWindow.ViewModels
         private bool minimizeOnClose;
         private string lastOpenedDirectory;
         private float audioNotificationVolume;
-
+        private double height;
+        private double left;
+        private double top;
+        private double width;
+        
         public MainWindowViewModel(
             IAppArguments appArguments,
             IFactory<IStartupManager, StartupManagerArgs> startupManagerFactory,
@@ -211,15 +218,15 @@ namespace MicSwitch.MainWindow.ViewModels
                     }, Log.HandleUiException)
                 .AddTo(Anchors);
 
-            configProvider.WhenChanged
-                .Subscribe()
-                .AddTo(Anchors);
-
             Observable.Merge(
                     microphoneControllerViewModel.ObservableForProperty(x => x.MuteMode, skipInitial: true).ToUnit(),
                     waveOutDeviceSelector.ObservableForProperty(x => x.SelectedItem, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.AudioNotification, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.MinimizeOnClose, skipInitial: true).ToUnit(),
+                    this.ObservableForProperty(x => x.Width, skipInitial: true).ToUnit(),
+                    this.ObservableForProperty(x => x.Height, skipInitial: true).ToUnit(),
+                    this.ObservableForProperty(x => x.Top, skipInitial: true).ToUnit(),
+                    this.ObservableForProperty(x => x.Left, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.AudioNotificationVolume, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.StartMinimized, skipInitial: true).ToUnit())
                 .Throttle(ConfigThrottlingTimeout)
@@ -232,6 +239,7 @@ namespace MicSwitch.MainWindow.ViewModels
                     config.StartMinimized = StartMinimized;
                     config.MinimizeOnClose = MinimizeOnClose;
                     config.OutputDeviceId = waveOutDeviceSelector.SelectedItem?.Id;
+                    config.MainWindowBounds = new Rect(Left, Top, Width, Height);
                     configProvider.Save(config);
                 }, Log.HandleUiException)
                 .AddTo(Anchors);
@@ -242,6 +250,36 @@ namespace MicSwitch.MainWindow.ViewModels
                     Log.Debug($"Main window loaded - loading overlay, current process({CurrentProcess.ProcessName} 0x{CurrentProcess.Id:x8}) main window: {CurrentProcess.MainWindowHandle} ({CurrentProcess.MainWindowTitle})");
                     overlayWindowController.RegisterChild(Overlay).AddTo(Anchors);
                     Log.Debug("Overlay loaded successfully");
+                }, Log.HandleUiException)
+                .AddTo(Anchors);
+
+            configProvider.ListenTo(x => x.MainWindowBounds)
+                .WithPrevious()
+                .ObserveOn(uiScheduler)
+                .SubscribeSafe(x =>
+                {
+                    Log.Debug($"Main window config bounds updated: {x}");
+
+                    Rect bounds;
+                    if (x.Current == null)
+                    {
+                        var monitorBounds = UnsafeNative.GetMonitorBounds(Rectangle.Empty).ScaleToWpf();
+                        var monitorCenter = monitorBounds.Center();
+                        bounds = new Rect(
+                            monitorCenter.X - DefaultSize.Width / 2f,
+                            monitorCenter.Y - DefaultSize.Height / 2f,
+                            DefaultSize.Width,
+                            DefaultSize.Height);
+                    }
+                    else
+                    {
+                        bounds = x.Current.Value;
+                    }
+
+                    Left = bounds.Left;
+                    Top = bounds.Top;
+                    Width = bounds.Width;
+                    Height = bounds.Height;
                 }, Log.HandleUiException)
                 .AddTo(Anchors);
             
@@ -285,6 +323,10 @@ namespace MicSwitch.MainWindow.ViewModels
 
         public bool RunAtLogin => startupManager.IsRegistered;
 
+        public Size MinSize { get; } = new Size(500, 430);
+        public Size MaxSize { get; } = new Size(500, 680);
+        public Size DefaultSize { get; } = new Size(500, 680);
+        
         public WindowState WindowState
         {
             get => windowState;
@@ -335,6 +377,32 @@ namespace MicSwitch.MainWindow.ViewModels
         {
             get => lastOpenedDirectory;
             private set => RaiseAndSetIfChanged(ref lastOpenedDirectory, value);
+        }
+        
+        
+
+        public double Width
+        {
+            get => width;
+            set => RaiseAndSetIfChanged(ref width, value);
+        }
+
+        public double Height
+        {
+            get => height;
+            set => RaiseAndSetIfChanged(ref height, value);
+        }
+
+        public double Left
+        {
+            get => left;
+            set => RaiseAndSetIfChanged(ref left, value);
+        }
+
+        public double Top
+        {
+            get => top;
+            set => RaiseAndSetIfChanged(ref top, value);
         }
 
         public TwoStateNotification AudioNotification => audioNotificationSource.Value;

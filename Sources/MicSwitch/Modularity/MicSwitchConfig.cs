@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Windows;
 using MicSwitch.MainWindow.Models;
 using MicSwitch.Services;
 using Newtonsoft.Json;
@@ -23,6 +24,8 @@ namespace MicSwitch.Modularity
         public bool MinimizeOnClose { get; set; } = true;
         
         public bool VolumeControlEnabled { get; set; } = false;
+        
+        public Rect? MainWindowBounds { get; set; }
 
         [Obsolete("Replaced with Notifications")]
         public TwoStateNotification? Notification { get; set; }
