@@ -225,3 +225,5 @@ Sources/PoeShared
 /Sources/PropertyBinder*
 /Sources/PoeShared*
 *.binlog
+
+/Sources/WindowsHook*

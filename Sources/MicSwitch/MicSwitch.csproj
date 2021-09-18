@@ -10,7 +10,6 @@
     <UseWPF>true</UseWPF>
     <WarningsAsErrors />
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <StartupObject>MicSwitch.App</StartupObject>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <IsPackable>false</IsPackable>
@@ -34,6 +33,7 @@
     <PackageReference Include="Prism.Unity" Version="7.2.0.1367" />
     <PackageReference Include="Prism.Wpf" Version="7.2.0.1367" />
     <PackageReference Include="ReactiveUI" Version="10.4.1" />
+    <PackageReference Include="SevenZipSharp.Interop" Version="19.0.1" />
     <PackageReference Include="Splat" Version="9.1.1" />
     <PackageReference Include="System.Drawing.Primitives" Version="4.3.0" />
     <PackageReference Include="System.Reactive" Version="4.2.0" />

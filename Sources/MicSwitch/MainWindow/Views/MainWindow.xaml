@@ -421,6 +421,7 @@
                 <TextBlock Margin="2.5,0,0,0" Text="USER-MODE" />
             </StackPanel>
             <StackPanel Orientation="Horizontal">
+                <eye:CachedContentControl Content="{Binding ErrorMonitor}"/>
                 <eye:ButtonEx Command="{Binding ApplicationUpdater.CheckForUpdatesCommand}"
                               ToolTip="Check for updates"
                               Margin="5,0"

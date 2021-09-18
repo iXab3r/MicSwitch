@@ -12,6 +12,7 @@ using log4net;
 using MaterialDesignColors;
 using MaterialDesignThemes.Wpf;
 using Microsoft.Win32;
+using MicSwitch.ErrorReporting;
 using MicSwitch.MainWindow.Models;
 using MicSwitch.Modularity;
 using PoeShared;
@@ -79,6 +80,7 @@ namespace MicSwitch.MainWindow.ViewModels
             IConfigProvider<MicSwitchConfig> configProvider,
             IConfigProvider<MicSwitchOverlayConfig> overlayConfigProvider,
             IImageProvider imageProvider,
+            IErrorMonitorViewModel errorMonitor,
             IAudioNotificationsManager notificationsManager,
             IWindowViewController viewController,
             [Dependency(WellKnownSchedulers.UI)] IScheduler uiScheduler)
@@ -96,6 +98,7 @@ namespace MicSwitch.MainWindow.ViewModels
             ApplicationUpdater = appUpdater.AddTo(Anchors);
             WaveOutDeviceSelector = waveOutDeviceSelector;
             ImageProvider = imageProvider;
+            ErrorMonitor = errorMonitor;
             AudioSelectorWhenMuted = audioSelectorFactory.Create().AddTo(Anchors);
             AudioSelectorWhenUnmuted = audioSelectorFactory.Create().AddTo(Anchors);
             WindowState = WindowState.Minimized;
@@ -326,9 +329,9 @@ namespace MicSwitch.MainWindow.ViewModels
 
         public bool RunAtLogin => startupManager.IsRegistered;
 
-        public Size MinSize { get; } = new Size(500, 430);
-        public Size MaxSize { get; } = new Size(500, 680);
-        public Size DefaultSize { get; } = new Size(500, 680);
+        public Size MinSize { get; } = new Size(550, 430);
+        public Size MaxSize { get; } = new Size(550, 680);
+        public Size DefaultSize { get; } = new Size(550, 680);
         
         public WindowState WindowState
         {
@@ -374,6 +377,8 @@ namespace MicSwitch.MainWindow.ViewModels
         
         public IImageProvider ImageProvider { get; }
         
+        public IErrorMonitorViewModel ErrorMonitor { get; }
+
         public CommandWrapper AddSoundCommand { get; }
         
         public string LastOpenedDirectory

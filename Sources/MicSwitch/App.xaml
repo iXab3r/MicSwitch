@@ -1,7 +1,7 @@
-﻿<Application x:Class="MicSwitch.App"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:eye="http://coderush.net/poeeye/">
+﻿<eye:ApplicationBase x:Class="MicSwitch.App"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:eye="http://coderush.net/poeeye/">
     <Application.Resources>
         <eye:SharedResourceDictionary>
             <eye:SharedResourceDictionary.MergedDictionaries>
@@ -13,7 +13,8 @@
                 <eye:SharedResourceDictionary Source="Themes/Converters.xaml" />
                 <eye:SharedResourceDictionary Source="MainWindow/Views/HotkeyEditorView.xaml" />
                 <eye:SharedResourceDictionary Source="MainWindow/Views/MicSwitchOverlayView.xaml" />
+                <eye:SharedResourceDictionary Source="ErrorReporting/ErrorMonitorView.xaml" />
             </eye:SharedResourceDictionary.MergedDictionaries>
         </eye:SharedResourceDictionary>
     </Application.Resources>
-</Application>
+</eye:ApplicationBase>

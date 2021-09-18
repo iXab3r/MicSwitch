@@ -1,0 +1,16 @@
+﻿<eye:SharedResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:eye="http://coderush.net/poeeye/"
+                              xmlns:st="http://schemas.spicytaco.io/"
+                              xmlns:errorReporting="clr-namespace:MicSwitch.ErrorReporting">
+    <DataTemplate DataType="{x:Type errorReporting:ErrorMonitorViewModel}">
+        <st:StackPanel Orientation="Horizontal">
+            <eye:ButtonEx Command="{Binding ReportProblemCommand}"
+                          Icon="&#xf071;"/>
+            <eye:ButtonEx Command="{Binding ThrowExceptionCommand}" 
+                          Style="{StaticResource CommandWrapperIconButton}"
+                          Visibility="{Binding ThrowExceptionCommand, Converter={StaticResource NullToCollapsedConverter}}"
+                          Icon="&#xf188;"/>
+        </st:StackPanel>
+    </DataTemplate>
+</eye:SharedResourceDictionary>
