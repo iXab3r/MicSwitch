@@ -8,13 +8,15 @@
             <eye:HotKeyBox st:StackPanel.Fill="Fill" HotKey="{Binding Key}" Background="Transparent" AcceptsTab="False" AcceptsReturn="False"
                            AcceptsMouseKeys="True" />
             <TextBlock Margin="10,0" Text="or" FontWeight="Bold" />
-            <eye:HotKeyBox st:StackPanel.Fill="Fill" HotKey="{Binding AlternativeKey}" Background="Transparent" AcceptsTab="False" AcceptsReturn="False"
+            <eye:HotKeyBox st:StackPanel.Fill="Fill" HotKey="{Binding AlternativeKey}" Background="Transparent" 
+                           AcceptsTab="False" 
+                           AcceptsReturn="False"
                            AcceptsMouseKeys="True" />
             <st:StackPanel Orientation="Vertical" MarginBetweenChildren="2.5">
                 <CheckBox
                     Content="Suppress"
                     ToolTip="If enabled other applications will not react to pressed hotkey. May not work for mouse buttons or special keys"
-                    IsChecked="{Binding SuppressKey}" />
+                    IsChecked="{Binding SuppressKey, Mode=TwoWay}" />
                 <CheckBox
                     IsEnabled="{Binding HasModifiers, Converter={StaticResource NotConverter}}"
                     Content="Ignore modifiers"
@@ -23,4 +25,4 @@
             </st:StackPanel>
         </st:StackPanel>
     </DataTemplate>
-</eye:SharedResourceDictionary>
+</eye:SharedResourceDictionary> 

@@ -33,6 +33,7 @@ namespace MicSwitch.Services
                 .AddTo(Anchors);
 
             this.WhenAnyValue(x => x.MixerControl)
+                .DisposePrevious()
                 .Do(mixer =>
                 {
                     if (mixer == null)
