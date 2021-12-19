@@ -13,7 +13,6 @@
                 <eye:SharedResourceDictionary Source="Themes/Converters.xaml" />
                 <eye:SharedResourceDictionary Source="MainWindow/Views/HotkeyEditorView.xaml" />
                 <eye:SharedResourceDictionary Source="MainWindow/Views/MicSwitchOverlayView.xaml" />
-                <eye:SharedResourceDictionary Source="ErrorReporting/ErrorMonitorView.xaml" />
             </eye:SharedResourceDictionary.MergedDictionaries>
         </eye:SharedResourceDictionary>
     </Application.Resources>

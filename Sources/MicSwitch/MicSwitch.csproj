@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net5-windows7</TargetFramework>
+    <TargetFramework>net6-windows7</TargetFramework>
     <LangVersion>9</LangVersion>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AssemblyName>MicSwitch</AssemblyName>

@@ -9,9 +9,6 @@ using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Threading;
-using log4net;
-using MicSwitch.ErrorReporting;
 using MicSwitch.MainWindow.Models;
 using MicSwitch.MainWindow.ViewModels;
 using MicSwitch.Modularity;
@@ -42,7 +39,6 @@ namespace MicSwitch
     public partial class App : ApplicationBase
     {
         public readonly TimeSpan StartupTimeout = TimeSpan.FromSeconds(10);
-        private static ILog Log => SharedLog.Instance.Log;
 
         private void InitializeContainer()
         {
@@ -54,7 +50,6 @@ namespace MicSwitch
                      .RegisterSingleton<IComplexHotkeyTracker, ComplexHotkeyTracker>()
                      .RegisterSingleton<IMicrophoneControllerViewModel, MicrophoneControllerViewModel>()
                      .RegisterSingleton<IMainWindowViewModel, MainWindowViewModel>()
-                     .RegisterSingleton<IErrorMonitorViewModel, ErrorMonitorViewModel>()
                      .RegisterSingleton<IImageProvider, ImageProvider>()
                      .RegisterSingleton<IConfigProvider, ConfigProviderFromFile>();
         }
@@ -112,6 +107,25 @@ namespace MicSwitch
             }
         }
 
+        private void ShowShutdownWarning()
+        {
+            var assemblyName = Assembly.GetExecutingAssembly().GetName();
+            var window = MainWindow;
+            var title = $"{assemblyName.Name} v{assemblyName.Version}";
+            var message = "Application is already running !";
+            if (window != null)
+            {
+                MessageBox.Show(window, message, title, MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            else
+            {
+                MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+
+            Log.Warn("Shutting down...");
+            Environment.Exit(0);
+        }
+
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
@@ -121,9 +135,10 @@ namespace MicSwitch
             using var sw = new BenchmarkTimer("MainWindow initialization routine", Log);
             Log.Info($"Application startup detected, PID: {Process.GetCurrentProcess().Id}");
             
-            Log.Debug("Initializing updater to handle initial events");
-            using var updateModel = Container.Resolve<IApplicationUpdaterModel>();
-            updateModel.HandleSquirrelEvents();
+            
+            Log.Debug("Resolving squirrel events handler");
+            var squirrelEventsHandler = Container.Resolve<ISquirrelEventsHandler>();
+            Log.Debug(() => $"Resolved squirrel events handler: {squirrelEventsHandler}");
             InitializeUpdateSettings();
 
             SingleInstanceValidationRoutine(true);
@@ -137,11 +152,7 @@ namespace MicSwitch
             ActualizeConfig(configProvider);
             
             sw.Step("Registering overlay");
-            var micSwitchOverlayDependencyName = "MicSwitchOverlayAllWindows";
-            Container.RegisterOverlayController(micSwitchOverlayDependencyName, micSwitchOverlayDependencyName);
-            var matcher = new RegexStringMatcher().AddToWhitelist(".*");
-            Container.RegisterWindowTracker(micSwitchOverlayDependencyName, matcher);
-            var overlayController = Container.Resolve<IOverlayWindowController>(micSwitchOverlayDependencyName);
+            var overlayController = Container.Resolve<IOverlayWindowController>(WellKnownWindows.AllWindows);
             var overlayViewModelFactory = Container.Resolve<IFactory<IMicSwitchOverlayViewModel, IOverlayWindowController>>();
             var overlayViewModel = overlayViewModelFactory.Create(overlayController).AddTo(Anchors);
             
@@ -158,33 +169,6 @@ namespace MicSwitch
             sw.Step($"Main window view model assigned");
             mainWindow.Show();
             sw.Step($"Main window shown");
-        }
-
-        protected override void OnExit(ExitEventArgs e)
-        {
-            base.OnExit(e);
-            Log.Info($"Application exit detected, PID: {Process.GetCurrentProcess().Id}");
-        }
-
-        private void ShowShutdownWarning()
-        {
-            var assemblyName = Assembly.GetExecutingAssembly().GetName();
-            var window = MainWindow;
-            var title = $"{assemblyName.Name} v{assemblyName.Version}";
-            var message = "Application is already running !";
-            Log.Warn($"Showing shutdown warning for process {Process.GetCurrentProcess().Id}");
-
-            if (window != null)
-            {
-                MessageBox.Show(window, message, title, MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-            else
-            {
-                MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-
-            Log.Warn("Shutting down...");
-            Environment.Exit(0);
         }
 
         private static void ActualizeConfig(IConfigProvider<MicSwitchConfig> mainConfigProvider)
