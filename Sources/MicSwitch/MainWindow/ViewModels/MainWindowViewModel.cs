@@ -329,8 +329,8 @@ namespace MicSwitch.MainWindow.ViewModels
 
         public bool RunAtLogin => startupManager.IsRegistered;
 
-        public Size MinSize { get; } = new Size(550, 430);
-        public Size MaxSize { get; } = new Size(550, 680);
+        public Size MinSize { get; } = new Size(600, 430);
+        public Size MaxSize { get; } = new Size(600, 680);
         public Size DefaultSize { get; } = new Size(550, 680);
         
         public WindowState WindowState
