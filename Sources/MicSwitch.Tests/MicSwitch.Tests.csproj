@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <ProjectTypeGuids>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <TargetFramework>net6-windows7</TargetFramework>
+    <TargetFramework>net6-windows10.0.19041.0</TargetFramework>
     <LangVersion>7</LangVersion>
     <AssemblyTitle>MicSwitch.Tests</AssemblyTitle>
     <Product>MicSwitch.Tests</Product>
