@@ -325,13 +325,19 @@
                             IsChecked="{Binding MinimizeOnClose}" />
                     </st:StackPanel>
 
-                    <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Run at start:" />
-                    <st:StackPanel>
+                    <TextBlock Style="{StaticResource SettingsLabelStyle}" 
+                               IsEnabled="{Binding ElementName=RunAtLoginCheckbox, Path=IsEnabled}"
+                               Text="Run at start:" />
+                    <st:StackPanel Orientation="Horizontal">
                         <CheckBox
                             HorizontalAlignment="Left"
+                            x:Name="RunAtLoginCheckbox"
                             IsChecked="{Binding RunAtLogin, Mode=OneWay}"
                             Command="{Binding RunAtLoginToggleCommand}"
                             CommandParameter="{Binding IsChecked, RelativeSource={RelativeSource Self}}" />
+                        <TextBlock Style="{StaticResource WarningIconTextBlock}"
+                                   Visibility="{Binding ElementName=RunAtLoginCheckbox, Path=IsEnabled, Converter={StaticResource TrueToCollapsedFalseToVisibleConverter}}"
+                                   ToolTip="This functionality is not available" />
                     </st:StackPanel>
 
                     <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Start minimized:" />
@@ -349,7 +355,7 @@
                             ToolTip="Periodically check for updates and report if new version is available"
                             IsChecked="{Binding ApplicationUpdater.CheckForUpdates, Mode=TwoWay}" />
                         <TextBlock IsHitTestVisible="True">
-                            <Run Text="update source:" />
+                            <Run Text="source:" />
                             <Hyperlink NavigateUri="{Binding ApplicationUpdater.UpdateSource.Uri}"
                                        Command="{Binding ApplicationUpdater.OpenUri}"
                                        CommandParameter="{Binding ApplicationUpdater.UpdateSource.Uri}"

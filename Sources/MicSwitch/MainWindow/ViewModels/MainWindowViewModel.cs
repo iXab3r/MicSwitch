@@ -171,7 +171,7 @@ namespace MicSwitch.MainWindow.ViewModels
             ShowAppCommand = CommandWrapper.Create(ShowAppCommandExecuted);
             OpenAppDataDirectoryCommand = CommandWrapper.Create(OpenAppDataDirectory);
             ResetOverlayPositionCommand = CommandWrapper.Create(ResetOverlayPositionCommandExecuted);
-            RunAtLoginToggleCommand = CommandWrapper.Create<bool>(RunAtLoginCommandExecuted);
+            RunAtLoginToggleCommand = CommandWrapper.Create<bool>(RunAtLoginCommandExecuted, startupManager.WhenAnyValue(x => x.IsReady));
             SelectMicrophoneIconCommand = CommandWrapper.Create(SelectMicrophoneIconCommandExecuted);
             SelectMutedMicrophoneIconCommand = CommandWrapper.Create(SelectMutedMicrophoneIconCommandExecuted);
             ResetMicrophoneIconsCommand = CommandWrapper.Create(ResetMicrophoneIconsCommandExecuted);
@@ -330,8 +330,8 @@ namespace MicSwitch.MainWindow.ViewModels
         public bool RunAtLogin => startupManager.IsRegistered;
 
         public Size MinSize { get; } = new Size(600, 430);
-        public Size MaxSize { get; } = new Size(600, 680);
-        public Size DefaultSize { get; } = new Size(550, 680);
+        public Size MaxSize { get; } = new Size(900, 680);
+        public Size DefaultSize { get; } = new Size(600, 680);
         
         public WindowState WindowState
         {

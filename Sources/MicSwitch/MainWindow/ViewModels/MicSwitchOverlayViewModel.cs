@@ -16,7 +16,7 @@ using PoeShared.Scaffolding;
 using PoeShared.Scaffolding.WPF;
 using ReactiveUI;
 using Unity;
-using Size = System.Windows.Size;
+using Size = System.Drawing.Size;
 
 namespace MicSwitch.MainWindow.ViewModels
 {
