@@ -5,22 +5,41 @@
                               xmlns:viewModels="clr-namespace:MicSwitch.MainWindow.ViewModels">
     <DataTemplate DataType="{x:Type viewModels:HotkeyEditorViewModel}">
         <st:StackPanel Orientation="Horizontal" MarginBetweenChildren="5">
-            <eye:HotKeyBox st:StackPanel.Fill="Fill" HotKey="{Binding Key}" Background="Transparent" AcceptsTab="False" AcceptsReturn="False"
-                           AcceptsMouseKeys="True" />
-            <TextBlock Margin="10,0" Text="or" FontWeight="Bold" />
-            <eye:HotKeyBox st:StackPanel.Fill="Fill" HotKey="{Binding AlternativeKey}" Background="Transparent" 
+            <eye:HotKeyBox st:StackPanel.Fill="Fill" 
+                           HotKey="{Binding Key}"
+                           Background="Transparent" 
                            AcceptsTab="False" 
                            AcceptsReturn="False"
-                           AcceptsMouseKeys="True" />
+                           AcceptsMouseKeys="True">
+                <eye:HotKeyBox.ToolTip>
+                    <MultiBinding Converter="{StaticResource StringFormatConverter}"
+                                  ConverterParameter="Hotkey for {0} - Press Backspace, Delete or Escape to reset. Double-click respective keys to assign them as HotKeys">
+                        <Binding Path="Description"/>
+                    </MultiBinding>
+                </eye:HotKeyBox.ToolTip>
+            </eye:HotKeyBox>
+            <TextBlock Margin="10,0" Text="or" FontWeight="Bold" />
+            <eye:HotKeyBox st:StackPanel.Fill="Fill" 
+                           HotKey="{Binding AlternativeKey}" Background="Transparent" 
+                           AcceptsTab="False" 
+                           AcceptsReturn="False"
+                           AcceptsMouseKeys="True">
+                <eye:HotKeyBox.ToolTip>
+                    <MultiBinding Converter="{StaticResource StringFormatConverter}"
+                                  ConverterParameter="Alternative hotkey for {0} - Press Backspace, Delete or Escape to reset. Double-click respective keys to assign them as HotKeys">
+                        <Binding Path="Description"/>
+                    </MultiBinding>
+                </eye:HotKeyBox.ToolTip>
+            </eye:HotKeyBox>
             <st:StackPanel Orientation="Vertical" MarginBetweenChildren="2.5">
                 <CheckBox
                     Content="Suppress"
-                    ToolTip="If enabled other applications will not react to pressed hotkey. May not work for mouse buttons or special keys"
+                    ToolTip="If enabled other applications will not react to selected hotkeys. May not work for mouse buttons or special keys"
                     IsChecked="{Binding SuppressKey, Mode=TwoWay}" />
                 <CheckBox
                     IsEnabled="{Binding HasModifiers, Converter={StaticResource NotConverter}}"
                     Content="Ignore modifiers"
-                    ToolTip="Ctrl/Alt/Shift state will be ignored"
+                    ToolTip="Ctrl/Alt/Shift state will be ignored for selected hotkeys"
                     IsChecked="{Binding IgnoreModifiers}" />
             </st:StackPanel>
         </st:StackPanel>

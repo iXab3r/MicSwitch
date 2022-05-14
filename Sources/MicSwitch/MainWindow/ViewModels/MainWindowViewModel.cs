@@ -5,6 +5,7 @@ using System.Drawing;
 using System.IO;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -330,7 +331,7 @@ namespace MicSwitch.MainWindow.ViewModels
         public bool RunAtLogin => startupManager.IsRegistered;
 
         public Size MinSize { get; } = new Size(600, 430);
-        public Size MaxSize { get; } = new Size(900, 680);
+        public Size MaxSize { get; } = new Size(900, 980);
         public Size DefaultSize { get; } = new Size(600, 680);
         
         public WindowState WindowState

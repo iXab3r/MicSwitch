@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using DynamicData;
 using DynamicData.Binding;
@@ -64,12 +65,12 @@ namespace MicSwitch.MainWindow.ViewModels
             this.hotkeyConfigProvider = hotkeyConfigProvider;
             this.uiScheduler = uiScheduler;
             MuteMicrophoneCommand = CommandWrapper.Create<object>(MuteMicrophoneCommandExecuted);
-            Hotkey = PrepareHotkey(x => x.Hotkey, (config, hotkeyConfig) => config.Hotkey = hotkeyConfig);
-            HotkeyToggle = PrepareHotkey(x => x.HotkeyForToggle, (config, hotkeyConfig) => config.HotkeyForToggle = hotkeyConfig);
-            HotkeyMute = PrepareHotkey(x => x.HotkeyForMute, (config, hotkeyConfig) => config.HotkeyForMute = hotkeyConfig);
-            HotkeyUnmute = PrepareHotkey(x => x.HotkeyForUnmute, (config, hotkeyConfig) => config.HotkeyForUnmute = hotkeyConfig);
-            HotkeyPushToMute = PrepareHotkey(x => x.HotkeyForPushToMute, (config, hotkeyConfig) => config.HotkeyForPushToMute = hotkeyConfig);
-            HotkeyPushToTalk = PrepareHotkey(x => x.HotkeyForPushToTalk, (config, hotkeyConfig) => config.HotkeyForPushToTalk = hotkeyConfig);
+            Hotkey = PrepareHotkey("Mute/Un-mute microphone", x => x.Hotkey, (config, hotkeyConfig) => config.Hotkey = hotkeyConfig);
+            HotkeyToggle = PrepareHotkey("Toggle microphone state", x => x.HotkeyForToggle, (config, hotkeyConfig) => config.HotkeyForToggle = hotkeyConfig);
+            HotkeyMute = PrepareHotkey("Mute microphone", x => x.HotkeyForMute, (config, hotkeyConfig) => config.HotkeyForMute = hotkeyConfig);
+            HotkeyUnmute = PrepareHotkey("Un-mute microphone", x => x.HotkeyForUnmute, (config, hotkeyConfig) => config.HotkeyForUnmute = hotkeyConfig);
+            HotkeyPushToMute = PrepareHotkey("Push-To-Mute", x => x.HotkeyForPushToMute, (config, hotkeyConfig) => config.HotkeyForPushToMute = hotkeyConfig);
+            HotkeyPushToTalk = PrepareHotkey("Push-To-Talk", x => x.HotkeyForPushToTalk, (config, hotkeyConfig) => config.HotkeyForPushToTalk = hotkeyConfig);
 
             PrepareTracker(HotkeyMode.Click, HotkeyToggle)
                 .ObservableForProperty(x => x.IsActive, skipInitial: true)
@@ -315,11 +316,13 @@ namespace MicSwitch.MainWindow.ViewModels
         public CommandWrapper MuteMicrophoneCommand { get; }
 
         private IHotkeyEditorViewModel PrepareHotkey(
+            string description,
             Expression<Func<MicSwitchHotkeyConfig, HotkeyConfig>> fieldToMonitor,
             Action<MicSwitchHotkeyConfig, HotkeyConfig> consumer)
         {
             return PrepareHotkey(
                 this,
+                description,
                 fieldToMonitor,
                 consumer).AddTo(Anchors);
         }
@@ -387,6 +390,7 @@ namespace MicSwitch.MainWindow.ViewModels
 
         private static IHotkeyEditorViewModel PrepareHotkey(
             MicrophoneControllerViewModel owner,
+            string description,
             Expression<Func<MicSwitchHotkeyConfig, HotkeyConfig>> fieldToMonitor,
             Action<MicSwitchHotkeyConfig, HotkeyConfig> consumer)
         {
@@ -411,6 +415,8 @@ namespace MicSwitch.MainWindow.ViewModels
                     owner.hotkeyConfigProvider.Save(hotkeyConfig);
                 }, Log.HandleUiException)
                 .AddTo(owner.Anchors);
+
+            result.Description = description;
             
             return result;
         }

@@ -8,6 +8,8 @@ namespace MicSwitch.MainWindow.ViewModels
     {
         HotkeyConfig Properties { get; }
         
+        string Description { get; set; }
+        
         HotkeyGesture Key { get; set; }
         
         HotkeyGesture AlternativeKey { get; set; }

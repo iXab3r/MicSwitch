@@ -58,18 +58,8 @@ namespace MicSwitch
         {
             var updateSourceProvider = Container.Resolve<IUpdateSourceProvider>();
             Log.Debug($"Reconfiguring {nameof(UpdateSettingsConfig)}, current update source: {updateSourceProvider.UpdateSource}");
-            UpdateSettings.WellKnownUpdateSources.ForEach(x => updateSourceProvider.AddSource(x));
-
-            if (!updateSourceProvider.UpdateSource.IsValid || !UpdateSettings.WellKnownUpdateSources.Contains(updateSourceProvider.UpdateSource))
-            {
-                var plusUpdateSource = UpdateSettings.WellKnownUpdateSources.First();
-                Log.Info($"Future updates will be provided by {plusUpdateSource} instead of {updateSourceProvider.UpdateSource} (isValid: {updateSourceProvider.UpdateSource.IsValid})");
-                updateSourceProvider.UpdateSource = plusUpdateSource;
-            }
-            else
-            {
-                Log.Info($"Updates are provided by {updateSourceProvider.UpdateSource}");
-            }
+            updateSourceProvider.KnownSources = UpdateSettings.WellKnownUpdateSources;
+            Log.Debug(() => $"Update source provider {updateSourceProvider}, active: {updateSourceProvider.UpdateSource}, known sources: {updateSourceProvider.KnownSources.DumpToString()}");
         }
 
         private void SingleInstanceValidationRoutine(bool retryIfAbandoned)

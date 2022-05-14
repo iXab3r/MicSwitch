@@ -1,4 +1,4 @@
-﻿<native:FastMetroWindow x:Class="MicSwitch.MainWindow.Views.MainWindow"
+﻿<mah:MetroWindow x:Class="MicSwitch.MainWindow.Views.MainWindow"
                  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -99,13 +99,14 @@
                         <ComboBox st:StackPanel.Fill="Fill"
                                   ItemsSource="{Binding MicrophoneController.Microphones}"
                                   SelectedItem="{Binding MicrophoneController.MicrophoneLine}"
-                                  DisplayMemberPath="Name" />
+                                  DisplayMemberPath="Name"
+                                  ToolTip="Microphone line"/>
                     </st:StackPanel>
 
                     <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Mute:" />
                     <st:StackPanel>
                         <CheckBox
-                            ToolTip="Microphone mute is system-wide"
+                            ToolTip="Mute microphone on system-level"
                             HorizontalAlignment="Left"
                             Command="{Binding MicrophoneController.MuteMicrophoneCommand}"
                             CommandParameter="{Binding IsChecked, RelativeSource={RelativeSource Self}}"
@@ -123,7 +124,7 @@
                     <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Microphone volume:" />
                     <st:StackPanel>
                         <CheckBox
-                            ToolTip="If enabled application will set microphone(s) volume to specified value"
+                            ToolTip="Enable microphone volume control"
                             HorizontalAlignment="Left"
                             IsChecked="{Binding MicrophoneController.MicrophoneVolumeControlEnabled}" />
 
@@ -151,10 +152,12 @@
                     <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Notification:" />
                     <st:StackPanel>
                         <TextBlock Text="when muted" />
-                        <ContentPresenter Width="22" Height="22" Content="{Binding AudioSelectorWhenMuted}"
+                        <ContentPresenter Width="22" Height="22" 
+                                          Content="{Binding AudioSelectorWhenMuted}"
                                           ContentTemplate="{StaticResource AudioNotificationSelectorButtonTemplate}" />
                         <TextBlock Text="when un-muted " />
-                        <ContentPresenter Width="22" Height="22" Content="{Binding AudioSelectorWhenUnmuted}"
+                        <ContentPresenter Width="22" Height="22" 
+                                          Content="{Binding AudioSelectorWhenUnmuted}"
                                           ContentTemplate="{StaticResource AudioNotificationSelectorButtonTemplate}" />
                         <eye:ButtonEx Command="{Binding AddSoundCommand}"
                                       st:StackPanel.Fill="Fill"
@@ -162,6 +165,7 @@
                                       HorizontalContentAlignment="Left"
                                       Icon="&#xf115;"
                                       Content="Load..."
+                                      ToolTip="Load custom notification sound"
                                       Margin="0" />
                     </st:StackPanel>
 
@@ -171,7 +175,8 @@
                                 Value="{Binding AudioNotificationVolume}"
                                 Minimum="0" Maximum="1"
                                 Margin="5,4,5,0"
-                                TickFrequency="0.05" />
+                                TickFrequency="0.05"
+                                ToolTip="Notification volume"/>
                         <TextBlock
                             MinWidth="45">
                             <TextBlock.Text>
@@ -182,7 +187,8 @@
 
                     <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Output device:" />
                     <st:StackPanel>
-                        <ContentControl st:StackPanel.Fill="Fill" Content="{Binding WaveOutDeviceSelector}" />
+                        <ContentControl st:StackPanel.Fill="Fill" 
+                                        Content="{Binding WaveOutDeviceSelector}" />
                     </st:StackPanel>
 
                     <Separator Grid.ColumnSpan="2" />
@@ -192,19 +198,23 @@
                         <RadioButton
                             VerticalContentAlignment="Center"
                             IsChecked="{Binding Overlay.OverlayVisibilityMode, Converter={StaticResource EqualToTrueConverter}, ConverterParameter={x:Static models:OverlayVisibilityMode.Always}}"
-                            Content="Always" />
+                            Content="Always" 
+                            ToolTip="Always show overlay regardless of microphone state"/>
                         <RadioButton
                             VerticalContentAlignment="Center"
                             IsChecked="{Binding Overlay.OverlayVisibilityMode, Converter={StaticResource EqualToTrueConverter}, ConverterParameter={x:Static models:OverlayVisibilityMode.WhenMuted}}"
-                            Content="When muted" />
+                            Content="When muted"
+                            ToolTip="Show overlay only when microphone is muted"/>
                         <RadioButton
                             VerticalContentAlignment="Center"
                             IsChecked="{Binding Overlay.OverlayVisibilityMode, Converter={StaticResource EqualToTrueConverter}, ConverterParameter={x:Static models:OverlayVisibilityMode.WhenUnmuted}}"
-                            Content="When un-muted" />
+                            Content="When un-muted" 
+                            ToolTip="Show overlay only when microphone is active"/>
                         <RadioButton
                             VerticalContentAlignment="Center"
                             IsChecked="{Binding Overlay.OverlayVisibilityMode, Converter={StaticResource EqualToTrueConverter}, ConverterParameter={x:Static models:OverlayVisibilityMode.Never}}"
-                            Content="Hide" />
+                            Content="Hide"
+                            ToolTip="Never show overlay"/>
                     </st:StackPanel>
 
                     <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Icon:"
@@ -214,7 +224,7 @@
                         <Border Width="22" Height="22" BorderBrush="{DynamicResource SecondaryHueMidBrush}" BorderThickness="1"
                                 Background="Transparent"
                                 Cursor="Hand"
-                                ToolTip="Click to select an icon">
+                                ToolTip="Click to select an icon for muted state">
                             <Image
                                 gif:ImageBehavior.RepeatBehavior="Forever"
                                 gif:ImageBehavior.AnimatedSource="{Binding ImageProvider.MutedMicrophoneImage}" />
@@ -228,7 +238,7 @@
                         <Border Width="22" Height="22" BorderBrush="{DynamicResource SecondaryHueMidBrush}" BorderThickness="1"
                                 Background="Transparent"
                                 Cursor="Hand"
-                                ToolTip="Click to select an icon">
+                                ToolTip="Click to select an icon for un-muted state">
                             <Image gif:ImageBehavior.RepeatBehavior="Forever"
                                    gif:ImageBehavior.AnimatedSource="{Binding ImageProvider.StreamingMicrophoneImage}" />
                             <i:Interaction.Triggers>
@@ -292,6 +302,7 @@
                     <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Additional hotkeys:" />
                     <CheckBox
                         HorizontalAlignment="Left"
+                        ToolTip="Enable additional hotkeys for more in-depth configuration"
                         IsChecked="{Binding MicrophoneController.EnableAdditionalHotkeys, Mode=TwoWay}" />
 
                     <st:AutoGrid RowHeightOverride="Auto"
@@ -327,7 +338,8 @@
 
                     <TextBlock Style="{StaticResource SettingsLabelStyle}" 
                                IsEnabled="{Binding ElementName=RunAtLoginCheckbox, Path=IsEnabled}"
-                               Text="Run at start:" />
+                               Text="Run at start:"
+                               ToolTip="Run application at system startup"/>
                     <st:StackPanel Orientation="Horizontal">
                         <CheckBox
                             HorizontalAlignment="Left"
@@ -356,11 +368,11 @@
                             IsChecked="{Binding ApplicationUpdater.CheckForUpdates, Mode=TwoWay}" />
                         <TextBlock IsHitTestVisible="True">
                             <Run Text="source:" />
-                            <Hyperlink NavigateUri="{Binding ApplicationUpdater.UpdateSource.Uri}"
-                                       Command="{Binding ApplicationUpdater.OpenUri}"
-                                       CommandParameter="{Binding ApplicationUpdater.UpdateSource.Uri}"
-                                       ToolTip="{Binding ApplicationUpdater.UpdateSource.Uri}">
-                                <TextBlock Text="{Binding ApplicationUpdater.UpdateSource.Description}" IsHitTestVisible="True" />
+                            <Hyperlink Command="{Binding ApplicationUpdater.OpenUri}" 
+                                       NavigateUri="{Binding ApplicationUpdater.UpdateSource.Uris[0]}"
+                                       CommandParameter="{Binding ApplicationUpdater.UpdateSource.Uris[0]}"
+                                       ToolTip="{Binding ApplicationUpdater.UpdateSource.Uris[0]}">
+                                <TextBlock Text="{Binding ApplicationUpdater.UpdateSource.Name}" IsHitTestVisible="True" />
                             </Hyperlink>
                         </TextBlock>
                     </st:StackPanel>
@@ -440,4 +452,4 @@
             </StackPanel>
         </mah:WindowCommands>
     </mah:MetroWindow.RightWindowCommands>
-</native:FastMetroWindow>
+</mah:MetroWindow>

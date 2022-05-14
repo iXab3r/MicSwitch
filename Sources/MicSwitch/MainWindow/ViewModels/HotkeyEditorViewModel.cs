@@ -24,6 +24,7 @@ namespace MicSwitch.MainWindow.ViewModels
         private bool ignoreModifiers;
         private bool hasModifiers;
         private bool isMouse;
+        private string description;
 
         static HotkeyEditorViewModel()
         {
@@ -68,6 +69,13 @@ namespace MicSwitch.MainWindow.ViewModels
             set => RaiseAndSetIfChanged(ref key, value);
         }
 
+        
+        public string Description
+        {
+            get => description;
+            set => RaiseAndSetIfChanged(ref description, value);
+        }
+        
         public HotkeyGesture AlternativeKey
         {
             get => alternativeKey;
@@ -79,7 +87,7 @@ namespace MicSwitch.MainWindow.ViewModels
             get => suppressKey;
             set => RaiseAndSetIfChanged(ref suppressKey, value);
         }
-
+        
         public bool IgnoreModifiers
         {
             get => ignoreModifiers;
