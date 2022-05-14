@@ -3,7 +3,6 @@
                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                 xmlns:tb="http://www.hardcodet.net/taskbar"
                  xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
                  xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
                  xmlns:viewModels="clr-namespace:MicSwitch.MainWindow.ViewModels"
@@ -14,7 +13,8 @@
                  xmlns:modularity="clr-namespace:MicSwitch.Modularity"
                  xmlns:st="http://schemas.spicytaco.io/"
                  xmlns:eye="clr-namespace:PoeShared.UI;assembly=PoeShared.Wpf"
-                 xmlns:native="clr-namespace:PoeShared.Native;assembly=PoeShared.Wpf"
+                 xmlns:tb="http://www.hardcodet.net/taskbar"
+                 xmlns:wpf="http://coderush.net/poeeye/"
                  mc:Ignorable="d"
                  d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel}"
                  WindowState="{Binding WindowState, Mode=TwoWay}"
@@ -87,7 +87,7 @@
                 </tb:TaskbarIcon.ContextMenu>
 
                 <i:Interaction.Behaviors>
-                    <models:TaskBarBitmapImageBehavior Icon="{Binding ImageProvider.MicrophoneImageAsIcon}" />
+                    <wpf:TaskBarBitmapImageBehavior Icon="{Binding ImageProvider.MicrophoneImageAsIcon}" />
                 </i:Interaction.Behaviors>
             </tb:TaskbarIcon>
 
