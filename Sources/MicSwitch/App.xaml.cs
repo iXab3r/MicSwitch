@@ -124,22 +124,30 @@ namespace MicSwitch
 
             using var sw = new BenchmarkTimer("MainWindow initialization routine", Log);
             Log.Info($"Application startup detected, PID: {Process.GetCurrentProcess().Id}");
-            
-            
+
             Log.Debug("Resolving squirrel events handler");
             var squirrelEventsHandler = Container.Resolve<ISquirrelEventsHandler>();
             Log.Debug(() => $"Resolved squirrel events handler: {squirrelEventsHandler}");
-            InitializeUpdateSettings();
 
             SingleInstanceValidationRoutine(true);
-
+            
+            var configProvider = Container.Resolve<IConfigProvider>();
+            var defaultConfigProviderStrategy = Container.Resolve<UseDefaultIfFailureConfigProviderStrategy>();
+            configProvider.RegisterStrategy(defaultConfigProviderStrategy);
+            Log.Debug("Loading initial configuration");
+            configProvider.Reload();
+            Log.Debug("Initial configuration loaded");
+            
+            InitializeUpdateSettings();
+            
             sw.Step("Actualizing configuration format");
+            Log.Debug("Initializing config provider");
             var hotkeyConfigProvider = Container.Resolve<IConfigProvider<MicSwitchHotkeyConfig>>();
             var overlayConfigProvider = Container.Resolve<IConfigProvider<MicSwitchOverlayConfig>>();
-            var configProvider = Container.Resolve<IConfigProvider<MicSwitchConfig>>();
-            ActualizeConfig(configProvider, hotkeyConfigProvider);
-            ActualizeConfig(configProvider, overlayConfigProvider);
-            ActualizeConfig(configProvider);
+            var mainConfigProvider = Container.Resolve<IConfigProvider<MicSwitchConfig>>();
+            ActualizeConfig(mainConfigProvider, hotkeyConfigProvider);
+            ActualizeConfig(mainConfigProvider, overlayConfigProvider);
+            ActualizeConfig(mainConfigProvider);
             
             sw.Step("Registering overlay");
             var overlayController = Container.Resolve<IOverlayWindowController>(WellKnownWindows.AllWindows);
