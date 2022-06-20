@@ -1,19 +1,9 @@
-using System;
 using System.Drawing;
-using System.Reactive.Concurrency;
-using System.Reactive.Linq;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using JetBrains.Annotations;
 using log4net;
 using MicSwitch.Modularity;
 using MicSwitch.Services;
-using PoeShared;
-using PoeShared.Modularity;
-using PoeShared.Prism;
-using PoeShared.Scaffolding;
-using ReactiveUI;
-using Unity;
 
 namespace MicSwitch.MainWindow.Models
 {

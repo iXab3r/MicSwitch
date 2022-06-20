@@ -1,6 +1,3 @@
-using System;
-using System.Reactive.Concurrency;
-using System.Reactive.Linq;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -8,14 +5,6 @@ using log4net;
 using MicSwitch.MainWindow.Models;
 using MicSwitch.Modularity;
 using MicSwitch.Services;
-using PoeShared;
-using PoeShared.Modularity;
-using PoeShared.Native;
-using PoeShared.Prism;
-using PoeShared.Scaffolding;
-using PoeShared.Scaffolding.WPF;
-using ReactiveUI;
-using Unity;
 using Size = System.Drawing.Size;
 
 namespace MicSwitch.MainWindow.ViewModels

@@ -1,24 +1,11 @@
-using System;
-using System.Diagnostics;
 using System.Drawing;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
 using System.Reflection;
-using System.Threading;
 using System.Windows;
 using System.Windows.Interop;
-using JetBrains.Annotations;
 using log4net;
 using MicSwitch.MainWindow.Models;
 using MicSwitch.Modularity;
 using PInvoke;
-using PoeShared;
-using PoeShared.Modularity;
-using PoeShared.Native;
-using PoeShared.Prism;
-using PoeShared.Scaffolding;
-using PoeShared.Scaffolding.WPF;
-using PoeShared.UI;
 
 namespace MicSwitch.Services
 {

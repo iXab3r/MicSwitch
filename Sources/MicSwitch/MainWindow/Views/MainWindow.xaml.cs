@@ -1,11 +1,6 @@
-﻿using System;
-using System.ComponentModel;
-using System.Reactive.Disposables;
+﻿using System.ComponentModel;
 using System.Windows;
 using log4net;
-using PoeShared.Modularity;
-using PoeShared.Scaffolding;
-using PoeShared.Scaffolding.WPF;
 
 namespace MicSwitch.MainWindow.Views
 {
@@ -15,7 +10,7 @@ namespace MicSwitch.MainWindow.Views
     public partial class MainWindow 
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(MainWindow));
-        private readonly CompositeDisposable anchors = new CompositeDisposable();
+        private readonly CompositeDisposable anchors = new();
 
         public MainWindow(IAppArguments appArguments)
         {

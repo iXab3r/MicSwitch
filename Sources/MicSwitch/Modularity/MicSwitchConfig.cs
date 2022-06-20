@@ -1,11 +1,7 @@
-﻿using System;
-using System.Drawing;
+﻿using System.Drawing;
 using System.Windows;
 using MicSwitch.MainWindow.Models;
-using MicSwitch.Services;
-using Newtonsoft.Json;
 using PoeShared.Audio.Models;
-using PoeShared.Modularity;
 using Point = System.Windows.Point;
 using Size = System.Windows.Size;
 

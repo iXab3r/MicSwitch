@@ -1,13 +1,7 @@
-using System;
-using System.Reactive.Linq;
 using log4net;
 using MicSwitch.Modularity;
 using NAudio.CoreAudioApi;
-using PoeShared;
 using PoeShared.Audio.Models;
-using PoeShared.Modularity;
-using PoeShared.Scaffolding;
-using ReactiveUI;
 
 namespace MicSwitch.Services
 {

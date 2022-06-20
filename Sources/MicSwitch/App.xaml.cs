@@ -1,33 +1,13 @@
-﻿using System;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Reactive.Concurrency;
-using System.Reactive.Disposables;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Runtime.Versioning;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using MicSwitch.MainWindow.Models;
 using MicSwitch.MainWindow.ViewModels;
 using MicSwitch.Modularity;
 using MicSwitch.Prism;
 using MicSwitch.Services;
-using PoeShared;
-using PoeShared.Modularity;
-using PoeShared.Native;
-using PoeShared.Native.Scaffolding;
-using PoeShared.Prism;
-using PoeShared.Scaffolding;
-using PoeShared.Services;
-using PoeShared.Squirrel.Core;
 using PoeShared.Squirrel.Prism;
 using PoeShared.Squirrel.Updater;
-using PoeShared.UI;
-using PoeShared.Wpf.Scaffolding;
-using ReactiveUI;
-using Unity;
 using Unity.Resolution;
 
 namespace MicSwitch
@@ -89,7 +69,7 @@ namespace MicSwitch
             }
             catch (AbandonedMutexException ex)
             {
-                Log.Debug($"Mutex is abandoned {mutexId} (retryIfAbandoned: {retryIfAbandoned})");
+                Log.Debug($"Mutex is abandoned {mutexId} (retryIfAbandoned: {retryIfAbandoned})", ex);
                 if (retryIfAbandoned)
                 {
                     SingleInstanceValidationRoutine(false);
@@ -169,7 +149,7 @@ namespace MicSwitch
             sw.Step($"Main window shown");
         }
 
-        private static void ActualizeConfig(IConfigProvider<MicSwitchConfig> mainConfigProvider)
+        private void ActualizeConfig(IConfigProvider<MicSwitchConfig> mainConfigProvider)
         {
             Log.Debug($"Actualizing configuration format of {mainConfigProvider}");
             var config = mainConfigProvider.ActualConfig.CloneJson();
@@ -187,7 +167,7 @@ namespace MicSwitch
             Log.Debug("Config format updated successfully");
         }
         
-        private static void ActualizeConfig(IConfigProvider<MicSwitchConfig> mainConfigProvider, IConfigProvider<MicSwitchHotkeyConfig> hotkeyConfigProvider)
+        private void ActualizeConfig(IConfigProvider<MicSwitchConfig> mainConfigProvider, IConfigProvider<MicSwitchHotkeyConfig> hotkeyConfigProvider)
         {
             Log.Debug($"Actualizing configuration format of {hotkeyConfigProvider}");
 
@@ -220,7 +200,7 @@ namespace MicSwitch
             Log.Debug("Config format updated successfully");
         }
         
-        private static void ActualizeConfig(IConfigProvider<MicSwitchConfig> mainConfigProvider, IConfigProvider<MicSwitchOverlayConfig> overlayConfigProvider)
+        private void ActualizeConfig(IConfigProvider<MicSwitchConfig> mainConfigProvider, IConfigProvider<MicSwitchOverlayConfig> overlayConfigProvider)
         {
             Log.Debug($"Actualizing configuration format of {overlayConfigProvider}");
 

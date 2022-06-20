@@ -1,5 +1,4 @@
 using MicSwitch.MainWindow.Models;
-using PoeShared.Modularity;
 
 namespace MicSwitch.Modularity
 {

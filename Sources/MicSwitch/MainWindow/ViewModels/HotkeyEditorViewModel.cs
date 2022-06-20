@@ -1,13 +1,6 @@
-using System;
-using System.Reactive.Linq;
 using System.Windows.Input;
 using log4net;
 using MicSwitch.MainWindow.Models;
-using PoeShared;
-using PoeShared.Scaffolding;
-using PoeShared.UI;
-using PropertyBinder;
-using ReactiveUI;
 
 namespace MicSwitch.MainWindow.ViewModels
 {

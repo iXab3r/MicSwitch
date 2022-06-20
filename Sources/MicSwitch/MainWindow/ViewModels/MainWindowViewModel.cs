@@ -1,12 +1,5 @@
-﻿using System;
-using System.ComponentModel;
-using System.Diagnostics;
+﻿using System.ComponentModel;
 using System.Drawing;
-using System.IO;
-using System.Reactive.Concurrency;
-using System.Reactive.Linq;
-using System.Runtime.Versioning;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using log4net;
@@ -15,19 +8,8 @@ using MaterialDesignThemes.Wpf;
 using Microsoft.Win32;
 using MicSwitch.MainWindow.Models;
 using MicSwitch.Modularity;
-using PoeShared;
 using PoeShared.Audio.Services;
-using PoeShared.Audio.ViewModels;
-using PoeShared.Modularity;
-using PoeShared.Native;
-using PoeShared.Prism;
-using PoeShared.Scaffolding;
-using PoeShared.Scaffolding.WPF;
-using PoeShared.Services;
 using PoeShared.Squirrel.Updater;
-using PoeShared.UI;
-using ReactiveUI;
-using Unity;
 using Application = System.Windows.Application;
 using Size = System.Windows.Size;
 
@@ -105,14 +87,22 @@ namespace MicSwitch.MainWindow.ViewModels
             WindowState = WindowState.Minimized;
             Overlay = overlay.AddTo(Anchors);
             
-            var startupManagerArgs = new StartupManagerArgs
+            try
             {
-                UniqueAppName = $"{appArguments.AppName}{(appArguments.IsDebugMode ? "-debug" : string.Empty)}",
-                ExecutablePath = appUpdater.GetLatestExecutable().FullName,
-                CommandLineArgs = appArguments.StartupArgs,
-                AutostartFlag = appArguments.AutostartFlag
-            };
-            this.startupManager = startupManagerFactory.Create(startupManagerArgs);
+                var startupManagerArgs = new StartupManagerArgs
+                {
+                    UniqueAppName = $"{appArguments.AppName}{(appArguments.IsDebugMode ? "-debug" : string.Empty)}",
+                    ExecutablePath = appUpdater.LauncherExecutable.FullName,
+                    CommandLineArgs = appArguments.StartupArgs,
+                    AutostartFlag = appArguments.AutostartFlag
+                };
+                this.startupManager = startupManagerFactory.Create(startupManagerArgs);
+                RunAtLoginToggleCommand = CommandWrapper.Create<bool>(RunAtLoginCommandExecuted,  Observable.Return(startupManager?.IsReady ?? false));
+            }
+            catch (Exception e)
+            {
+                Log.Warn("Failed to initialize startup manager", e);
+            }
 
             this.RaiseWhenSourceValue(x => x.IsActive, mainWindowTracker, x => x.IsActive, uiScheduler).AddTo(Anchors);
             this.RaiseWhenSourceValue(x => x.RunAtLogin, startupManager, x => x.IsRegistered, uiScheduler).AddTo(Anchors);
@@ -328,7 +318,7 @@ namespace MicSwitch.MainWindow.ViewModels
 
         public bool IsActive => mainWindowTracker.IsActive;
 
-        public bool RunAtLogin => startupManager.IsRegistered;
+        public bool RunAtLogin => startupManager?.IsRegistered ?? false;
 
         public Size MinSize { get; } = new Size(600, 430);
         public Size MaxSize { get; } = new Size(900, 980);

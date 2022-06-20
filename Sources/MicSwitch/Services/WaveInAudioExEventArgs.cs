@@ -1,4 +1,3 @@
-using System;
 using NAudio.Wave;
 
 namespace MicSwitch.Services

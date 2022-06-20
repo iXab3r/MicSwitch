@@ -1,26 +1,8 @@
-using System;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reactive.Concurrency;
-using System.Reactive.Linq;
-using System.Runtime.Versioning;
-using System.Threading.Tasks;
-using DynamicData;
-using DynamicData.Binding;
 using log4net;
 using MicSwitch.MainWindow.Models;
 using MicSwitch.Modularity;
 using MicSwitch.Services;
-using PoeShared;
 using PoeShared.Audio.Models;
-using PoeShared.Modularity;
-using PoeShared.Prism;
-using PoeShared.Scaffolding;
-using PoeShared.Scaffolding.WPF;
-using PoeShared.UI;
-using ReactiveUI;
-using Unity;
 
 namespace MicSwitch.MainWindow.ViewModels
 {

@@ -1,11 +1,5 @@
-using System.Collections.ObjectModel;
-using System.Linq;
-using DynamicData.Binding;
-using DynamicData;
 using log4net;
-using PoeShared;
 using PoeShared.Audio.Models;
-using PoeShared.Scaffolding;
 
 namespace MicSwitch.Services
 {
