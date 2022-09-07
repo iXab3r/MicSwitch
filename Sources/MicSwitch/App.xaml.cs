@@ -112,10 +112,13 @@ namespace MicSwitch
             SingleInstanceValidationRoutine(true);
             
             var configProvider = Container.Resolve<IConfigProvider>();
-            var defaultConfigProviderStrategy = Container.Resolve<UseDefaultIfFailureConfigProviderStrategy>();
-            configProvider.RegisterStrategy(defaultConfigProviderStrategy);
-            Log.Debug("Loading initial configuration");
-            configProvider.Reload();
+            if (configProvider is ConfigProviderFromFile fromFile)
+            {
+                Log.Debug("Loading initial configuration");
+                var defaultConfigProviderStrategy = Container.Resolve<UseDefaultIfFailureConfigProviderStrategy>();
+                fromFile.RegisterStrategy(defaultConfigProviderStrategy);
+                fromFile.Reload();
+            }
             Log.Debug("Initial configuration loaded");
             
             InitializeUpdateSettings();
