@@ -89,7 +89,7 @@ namespace MicSwitch.Services
 
                 if (configProvider.ActualConfig.VolumeControlEnabled == false)
                 {
-                    Log.Warn($"[#{LineId}] Ignoring volume control request because it is disable, value: {value}");
+                    Log.Warn($"[#{LineId}] Ignoring volume control request because it is disabled, value: {value}");
                     return;
                 }
 
