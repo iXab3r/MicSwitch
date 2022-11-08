@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using MaterialDesignThemes.Wpf;
 using MicSwitch.MainWindow.Models;
 using MicSwitch.Modularity;
 using MicSwitch.Services;
@@ -22,6 +23,17 @@ namespace MicSwitch.MainWindow.ViewModels
             Binder.BindIf(x => x.MicrophoneDeviceController != null && x.MicrophoneDeviceController.Mute.HasValue, x => x.MicrophoneDeviceController.Mute.Value)
                 .Else(x => false)
                 .To(x => x.MicrophoneMute);
+            
+            Binder.BindIf(x => x.OutputDeviceController != null, x => x.OutputDeviceController.VolumePercent)
+                .Else(x => default)
+                .To(x => x.OutputVolume);
+            Binder.BindIf(x => x.OutputDeviceController != null && x.OutputDeviceController.Mute == true, x => PackIconKind.VolumeMute)
+                .ElseIf(x => x.OutputVolume == 0, x => PackIconKind.VolumeOff)
+                .ElseIf(x => x.OutputVolume > 0.25, x => PackIconKind.VolumeLow)
+                .ElseIf(x => x.OutputVolume > 0.5, x => PackIconKind.VolumeMedium)
+                .ElseIf(x => x.OutputVolume > 0.75, x => PackIconKind.VolumeHigh)
+                .Else(x => PackIconKind.None)
+                .To(x => x.OutputVolumeKind);
         }
 
         public MicSwitchOverlayViewModel(
@@ -122,6 +134,9 @@ namespace MicSwitch.MainWindow.ViewModels
             
             Binder.Attach(this).AddTo(Anchors);
         }
+
+        public double? OutputVolume { get; [UsedImplicitly] private set; }
+        public PackIconKind OutputVolumeKind { get; [UsedImplicitly] private set; }
 
         public bool IsEnabled
         {

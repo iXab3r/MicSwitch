@@ -76,13 +76,7 @@ namespace MicSwitch.Services
                 {
                     return;
                 }
-
-                if (EnableVolumeControl == false)
-                {
-                    Log.Warn($"[#{LineId}] Ignoring volume control request because it is disabled, value: {value}");
-                    return;
-                }
-
+                
                 Log.Debug($"[#{LineId}] Setting volume to {value.Value} (current: {VolumePercent})");
                 MixerControl.AudioEndpointVolume.MasterVolumeLevelScalar = (float) value.Value;
             }
@@ -90,8 +84,6 @@ namespace MicSwitch.Services
 
         public MMDeviceId LineId { get; set; }
         
-        public bool EnableVolumeControl { get; set; }
-
         public bool? Mute
         {
             get => MixerControl?.AudioEndpointVolume?.Mute;

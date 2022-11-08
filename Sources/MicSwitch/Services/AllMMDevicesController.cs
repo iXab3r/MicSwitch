@@ -11,8 +11,8 @@ namespace MicSwitch.Services
 
         public AllMMDevicesController(IReadOnlyObservableCollection<IMMDeviceController> devices)
         {
-            this.devices = devices;
             LineId = MMDeviceId.All;
+            this.devices = devices;
 
             devices
                 .ToObservableChangeSet()
@@ -29,7 +29,7 @@ namespace MicSwitch.Services
                 .AddTo(Anchors);
         }
 
-        public MMDeviceId LineId { get; }
+        public MMDeviceId LineId { get; set; }
 
         public bool? Mute
         {

@@ -56,12 +56,16 @@
             </Grid>
             <Grid Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Top" IsHitTestVisible="False"
                   Opacity="{Binding Opacity}">
-                <Viewbox>
+                <Viewbox Visibility="Hidden">
                     <Image
                         RenderOptions.BitmapScalingMode="Fant"
                         gif:ImageBehavior.RepeatBehavior="Forever"
                         gif:ImageBehavior.AnimatedSource="{Binding MicrophoneImage}" />
                 </Viewbox>
+                <materialDesign:PackIcon Kind="{Binding OutputVolumeKind}" Margin="2" Width="NaN" Height="NaN"/>
+                <ProgressBar Value="{Binding OutputVolume, Mode=OneWay}" Minimum="0" Maximum="1"
+                             Width="NaN" Height="NaN" FlowDirection="RightToLeft"
+                             Style="{StaticResource MaterialDesignCircularProgressBar}"/>
             </Grid>
             <Grid Grid.Row="1" DockPanel.Dock="Bottom"
                   Visibility="{Binding IsLocked, Converter={StaticResource TrueToHiddenFalseToVisibleConverter}}">

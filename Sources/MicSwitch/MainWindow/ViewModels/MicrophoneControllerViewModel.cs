@@ -6,7 +6,7 @@ using PoeShared.Audio.Models;
 
 namespace MicSwitch.MainWindow.ViewModels;
 
-internal sealed class MicrophoneControllerViewModel : MediaControllerBase, IMicrophoneControllerViewModel
+internal sealed class MicrophoneControllerViewModel : MediaControllerBase<MicSwitchHotkeyConfig>, IMicrophoneControllerViewModel
 {
     private static readonly Binder<MicrophoneControllerViewModel> Binder = new();
 

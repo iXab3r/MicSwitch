@@ -6,22 +6,23 @@ using PoeShared.Audio.Models;
 
 namespace MicSwitch.MainWindow.ViewModels;
 
-internal abstract class MediaControllerBase : DisposableReactiveObjectWithLogger, IMediaController
+internal abstract class MediaControllerBase<TConfig> : DisposableReactiveObjectWithLogger, IMediaController where TConfig : IPoeEyeConfig
 {
     protected static readonly TimeSpan ConfigThrottlingTimeout = TimeSpan.FromMilliseconds(250);
-    private static readonly Binder<MediaControllerBase> Binder = new();
+    private static readonly Binder<MediaControllerBase<TConfig>> Binder = new();
 
     private readonly IMMDeviceControllerEx deviceController;
     private readonly IFactory<IHotkeyTracker> hotkeyTrackerFactory;
     private readonly IFactory<IHotkeyEditorViewModel> hotkeyEditorFactory;
-    private readonly IConfigProvider<MicSwitchHotkeyConfig> hotkeyConfigProvider;
+    private readonly IConfigProvider<TConfig> hotkeyConfigProvider;
     private readonly IScheduler uiScheduler;
 
     static MediaControllerBase()
     {
         Binder.Bind(x => x.deviceController.VolumePercent).To((x, v) => x.Volume = v ?? 0);
-        Binder.Bind(x => x.Volume).To(x => x.deviceController.VolumePercent);
         Binder.Bind(x => x.deviceController.Mute).To((x, v) => x.Mute = v ?? false);
+        Binder.BindIf(x => x.IsEnabled, x => (double?)x.Volume).To(x => x.deviceController.VolumePercent);
+        Binder.Bind(x => x.DeviceId).To(x => x.deviceController.LineId);
     }
 
     protected MediaControllerBase(
@@ -29,7 +30,7 @@ internal abstract class MediaControllerBase : DisposableReactiveObjectWithLogger
         IMMDeviceControllerEx deviceController,
         IFactory<IHotkeyTracker> hotkeyTrackerFactory,
         IFactory<IHotkeyEditorViewModel> hotkeyEditorFactory,
-        IConfigProvider<MicSwitchHotkeyConfig> hotkeyConfigProvider,
+        IConfigProvider<TConfig> hotkeyConfigProvider,
         [Dependency(WellKnownSchedulers.UI)] IScheduler uiScheduler)
     {
         deviceProvider.Devices
@@ -47,15 +48,6 @@ internal abstract class MediaControllerBase : DisposableReactiveObjectWithLogger
         this.hotkeyConfigProvider = hotkeyConfigProvider;
         this.uiScheduler = uiScheduler;
         MuteMicrophoneCommand = CommandWrapper.Create<object>(MuteMicrophoneCommandExecuted);
-
-        this.RaiseWhenSourceValue(x => x.Volume, deviceController, x => x.VolumePercent, uiScheduler).AddTo(Anchors);
-        this.RaiseWhenSourceValue(x => x.Mute, deviceController, x => x.Mute, uiScheduler).AddTo(Anchors);
-        
-        this.WhenAnyValue(x => x.DeviceId)
-            .DistinctUntilChanged()
-            .SubscribeSafe(x => deviceController.LineId = x, Log.HandleUiException)
-            .AddTo(Anchors);
-        
         Binder.Attach(this).AddTo(Anchors);
     }
     
@@ -75,8 +67,8 @@ internal abstract class MediaControllerBase : DisposableReactiveObjectWithLogger
     
     protected IHotkeyEditorViewModel PrepareHotkey(
         string description,
-        Expression<Func<MicSwitchHotkeyConfig, HotkeyConfig>> fieldToMonitor,
-        Action<MicSwitchHotkeyConfig, HotkeyConfig> consumer)
+        Expression<Func<TConfig, HotkeyConfig>> fieldToMonitor,
+        Action<TConfig, HotkeyConfig> consumer)
     {
         return PrepareHotkey(
             this,
@@ -95,8 +87,8 @@ internal abstract class MediaControllerBase : DisposableReactiveObjectWithLogger
             hotkeyEditor);
     }
 
-    protected static IHotkeyTracker PrepareTracker(
-        MediaControllerBase owner,
+    private static IHotkeyTracker PrepareTracker(
+        MediaControllerBase<TConfig> owner,
         HotkeyMode hotkeyMode,
         IHotkeyEditorViewModel hotkeyEditor)
     {
@@ -136,11 +128,11 @@ internal abstract class MediaControllerBase : DisposableReactiveObjectWithLogger
         return result.AddTo(owner.Anchors);
     }
 
-    protected static IHotkeyEditorViewModel PrepareHotkey(
-        MediaControllerBase owner,
+    private static IHotkeyEditorViewModel PrepareHotkey(
+        MediaControllerBase<TConfig> owner,
         string description,
-        Expression<Func<MicSwitchHotkeyConfig, HotkeyConfig>> fieldToMonitor,
-        Action<MicSwitchHotkeyConfig, HotkeyConfig> consumer)
+        Expression<Func<TConfig, HotkeyConfig>> fieldToMonitor,
+        Action<TConfig, HotkeyConfig> consumer)
     {
         var result = owner.hotkeyEditorFactory.Create();
 

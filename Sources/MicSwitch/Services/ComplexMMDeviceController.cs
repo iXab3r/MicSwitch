@@ -9,6 +9,12 @@ namespace MicSwitch.Services
 
         private readonly IObservableCache<IMMDeviceController, MMDeviceId> devices;
 
+        private static readonly Binder<ComplexMMDeviceController> Binder = new();
+
+        static ComplexMMDeviceController()
+        {
+        }
+
         public ComplexMMDeviceController(
             IFactory<MultimediaDeviceController, IMMDeviceProvider> multimediaControllerFactory,
             IMMDeviceProvider deviceProvider)
@@ -35,6 +41,7 @@ namespace MicSwitch.Services
                 .SubscribeSafe(x => ActiveController = x, Log.HandleUiException)
                 .AddTo(Anchors);
 
+            
             this.WhenAnyValue(x => x.ActiveController.VolumePercent)
                 .SubscribeSafe(() => RaisePropertyChanged(nameof(VolumePercent)), Log.HandleUiException)
                 .AddTo(Anchors);
@@ -57,6 +64,8 @@ namespace MicSwitch.Services
                 .AddTo(Anchors);
 
             LineId = MMDeviceId.All;
+            
+            Binder.Attach(this).AddTo(Anchors);
         }
 
         public MMDeviceId LineId { get; set; }

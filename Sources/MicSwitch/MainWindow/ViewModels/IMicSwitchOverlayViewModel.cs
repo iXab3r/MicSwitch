@@ -7,6 +7,8 @@ namespace MicSwitch.MainWindow.ViewModels
     {
         bool MicrophoneMute { get; }
         
+        double? OutputVolume { get; }
+        
         bool IsEnabled { get; set; }
         
         OverlayVisibilityMode OverlayVisibilityMode { get; set; }
