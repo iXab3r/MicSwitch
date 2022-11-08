@@ -7,21 +7,21 @@ namespace MicSwitch.Services
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(ComplexMicrophoneController));
 
-        private readonly IObservableCache<IMicrophoneController, MicrophoneLineData> microphones;
+        private readonly IObservableCache<IMicrophoneController, MMDeviceLineData> microphones;
         private IMicrophoneController activeController;
-        private MicrophoneLineData lineId;
+        private MMDeviceLineData lineId;
 
         public ComplexMicrophoneController(
-            IFactory<MultimediaMicrophoneController, IMicrophoneProvider> multimediaControllerFactory,
-            IMicrophoneProvider microphoneProvider)
+            IFactory<MultimediaMicrophoneController, IMMDeviceProvider> multimediaControllerFactory,
+            IMMDeviceProvider immDeviceProvider)
         {
-            microphones = microphoneProvider
+            microphones = immDeviceProvider
                 .Microphones
                 .ToObservableChangeSet()
-                .Filter(x => x.LineId != MicrophoneLineData.All.LineId)
+                .Filter(x => x.LineId != MMDeviceLineData.All.LineId)
                 .Transform(x =>
                 {
-                    var multimediaLine = multimediaControllerFactory.Create(microphoneProvider);
+                    var multimediaLine = multimediaControllerFactory.Create(immDeviceProvider);
                     multimediaLine.LineId = x;
                     return (IMicrophoneController) multimediaLine;
                 })
@@ -46,7 +46,7 @@ namespace MicSwitch.Services
                 .AddTo(Anchors);
 
             this.WhenAnyValue(x => x.ActiveController)
-                .Select(x => x?.LineId.LineId == MicrophoneLineData.All.LineId
+                .Select(x => x?.LineId.LineId == MMDeviceLineData.All.LineId
                     ? sources.ToObservableChangeSet().OnItemAdded(newMicrophone =>
                     {
                         Log.Debug($"New microphone {newMicrophone.LineId} detected in All microphones mode, assigning following parameters: {new {Mute, VolumePercent}}");
@@ -58,10 +58,10 @@ namespace MicSwitch.Services
                 .SubscribeToErrors(Log.HandleException)
                 .AddTo(Anchors);
 
-            LineId = MicrophoneLineData.All;
+            LineId = MMDeviceLineData.All;
         }
 
-        public MicrophoneLineData LineId
+        public MMDeviceLineData LineId
         {
             get => lineId;
             set => RaiseAndSetIfChanged(ref lineId, value);

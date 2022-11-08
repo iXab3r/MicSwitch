@@ -10,17 +10,17 @@ namespace MicSwitch.Services
         private static readonly ILog Log = LogManager.GetLogger(typeof(MultimediaMicrophoneController));
 
         private readonly IConfigProvider<MicSwitchConfig> configProvider;
-        private readonly IMicrophoneProvider microphoneProvider;
+        private readonly IMMDeviceProvider immDeviceProvider;
         private static readonly TimeSpan SamplingInterval = TimeSpan.FromMilliseconds(50);
         private MMDevice mixerControl;
-        private MicrophoneLineData lineId;
+        private MMDeviceLineData lineId;
 
         public MultimediaMicrophoneController(
             IConfigProvider<MicSwitchConfig> configProvider,
-            IMicrophoneProvider microphoneProvider)
+            IMMDeviceProvider immDeviceProvider)
         {
             this.configProvider = configProvider;
-            this.microphoneProvider = microphoneProvider;
+            this.immDeviceProvider = immDeviceProvider;
             this.WhenAnyValue(x => x.LineId)
                 .Where(x => !x.IsEmpty)
                 .SubscribeSafe(InitializeLine, Log.HandleException)
@@ -99,7 +99,7 @@ namespace MicSwitch.Services
             }
         }
 
-        public MicrophoneLineData LineId
+        public MMDeviceLineData LineId
         {
             get => lineId;
             set => RaiseAndSetIfChanged(ref lineId, value);
@@ -140,7 +140,7 @@ namespace MicSwitch.Services
             Log.Info($"Binding to line ({lineId})...");
             VolumePercent = null;
             Mute = null;
-            MixerControl = lineId.IsEmpty ? null : microphoneProvider.GetMixerControl(lineId.LineId);
+            MixerControl = lineId.IsEmpty ? null : immDeviceProvider.GetMixerControl(lineId.LineId);
         }
     }
 }

@@ -10,3 +10,4 @@ using System.Windows;
 [assembly: AssemblyVersion("0.0.0.0")]
 [assembly: AssemblyFileVersion("0.0.0.0")]
 [assembly: AssemblyMetadata("SquirrelAwareVersion", "1")]
+[assembly: System.Runtime.Versioning.SupportedOSPlatformAttribute("Windows10.0.20348.0")]

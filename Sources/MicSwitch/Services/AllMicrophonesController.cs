@@ -8,12 +8,12 @@ namespace MicSwitch.Services
         private static readonly ILog Log = LogManager.GetLogger(typeof(AllMicrophonesController));
 
         private readonly ReadOnlyObservableCollection<IMicrophoneController> microphones;
-        private MicrophoneLineData lineId;
+        private MMDeviceLineData lineId;
 
         public AllMicrophonesController(ReadOnlyObservableCollection<IMicrophoneController> microphones)
         {
             this.microphones = microphones;
-            LineId = MicrophoneLineData.All;
+            LineId = MMDeviceLineData.All;
 
             microphones
                 .ToObservableChangeSet()
@@ -30,7 +30,7 @@ namespace MicSwitch.Services
                 .AddTo(Anchors);
         }
 
-        public MicrophoneLineData LineId
+        public MMDeviceLineData LineId
         {
             get => lineId;
             private set => RaiseAndSetIfChanged(ref lineId, value);

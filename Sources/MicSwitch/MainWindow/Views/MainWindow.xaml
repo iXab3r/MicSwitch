@@ -98,7 +98,7 @@
                     <st:StackPanel st:AutoGrid.RowHeightOverride="40">
                         <ComboBox st:StackPanel.Fill="Fill"
                                   ItemsSource="{Binding MicrophoneController.Microphones}"
-                                  SelectedItem="{Binding MicrophoneController.MicrophoneLine}"
+                                  SelectedItem="{Binding MicrophoneController.MMDeviceLine}"
                                   DisplayMemberPath="Name"
                                   ToolTip="Microphone line"/>
                     </st:StackPanel>
@@ -171,10 +171,10 @@
 
                     <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Notification volume:" />
                     <st:StackPanel>
-                        <Slider Width="180"
+                        <Slider Width="160"
                                 Value="{Binding AudioNotificationVolume}"
                                 Minimum="0" Maximum="1"
-                                Margin="5,4,5,0"
+                                Margin="0,2,5,0"
                                 TickFrequency="0.05"
                                 ToolTip="Notification volume"/>
                         <TextBlock
@@ -183,6 +183,11 @@
                                 <Binding Path="AudioNotificationVolume" StringFormat="{}{0:F1}%" Converter="{StaticResource DoubleToPercentConverter}" />
                             </TextBlock.Text>
                         </TextBlock>
+                        <eye:ButtonEx Command="{Binding PlaySoundCommand}"
+                                      Icon="&#xf144;"
+                                      Padding="0"
+                                      Content="Test"
+                                      Margin="0" />
                     </st:StackPanel>
 
                     <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Output device:" />
@@ -192,6 +197,45 @@
                     </st:StackPanel>
 
                     <Separator Grid.ColumnSpan="2" />
+                    <!-- Not ready yet
+                    <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Volume control:" />
+                    <CheckBox
+                        HorizontalAlignment="Left"
+                        ToolTip="Enable output devices volume control"
+                        IsChecked="{Binding MicrophoneController.EnableOutputVolumeControl, Mode=TwoWay}" />
+
+                    <st:AutoGrid RowHeightOverride="Auto"
+                                 Margin="0"
+                                 ColumnSpan="2"
+                                 Columns="120,*" ChildMargin="5" RowHeight="50"
+                                 Visibility="{Binding MicrophoneController.EnableOutputVolumeControl, Converter={StaticResource TrueToVisibleFalseToCollapsedConverter}}">
+                        <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Output device:" />
+                        <ContentControl Content="{Binding MicrophoneController.OutputDeviceSelector}" />
+                        <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Notification volume:" />
+                        <st:StackPanel VerticalAlignment="Center">
+                            <Slider Width="160"
+                                    Value="{Binding MicrophoneController.OutputDeviceVolume}"
+                                    Minimum="0" Maximum="1"
+                                    Margin="0,2,5,0"
+                                    TickFrequency="0.05"
+                                    ToolTip="Volume"/>
+                            <TextBlock
+                                MinWidth="45">
+                                <TextBlock.Text>
+                                    <Binding Path="MicrophoneController.OutputDeviceVolume" StringFormat="{}{0:F1}%" Converter="{StaticResource DoubleToPercentConverter}" />
+                                </TextBlock.Text>
+                            </TextBlock>
+                        </st:StackPanel>
+                        <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="for Mute:" />
+                        <ContentControl Content="{Binding MicrophoneController.HotkeyOutputMute}" />
+                        <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="for Volume Up:" />
+                        <ContentControl Content="{Binding MicrophoneController.HotkeyOutputVolumeUp}" />
+                        <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="for Volume Down:" />
+                        <ContentControl Content="{Binding MicrophoneController.HotkeyOutputVolumeDown}" />
+                    </st:AutoGrid>
+
+                    <Separator Grid.ColumnSpan="2" />
+                    -->
 
                     <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Show overlay:" />
                     <st:StackPanel>

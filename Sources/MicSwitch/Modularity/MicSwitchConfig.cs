@@ -13,7 +13,7 @@ namespace MicSwitch.Modularity
         
         public bool StartMinimized { get; set; }
 
-        public MicrophoneLineData MicrophoneLineId { get; set; }
+        public MMDeviceLineData MicrophoneLineId { get; set; }
         
         public string OutputDeviceId { get; set; }
         

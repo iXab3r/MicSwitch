@@ -5,11 +5,13 @@ namespace MicSwitch.MainWindow.ViewModels
 {
     internal interface IMicrophoneControllerViewModel : IDisposableReactiveObject
     {
-        ReadOnlyObservableCollection<MicrophoneLineData> Microphones { get; }
+        ReadOnlyObservableCollection<MMDeviceLineData> Microphones { get; }
         
         MuteMode MuteMode { get; set; }
         
         bool EnableAdditionalHotkeys { get; set; }
+        
+        bool EnableOutputVolumeControl { get; set; }
         
         IHotkeyEditorViewModel Hotkey { get; }
         
@@ -21,11 +23,21 @@ namespace MicSwitch.MainWindow.ViewModels
         
         IHotkeyEditorViewModel HotkeyPushToTalk { get; }
         
+        IHotkeyEditorViewModel HotkeyOutputMute { get; }
+        
+        IHotkeyEditorViewModel HotkeyOutputVolumeUp { get; }
+        
+        IHotkeyEditorViewModel HotkeyOutputVolumeDown { get; }
+        
         IHotkeyEditorViewModel HotkeyPushToMute { get; }
+        
+        IWaveOutDeviceSelectorViewModel OutputDeviceSelector { get; }
+        
+        double OutputDeviceVolume { get; set; }
         
         bool MicrophoneMuted { get; }
         
-        MicrophoneLineData MicrophoneLine { get; set; }
+        MMDeviceLineData MMDeviceLine { get; set; }
         
         double MicrophoneVolume { get; set; }
         

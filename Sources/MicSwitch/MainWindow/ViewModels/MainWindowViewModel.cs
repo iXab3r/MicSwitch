@@ -29,6 +29,7 @@ namespace MicSwitch.MainWindow.ViewModels
         private readonly IConfigProvider<MicSwitchOverlayConfig> overlayConfigProvider;
         private readonly IAudioNotificationsManager notificationsManager;
         private readonly IWindowViewController viewController;
+        private readonly IRandomNumberGenerator rng;
 
         private readonly IStartupManager startupManager;
         private readonly IAppArguments appArguments;
@@ -66,6 +67,7 @@ namespace MicSwitch.MainWindow.ViewModels
             IErrorMonitorViewModel errorMonitor,
             IAudioNotificationsManager notificationsManager,
             IWindowViewController viewController,
+            IRandomNumberGenerator rng,
             [Dependency(WellKnownSchedulers.UI)] IScheduler uiScheduler)
         {
             Title = $"{(appArguments.IsDebugMode ? "[D]" : "")} {appArguments.AppName} v{appArguments.Version}";
@@ -78,6 +80,7 @@ namespace MicSwitch.MainWindow.ViewModels
             this.overlayConfigProvider = overlayConfigProvider;
             this.notificationsManager = notificationsManager;
             this.viewController = viewController;
+            this.rng = rng;
             ApplicationUpdater = appUpdater.AddTo(Anchors);
             WaveOutDeviceSelector = waveOutDeviceSelector;
             ImageProvider = imageProvider;
@@ -128,7 +131,7 @@ namespace MicSwitch.MainWindow.ViewModels
             
             MicrophoneController.ObservableForProperty(x => x.MicrophoneMuted, skipInitial: true)
                 .DistinctUntilChanged()
-                .Where(x => !MicrophoneController.MicrophoneLine.IsEmpty)
+                .Where(x => !MicrophoneController.MMDeviceLine.IsEmpty)
                 .Select(isMuted => (isMuted.Value ? AudioNotification.Off : AudioNotification.On) ?? default(AudioNotificationType).ToString())
                 .Where(notificationToPlay => !string.IsNullOrEmpty(notificationToPlay))
                 .Select(notificationToPlay => Observable.FromAsync(async token =>
@@ -167,6 +170,7 @@ namespace MicSwitch.MainWindow.ViewModels
             SelectMutedMicrophoneIconCommand = CommandWrapper.Create(SelectMutedMicrophoneIconCommandExecuted);
             ResetMicrophoneIconsCommand = CommandWrapper.Create(ResetMicrophoneIconsCommandExecuted);
             AddSoundCommand = CommandWrapper.Create(AddSoundCommandExecuted);
+            PlaySoundCommand = CommandWrapper.Create(PlaySoundCommandExecuted);
 
             Observable.Merge(configProvider.ListenTo(x => x.Notifications).ToUnit(), configProvider.ListenTo(x => x.NotificationVolume).ToUnit())
                 .Select(_ => new { configProvider.ActualConfig.Notifications, configProvider.ActualConfig.NotificationVolume })
@@ -291,21 +295,21 @@ namespace MicSwitch.MainWindow.ViewModels
         public bool IsElevated => appArguments.IsElevated;
 
         public ICommand ToggleOverlayLockCommand { get; }
-        
+
         public ICommand ResetOverlayPositionCommand { get; }
 
         public ICommand ExitAppCommand { get; }
 
         public ICommand ShowAppCommand { get; }
-        
+
         public ICommand SelectMutedMicrophoneIconCommand { get; }
-        
+
         public ICommand SelectMicrophoneIconCommand { get; }
-        
+
         public ICommand ResetMicrophoneIconsCommand { get; }
 
         public CommandWrapper OpenAppDataDirectoryCommand { get; }
-        
+
         public CommandWrapper RunAtLoginToggleCommand { get; }
 
         public IMicSwitchOverlayViewModel Overlay { get; }
@@ -321,9 +325,21 @@ namespace MicSwitch.MainWindow.ViewModels
         public bool RunAtLogin => startupManager?.IsRegistered ?? false;
 
         public Size MinSize { get; } = new Size(600, 430);
+
         public Size MaxSize { get; } = new Size(900, 980);
+
         public Size DefaultSize { get; } = new Size(600, 680);
-        
+
+        private async Task PlaySoundCommandExecuted()
+        {
+            var notifications = new[] {AudioSelectorWhenMuted, AudioSelectorWhenUnmuted}
+                .Where(x => !string.IsNullOrEmpty(x.SelectedValue))
+                .ToArray();
+
+            var notificationToPlay = notifications.Any() ? notifications.PickRandom().SelectedValue : AudioNotificationType.Bell.ToString();
+            await notificationsManager.PlayNotification(notificationToPlay, AudioNotificationVolume);
+        }
+
         public WindowState WindowState
         {
             get => windowState;
@@ -331,7 +347,7 @@ namespace MicSwitch.MainWindow.ViewModels
         }
 
         public bool ShowOverlaySettings => Overlay.OverlayVisibilityMode != OverlayVisibilityMode.Never;
-        
+
         public Visibility Visibility
         {
             get => visibility;
@@ -371,6 +387,8 @@ namespace MicSwitch.MainWindow.ViewModels
         public IErrorMonitorViewModel ErrorMonitor { get; }
 
         public CommandWrapper AddSoundCommand { get; }
+        
+        public CommandWrapper PlaySoundCommand { get; }
         
         public string LastOpenedDirectory
         {
