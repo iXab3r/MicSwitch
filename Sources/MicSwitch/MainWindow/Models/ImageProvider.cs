@@ -14,22 +14,17 @@ namespace MicSwitch.MainWindow.Models
         private readonly BitmapImage defaultMicrophoneImage = new BitmapImage(new Uri("pack://application:,,,/Resources/microphoneEnabled.ico", UriKind.RelativeOrAbsolute));
         private readonly BitmapImage defaultMutedMicrophoneImage = new BitmapImage(new Uri("pack://application:,,,/Resources/microphoneDisabled.ico", UriKind.RelativeOrAbsolute));
 
-        private ImageSource streamingMicrophoneImage;
-        private ImageSource mutedMicrophoneImage;
-        private ImageSource microphoneImage;
-        private Icon microphoneImageAsIcon;
-
         public ImageProvider(
-            [NotNull] IMicrophoneControllerEx microphoneController,
+            [NotNull] IMMDeviceControllerEx immDeviceController,
             [NotNull] IConfigProvider<MicSwitchOverlayConfig> configProvider,
             [NotNull] [Dependency(WellKnownSchedulers.UI)] IScheduler uiScheduler)
         {
             Observable.Merge(
-                    microphoneController.WhenAnyValue(x => x.Mute).ToUnit(),
+                    immDeviceController.WhenAnyValue(x => x.Mute).ToUnit(),
                     this.WhenAnyValue(x => x.StreamingMicrophoneImage).ToUnit(),
                     this.WhenAnyValue(x => x.MutedMicrophoneImage).ToUnit())
                 .ObserveOn(uiScheduler)
-                .Select(x => microphoneController.Mute ?? false ? mutedMicrophoneImage : streamingMicrophoneImage)
+                .Select(x => immDeviceController.Mute ?? false ? MutedMicrophoneImage : StreamingMicrophoneImage)
                 .SubscribeSafe(x => MicrophoneImage = x, Log.HandleUiException)
                 .AddTo(Anchors);
 
@@ -53,28 +48,12 @@ namespace MicSwitch.MainWindow.Models
                 .AddTo(Anchors);
         }
 
-        public ImageSource MicrophoneImage
-        {
-            get => microphoneImage;
-            private set => RaiseAndSetIfChanged(ref microphoneImage, value);
-        }
+        public ImageSource MicrophoneImage { get; private set; }
 
-        public ImageSource StreamingMicrophoneImage
-        {
-            get => streamingMicrophoneImage;
-            private set => RaiseAndSetIfChanged(ref streamingMicrophoneImage, value);
-        }
+        public ImageSource StreamingMicrophoneImage { get; private set; }
 
-        public ImageSource MutedMicrophoneImage
-        {
-            get => mutedMicrophoneImage;
-            private set => RaiseAndSetIfChanged(ref mutedMicrophoneImage, value);
-        }
+        public ImageSource MutedMicrophoneImage { get; private set; }
 
-        public Icon MicrophoneImageAsIcon
-        {
-            get => microphoneImageAsIcon;
-            private set => RaiseAndSetIfChanged(ref microphoneImageAsIcon, value);
-        }
+        public Icon MicrophoneImageAsIcon { get; private set; }
     }
 }

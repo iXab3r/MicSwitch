@@ -11,22 +11,14 @@ namespace MicSwitch.MainWindow.ViewModels
         private static readonly ILog Log = LogManager.GetLogger(typeof(MicrophoneControllerViewModel));
         private static readonly TimeSpan ConfigThrottlingTimeout = TimeSpan.FromMilliseconds(250);
 
-        private readonly IMicrophoneControllerEx microphoneController;
+        private readonly IMMDeviceControllerEx immDeviceController;
         private readonly IFactory<IHotkeyTracker> hotkeyTrackerFactory;
         private readonly IFactory<IHotkeyEditorViewModel> hotkeyEditorFactory;
         private readonly IConfigProvider<MicSwitchHotkeyConfig> hotkeyConfigProvider;
         private readonly IScheduler uiScheduler;
 
-        private MuteMode muteMode;
-        private MMDeviceLineData mmDeviceLine;
-        private bool microphoneVolumeControlEnabled;
-        private bool enableAdvancedHotkeys;
-        private MicrophoneState initialMicrophoneState;
-        private bool enableOutputVolumeControl;
-        private double outputDeviceVolume;
-
         public MicrophoneControllerViewModel(
-            IMicrophoneControllerEx microphoneController,
+            IMMDeviceControllerEx immDeviceController,
             IMMDeviceProvider deviceProvider,
             IComplexHotkeyTracker hotkeyTracker,
             IFactory<IHotkeyTracker> hotkeyTrackerFactory,
@@ -44,7 +36,7 @@ namespace MicSwitch.MainWindow.ViewModels
                 .AddTo(Anchors);
             Microphones = microphones;
 
-            this.microphoneController = microphoneController;
+            this.immDeviceController = immDeviceController;
             this.hotkeyTrackerFactory = hotkeyTrackerFactory;
             this.hotkeyEditorFactory = hotkeyEditorFactory;
             this.hotkeyConfigProvider = hotkeyConfigProvider;
@@ -65,8 +57,8 @@ namespace MicSwitch.MainWindow.ViewModels
                 .ObservableForProperty(x => x.IsActive, skipInitial: true)
                 .SubscribeSafe(x =>
                 {
-                    Log.Debug($"[{x.Sender}] Toggling microphone state: {microphoneController}");
-                    microphoneController.Mute = !microphoneController.Mute;
+                    Log.Debug($"[{x.Sender}] Toggling microphone state: {immDeviceController}");
+                    immDeviceController.Mute = !immDeviceController.Mute;
                 }, Log.HandleUiException)
                 .AddTo(Anchors);
 
@@ -75,8 +67,8 @@ namespace MicSwitch.MainWindow.ViewModels
                 .Where(x => x.Value)
                 .SubscribeSafe(x =>
                 {
-                    Log.Debug($"[{x.Sender}] Muting microphone: {microphoneController}");
-                    microphoneController.Mute = true;
+                    Log.Debug($"[{x.Sender}] Muting microphone: {immDeviceController}");
+                    immDeviceController.Mute = true;
                 }, Log.HandleUiException)
                 .AddTo(Anchors);
 
@@ -85,8 +77,8 @@ namespace MicSwitch.MainWindow.ViewModels
                 .Where(x => x.Value)
                 .SubscribeSafe(x =>
                 {
-                    Log.Debug($"[{x.Sender}] Un-muting microphone: {microphoneController}");
-                    microphoneController.Mute = false;
+                    Log.Debug($"[{x.Sender}] Un-muting microphone: {immDeviceController}");
+                    immDeviceController.Mute = false;
                 }, Log.HandleUiException)
                 .AddTo(Anchors);
 
@@ -94,8 +86,8 @@ namespace MicSwitch.MainWindow.ViewModels
                 .ObservableForProperty(x => x.IsActive, skipInitial: true)
                 .SubscribeSafe(x =>
                 {
-                    Log.Debug($"[{x.Sender}] Processing push-to-talk hotkey for microphone: {microphoneController}");
-                    microphoneController.Mute = !x.Value;
+                    Log.Debug($"[{x.Sender}] Processing push-to-talk hotkey for microphone: {immDeviceController}");
+                    immDeviceController.Mute = !x.Value;
                 }, Log.HandleUiException)
                 .AddTo(Anchors);
 
@@ -103,17 +95,17 @@ namespace MicSwitch.MainWindow.ViewModels
                 .ObservableForProperty(x => x.IsActive, skipInitial: true)
                 .SubscribeSafe(x =>
                 {
-                    Log.Debug($"[{x.Sender}] Processing push-to-mute hotkey for microphone: {microphoneController}");
-                    microphoneController.Mute = x.Value;
+                    Log.Debug($"[{x.Sender}] Processing push-to-mute hotkey for microphone: {immDeviceController}");
+                    immDeviceController.Mute = x.Value;
                 }, Log.HandleUiException)
                 .AddTo(Anchors);
 
-            this.RaiseWhenSourceValue(x => x.MicrophoneVolume, microphoneController, x => x.VolumePercent, uiScheduler).AddTo(Anchors);
-            this.RaiseWhenSourceValue(x => x.MicrophoneMuted, microphoneController, x => x.Mute, uiScheduler).AddTo(Anchors);
+            this.RaiseWhenSourceValue(x => x.MicrophoneVolume, immDeviceController, x => x.VolumePercent, uiScheduler).AddTo(Anchors);
+            this.RaiseWhenSourceValue(x => x.MicrophoneMuted, immDeviceController, x => x.Mute, uiScheduler).AddTo(Anchors);
 
-            this.WhenAnyValue(x => x.MMDeviceLine)
+            this.WhenAnyValue(x => x.MicrophoneLine)
                 .DistinctUntilChanged()
-                .SubscribeSafe(x => microphoneController.LineId = x, Log.HandleUiException)
+                .SubscribeSafe(x => immDeviceController.LineId = x, Log.HandleUiException)
                 .AddTo(Anchors);
 
             hotkeyConfigProvider.ListenTo(x => x.MuteMode)
@@ -146,22 +138,22 @@ namespace MicSwitch.MainWindow.ViewModels
                 .AddTo(Anchors);
 
             Observable.Merge(
-                    configProvider.ListenTo(x => x.MMDeviceLineId).ToUnit(),
+                    configProvider.ListenTo(x => x.MicrophoneLineId).ToUnit(),
                     Microphones.ToObservableChangeSet().ToUnit())
-                .Select(_ => configProvider.ActualConfig.MMDeviceLineId)
+                .Select(_ => configProvider.ActualConfig.MicrophoneLineId)
                 .ObserveOn(uiScheduler)
                 .SubscribeSafe(configLineId =>
                 {
-                    Log.Debug($"Microphone line configuration changed, lineId: {configLineId}, known lines: {Microphones.DumpToTextRaw()}");
+                    Log.Debug($"Microphone line configuration changed, lineId: {configLineId}, known lines: {Microphones.Dump()}");
 
                     var micLine = Microphones.FirstOrDefault(line => line.Equals(configLineId));
                     if (micLine.IsEmpty)
                     {
-                        Log.Debug($"Selecting first one of available microphone lines, known lines: {Microphones.DumpToTextRaw()}");
+                        Log.Debug($"Selecting first one of available microphone lines, known lines: {Microphones.Dump()}");
                         micLine = Microphones.FirstOrDefault();
                     }
 
-                    MMDeviceLine = micLine;
+                    MicrophoneLine = micLine;
                     MuteMicrophoneCommand.ResetError();
                 }, Log.HandleUiException)
                 .AddTo(Anchors);
@@ -170,27 +162,27 @@ namespace MicSwitch.MainWindow.ViewModels
                 .ObserveOn(uiScheduler)
                 .SubscribeSafe(_ =>
                 {
-                    Log.Debug($"Processing muteMode: {muteMode}, {microphoneController}.Mute: {microphoneController.Mute}");
-                    switch (muteMode)
+                    Log.Debug($"Processing muteMode: {MuteMode}, {immDeviceController}.Mute: {immDeviceController.Mute}");
+                    switch (MuteMode)
                     {
                         case MuteMode.PushToTalk:
-                            Log.Debug($"{muteMode} mute mode is enabled, un-muting microphone");
-                            microphoneController.Mute = true;
+                            Log.Debug($"{MuteMode} mute mode is enabled, un-muting microphone");
+                            immDeviceController.Mute = true;
                             break;
                         case MuteMode.PushToMute:
-                            microphoneController.Mute = false;
-                            Log.Debug($"{muteMode} mute mode is enabled, muting microphone");
+                            immDeviceController.Mute = false;
+                            Log.Debug($"{MuteMode} mute mode is enabled, muting microphone");
                             break;
-                        case MuteMode.ToggleMute when initialMicrophoneState == MicrophoneState.Mute:
-                            Log.Debug($"{muteMode} enabled, muting microphone");
-                            microphoneController.Mute = true;
+                        case MuteMode.ToggleMute when InitialMicrophoneState == MicrophoneState.Mute:
+                            Log.Debug($"{MuteMode} enabled, muting microphone");
+                            immDeviceController.Mute = true;
                             break;
-                        case MuteMode.ToggleMute when initialMicrophoneState == MicrophoneState.Unmute:
-                            Log.Debug($"{muteMode} enabled, un-muting microphone");
-                            microphoneController.Mute = false;
+                        case MuteMode.ToggleMute when InitialMicrophoneState == MicrophoneState.Unmute:
+                            Log.Debug($"{MuteMode} enabled, un-muting microphone");
+                            immDeviceController.Mute = false;
                             break;
                         default:
-                            Log.Debug($"{muteMode} enabled, action is not needed");
+                            Log.Debug($"{MuteMode} enabled, action is not needed");
                             break;
                     }
                 }, Log.HandleUiException)
@@ -202,20 +194,20 @@ namespace MicSwitch.MainWindow.ViewModels
                 .ObserveOn(uiScheduler)
                 .SubscribeSafe(async isActive =>
                 {
-                    Log.Debug($"Handling hotkey press (isActive: {isActive}), mute mode: {muteMode}");
-                    switch (muteMode)
+                    Log.Debug($"Handling hotkey press (isActive: {isActive}), mute mode: {MuteMode}");
+                    switch (MuteMode)
                     {
                         case MuteMode.PushToTalk:
-                            microphoneController.Mute = !isActive;
+                            immDeviceController.Mute = !isActive;
                             break;
                         case MuteMode.PushToMute:
-                            microphoneController.Mute = isActive;
+                            immDeviceController.Mute = isActive;
                             break;
                         case MuteMode.ToggleMute:
-                            microphoneController.Mute = !microphoneController.Mute;
+                            immDeviceController.Mute = !immDeviceController.Mute;
                             break;
                         default:
-                            throw new ArgumentOutOfRangeException(nameof(muteMode), muteMode, @"Unsupported mute mode");
+                            throw new ArgumentOutOfRangeException(nameof(MuteMode), MuteMode, @"Unsupported mute mode");
                     }
                 }, Log.HandleUiException)
                 .AddTo(Anchors);
@@ -232,24 +224,24 @@ namespace MicSwitch.MainWindow.ViewModels
                 {
                     var hotkeyConfig = hotkeyConfigProvider.ActualConfig.CloneJson();
                     hotkeyConfig.Hotkey = Hotkey.Properties;
-                    hotkeyConfig.MuteMode = muteMode;
-                    hotkeyConfig.EnableAdvancedHotkeys = enableAdvancedHotkeys;
-                    hotkeyConfig.EnableOutputVolumeControl = enableOutputVolumeControl;
-                    hotkeyConfig.InitialMicrophoneState = initialMicrophoneState;
+                    hotkeyConfig.MuteMode = MuteMode;
+                    hotkeyConfig.EnableAdvancedHotkeys = EnableAdditionalHotkeys;
+                    hotkeyConfig.EnableOutputVolumeControl = EnableOutputVolumeControl;
+                    hotkeyConfig.InitialMicrophoneState = InitialMicrophoneState;
                     hotkeyConfigProvider.Save(hotkeyConfig);
                 }, Log.HandleUiException)
                 .AddTo(Anchors);
 
             Observable.Merge(
-                    this.ObservableForProperty(x => x.MMDeviceLine, skipInitial: true).ToUnit(),
+                    this.ObservableForProperty(x => x.MicrophoneLine, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.MicrophoneVolumeControlEnabled, skipInitial: true).ToUnit())
                 .Throttle(ConfigThrottlingTimeout)
                 .ObserveOn(uiScheduler)
                 .SubscribeSafe(() =>
                 {
                     var config = configProvider.ActualConfig.CloneJson();
-                    config.MMDeviceLineId = mmDeviceLine;
-                    config.VolumeControlEnabled = microphoneVolumeControlEnabled;
+                    config.MicrophoneLineId = MicrophoneLine;
+                    config.VolumeControlEnabled = MicrophoneVolumeControlEnabled;
                     configProvider.Save(config);
                 }, Log.HandleUiException)
                 .AddTo(Anchors);
@@ -257,19 +249,11 @@ namespace MicSwitch.MainWindow.ViewModels
 
         public IWaveOutDeviceSelectorViewModel OutputDeviceSelector { get; }
 
-        public ReadOnlyObservableCollection<MMDeviceLineData> Microphones { get; }
+        public ReadOnlyObservableCollection<MMDeviceId> Microphones { get; }
 
-        public MuteMode MuteMode
-        {
-            get => muteMode;
-            set => RaiseAndSetIfChanged(ref muteMode, value);
-        }
+        public MuteMode MuteMode { get; set; }
 
-        public bool EnableOutputVolumeControl
-        {
-            get => enableOutputVolumeControl;
-            set => this.RaiseAndSetIfChanged(ref enableOutputVolumeControl, value);
-        }
+        public bool EnableOutputVolumeControl { get; set; }
 
         public IHotkeyEditorViewModel HotkeyOutputMute { get; }
         
@@ -289,46 +273,23 @@ namespace MicSwitch.MainWindow.ViewModels
 
         public IHotkeyEditorViewModel HotkeyPushToMute { get; }
 
-        public bool MicrophoneMuted
-        {
-            get => microphoneController.Mute ?? false;
-        }
+        public bool MicrophoneMuted => immDeviceController.Mute ?? false;
 
-        public bool EnableAdditionalHotkeys
-        {
-            get => enableAdvancedHotkeys;
-            set => RaiseAndSetIfChanged(ref enableAdvancedHotkeys, value);
-        }
+        public bool EnableAdditionalHotkeys { get; set; }
 
-        public MMDeviceLineData MMDeviceLine
-        {
-            get => mmDeviceLine;
-            set => this.RaiseAndSetIfChanged(ref mmDeviceLine, value);
-        }
+        public MMDeviceId MicrophoneLine { get; set; }
 
-        public MicrophoneState InitialMicrophoneState
-        {
-            get => initialMicrophoneState;
-            set => RaiseAndSetIfChanged(ref initialMicrophoneState, value);
-        }
+        public MicrophoneState InitialMicrophoneState { get; set; }
 
         public double MicrophoneVolume
         {
-            get => microphoneController.VolumePercent ?? 0;
-            set => microphoneController.VolumePercent = value;
+            get => immDeviceController.VolumePercent ?? 0;
+            set => immDeviceController.VolumePercent = value;
         }
         
-        public double OutputDeviceVolume
-        {
-            get => outputDeviceVolume;
-            set => RaiseAndSetIfChanged(ref outputDeviceVolume, value);
-        }
+        public double OutputDeviceVolume { get; set; }
         
-        public bool MicrophoneVolumeControlEnabled
-        {
-            get => microphoneVolumeControlEnabled;
-            set => RaiseAndSetIfChanged(ref microphoneVolumeControlEnabled, value);
-        }
+        public bool MicrophoneVolumeControlEnabled { get; set; }
 
         public CommandWrapper MuteMicrophoneCommand { get; }
 
@@ -359,10 +320,10 @@ namespace MicSwitch.MainWindow.ViewModels
             var mute = arg switch
             {
                 bool argBool => argBool,
-                _ => !microphoneController.Mute
+                _ => !immDeviceController.Mute
             };
-            Log.Debug($"{(mute == true ? "Muting" : "Un-muting")} microphone {microphoneController.LineId}");
-            microphoneController.Mute = mute;
+            Log.Debug($"{(mute == true ? "Muting" : "Un-muting")} microphone {immDeviceController.LineId}");
+            immDeviceController.Mute = mute;
         }
 
         private static IHotkeyTracker PrepareTracker(
@@ -419,7 +380,7 @@ namespace MicSwitch.MainWindow.ViewModels
                 .ObserveOn(owner.uiScheduler)
                 .SubscribeSafe(config =>
                 {
-                    Log.Debug($"Setting new hotkeys configuration: {config.DumpToTextRaw()}, current: {result.Properties}");
+                    Log.Debug($"Setting new hotkeys configuration: {config.Dump()}, current: {result.Properties}");
                     result.Load(config);
                 }, Log.HandleException)
                 .AddTo(owner.Anchors);

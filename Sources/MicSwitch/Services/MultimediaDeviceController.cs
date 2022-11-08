@@ -5,17 +5,17 @@ using PoeShared.Audio.Models;
 
 namespace MicSwitch.Services
 {
-    internal sealed class MultimediaMicrophoneController : DisposableReactiveObject, IMicrophoneControllerEx
+    internal sealed class MultimediaDeviceController : DisposableReactiveObject, IMMDeviceControllerEx
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(MultimediaMicrophoneController));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(MultimediaDeviceController));
 
         private readonly IConfigProvider<MicSwitchConfig> configProvider;
         private readonly IMMDeviceProvider immDeviceProvider;
         private static readonly TimeSpan SamplingInterval = TimeSpan.FromMilliseconds(50);
         private MMDevice mixerControl;
-        private MMDeviceLineData lineId;
+        private MMDeviceId lineId;
 
-        public MultimediaMicrophoneController(
+        public MultimediaDeviceController(
             IConfigProvider<MicSwitchConfig> configProvider,
             IMMDeviceProvider immDeviceProvider)
         {
@@ -99,7 +99,7 @@ namespace MicSwitch.Services
             }
         }
 
-        public MMDeviceLineData LineId
+        public MMDeviceId LineId
         {
             get => lineId;
             set => RaiseAndSetIfChanged(ref lineId, value);

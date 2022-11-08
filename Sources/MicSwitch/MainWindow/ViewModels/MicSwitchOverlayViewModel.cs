@@ -1,7 +1,6 @@
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
-using log4net;
 using MicSwitch.MainWindow.Models;
 using MicSwitch.Modularity;
 using MicSwitch.Services;
@@ -11,24 +10,21 @@ namespace MicSwitch.MainWindow.ViewModels
 {
     internal sealed class MicSwitchOverlayViewModel : OverlayViewModelBase, IMicSwitchOverlayViewModel
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(MicSwitchOverlayViewModel));
-
         private static readonly TimeSpan ConfigThrottlingTimeout = TimeSpan.FromMilliseconds(250);
         private readonly IConfigProvider<MicSwitchOverlayConfig> configProvider;
         private readonly IImageProvider imageProvider;
         private readonly IOverlayWindowController overlayWindowController;
-        private readonly IMicrophoneControllerEx microphoneController;
-        private OverlayVisibilityMode overlayVisibilityMode;
+        private readonly IMMDeviceControllerEx immDeviceController;
 
         public MicSwitchOverlayViewModel(
             IOverlayWindowController overlayWindowController,
-            IMicrophoneControllerEx microphoneController,
+            IMMDeviceControllerEx immDeviceController,
             IConfigProvider<MicSwitchOverlayConfig> configProvider,
             IImageProvider imageProvider,
             [Dependency(WellKnownSchedulers.UI)] IScheduler uiScheduler)
         {
             this.overlayWindowController = overlayWindowController;
-            this.microphoneController = microphoneController;
+            this.immDeviceController = immDeviceController;
             this.configProvider = configProvider;
             this.imageProvider = imageProvider;
             OverlayMode = OverlayMode.Transparent;
@@ -47,7 +43,7 @@ namespace MicSwitch.MainWindow.ViewModels
                 .AddTo(Anchors);
 
             this.RaiseWhenSourceValue(x => x.IsEnabled, overlayWindowController, x => x.IsEnabled).AddTo(Anchors);
-            this.RaiseWhenSourceValue(x => x.Mute, microphoneController, x => x.Mute, uiScheduler).AddTo(Anchors);
+            this.RaiseWhenSourceValue(x => x.Mute, immDeviceController, x => x.Mute, uiScheduler).AddTo(Anchors);
             this.RaiseWhenSourceValue(x => x.MicrophoneImage, imageProvider, x => x.MicrophoneImage, uiScheduler).AddTo(Anchors);
             
             ToggleLockStateCommand = CommandWrapper.Create(
@@ -87,7 +83,7 @@ namespace MicSwitch.MainWindow.ViewModels
                         OverlayVisibilityMode.Never => false,
                         OverlayVisibilityMode.WhenMuted => Mute,
                         OverlayVisibilityMode.WhenUnmuted => !Mute,
-                        _ => throw new ArgumentOutOfRangeException(nameof(overlayVisibilityMode), overlayVisibilityMode, "Unknown visibility mode")
+                        _ => throw new ArgumentOutOfRangeException(nameof(OverlayVisibilityMode), OverlayVisibilityMode, "Unknown visibility mode")
                     };
                 })
                 .DistinctUntilChanged()
@@ -126,13 +122,9 @@ namespace MicSwitch.MainWindow.ViewModels
             set => overlayWindowController.IsEnabled = value;
         }
 
-        public bool Mute => microphoneController.Mute ?? false;
+        public bool Mute => immDeviceController.Mute ?? false;
 
-        public OverlayVisibilityMode OverlayVisibilityMode
-        {
-            get => overlayVisibilityMode;
-            set => RaiseAndSetIfChanged(ref overlayVisibilityMode, value);
-        }
+        public OverlayVisibilityMode OverlayVisibilityMode { get; set; }
 
         public ImageSource MicrophoneImage => imageProvider.MicrophoneImage;
 

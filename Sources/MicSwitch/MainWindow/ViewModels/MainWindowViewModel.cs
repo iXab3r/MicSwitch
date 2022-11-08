@@ -35,19 +35,6 @@ namespace MicSwitch.MainWindow.ViewModels
         private readonly IAppArguments appArguments;
         private readonly IApplicationAccessor applicationAccessor;
         private readonly ObservableAsPropertyHelper<TwoStateNotification> audioNotificationSource;
-
-        private bool showInTaskbar;
-        private Visibility trayIconVisibility = Visibility.Visible;
-        private WindowState windowState;
-        private bool startMinimized;
-        private Visibility visibility;
-        private bool minimizeOnClose;
-        private string lastOpenedDirectory;
-        private float audioNotificationVolume;
-        private double height;
-        private double left;
-        private double top;
-        private double width;
         
         public MainWindowViewModel(
             IAppArguments appArguments,
@@ -131,15 +118,15 @@ namespace MicSwitch.MainWindow.ViewModels
             
             MicrophoneController.ObservableForProperty(x => x.MicrophoneMuted, skipInitial: true)
                 .DistinctUntilChanged()
-                .Where(x => !MicrophoneController.MMDeviceLine.IsEmpty)
+                .Where(x => !MicrophoneController.MicrophoneLine.IsEmpty)
                 .Select(isMuted => (isMuted.Value ? AudioNotification.Off : AudioNotification.On) ?? default(AudioNotificationType).ToString())
                 .Where(notificationToPlay => !string.IsNullOrEmpty(notificationToPlay))
                 .Select(notificationToPlay => Observable.FromAsync(async token =>
                 {
-                    Log.Debug($"Playing notification {notificationToPlay}, volume: {audioNotificationVolume}");
+                    Log.Debug($"Playing notification {notificationToPlay}, volume: {AudioNotificationVolume}");
                     try
                     {
-                        await audioNotificationsManager.PlayNotification(notificationToPlay, audioNotificationVolume, waveOutDeviceSelector.SelectedItem, token);
+                        await audioNotificationsManager.PlayNotification(notificationToPlay, AudioNotificationVolume, waveOutDeviceSelector.SelectedItem, token);
                         Log.Debug($"Played notification {notificationToPlay}");
                     }
                     catch (Exception ex)
@@ -340,43 +327,19 @@ namespace MicSwitch.MainWindow.ViewModels
             await notificationsManager.PlayNotification(notificationToPlay, AudioNotificationVolume);
         }
 
-        public WindowState WindowState
-        {
-            get => windowState;
-            set => this.RaiseAndSetIfChanged(ref windowState, value);
-        }
+        public WindowState WindowState { get; set; }
 
         public bool ShowOverlaySettings => Overlay.OverlayVisibilityMode != OverlayVisibilityMode.Never;
 
-        public Visibility Visibility
-        {
-            get => visibility;
-            set => this.RaiseAndSetIfChanged(ref visibility, value);
-        }
+        public Visibility Visibility { get; set; }
 
-        public bool StartMinimized
-        {
-            get => startMinimized;
-            set => this.RaiseAndSetIfChanged(ref startMinimized, value);
-        }
+        public bool StartMinimized { get; set; }
 
-        public bool MinimizeOnClose
-        {
-            get => minimizeOnClose;
-            set => RaiseAndSetIfChanged(ref minimizeOnClose, value);
-        }
+        public bool MinimizeOnClose { get; set; }
 
-        public Visibility TrayIconVisibility
-        {
-            get => trayIconVisibility;
-            set => this.RaiseAndSetIfChanged(ref trayIconVisibility, value);
-        }
+        public Visibility TrayIconVisibility { get; set; }
 
-        public bool ShowInTaskbar
-        {
-            get => showInTaskbar;
-            set => this.RaiseAndSetIfChanged(ref showInTaskbar, value);
-        }
+        public bool ShowInTaskbar { get; set; }
 
         public string Title { get; }
 
@@ -390,43 +353,19 @@ namespace MicSwitch.MainWindow.ViewModels
         
         public CommandWrapper PlaySoundCommand { get; }
         
-        public string LastOpenedDirectory
-        {
-            get => lastOpenedDirectory;
-            private set => RaiseAndSetIfChanged(ref lastOpenedDirectory, value);
-        }
+        public string LastOpenedDirectory { get; private set; }
 
-        public double Width
-        {
-            get => width;
-            set => RaiseAndSetIfChanged(ref width, value);
-        }
+        public double Width { get; set; }
 
-        public double Height
-        {
-            get => height;
-            set => RaiseAndSetIfChanged(ref height, value);
-        }
+        public double Height { get; set; }
 
-        public double Left
-        {
-            get => left;
-            set => RaiseAndSetIfChanged(ref left, value);
-        }
+        public double Left { get; set; }
 
-        public double Top
-        {
-            get => top;
-            set => RaiseAndSetIfChanged(ref top, value);
-        }
+        public double Top { get; set; }
 
         public TwoStateNotification AudioNotification => audioNotificationSource.Value;
 
-        public float AudioNotificationVolume
-        {
-            get => audioNotificationVolume;
-            set => RaiseAndSetIfChanged(ref audioNotificationVolume, value);
-        }
+        public float AudioNotificationVolume { get; set; }
 
         public IApplicationUpdaterViewModel ApplicationUpdater { get; }
 

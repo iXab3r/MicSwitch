@@ -10,15 +10,7 @@ namespace MicSwitch.MainWindow.ViewModels
         private static readonly ILog Log = LogManager.GetLogger(typeof(HotkeyEditorViewModel));
 
         private readonly IHotkeyConverter hotkeyConverter;
-        private HotkeyGesture alternativeKey;
-        private HotkeyGesture key;
-        private bool suppressKey;
-        private HotkeyConfig properties;
-        private bool ignoreModifiers;
-        private bool hasModifiers;
-        private bool isMouse;
-        private string description;
-
+       
         static HotkeyEditorViewModel()
         {
             Binder
@@ -38,63 +30,30 @@ namespace MicSwitch.MainWindow.ViewModels
             Binder.Attach(this).AddTo(Anchors);
         }
 
-        public bool HasModifiers
-        {
-            get => hasModifiers;
-            private set => RaiseAndSetIfChanged(ref hasModifiers, value);
-        }
+        public bool HasModifiers { get; [UsedImplicitly] private set; }
 
-        public bool IsMouse
-        {
-            get => isMouse;
-            private set => RaiseAndSetIfChanged(ref isMouse, value);
-        }
+        public bool IsMouse { get; [UsedImplicitly] private set; }
 
-        public HotkeyConfig Properties
-        {
-            get => properties;
-            private set => RaiseAndSetIfChanged(ref properties, value);
-        }
+        public HotkeyConfig Properties { get; private set; }
 
-        public HotkeyGesture Key
-        {
-            get => key;
-            set => RaiseAndSetIfChanged(ref key, value);
-        }
-
+        public HotkeyGesture Key { get; set; }
         
-        public string Description
-        {
-            get => description;
-            set => RaiseAndSetIfChanged(ref description, value);
-        }
+        public string Description { get; set; }
         
-        public HotkeyGesture AlternativeKey
-        {
-            get => alternativeKey;
-            set => RaiseAndSetIfChanged(ref alternativeKey, value);
-        }
+        public HotkeyGesture AlternativeKey { get; set; }
 
-        public bool SuppressKey
-        {
-            get => suppressKey;
-            set => RaiseAndSetIfChanged(ref suppressKey, value);
-        }
+        public bool SuppressKey { get; set; }
         
-        public bool IgnoreModifiers
-        {
-            get => ignoreModifiers;
-            set => RaiseAndSetIfChanged(ref ignoreModifiers, value);
-        }
+        public bool IgnoreModifiers { get; set; }
 
         private HotkeyConfig SaveToHotkeyConfig()
         {
             return new()
             {
-                Key = hotkeyConverter.ConvertToString(key ?? HotkeyGesture.Empty),
-                AlternativeKey = hotkeyConverter.ConvertToString(alternativeKey ?? HotkeyGesture.Empty),
-                Suppress = suppressKey,
-                IgnoreModifiers = ignoreModifiers
+                Key = hotkeyConverter.ConvertToString(Key ?? HotkeyGesture.Empty),
+                AlternativeKey = hotkeyConverter.ConvertToString(AlternativeKey ?? HotkeyGesture.Empty),
+                Suppress = SuppressKey,
+                IgnoreModifiers = IgnoreModifiers
             };
         }
 

@@ -98,7 +98,7 @@
                     <st:StackPanel st:AutoGrid.RowHeightOverride="40">
                         <ComboBox st:StackPanel.Fill="Fill"
                                   ItemsSource="{Binding MicrophoneController.Microphones}"
-                                  SelectedItem="{Binding MicrophoneController.MMDeviceLine}"
+                                  SelectedItem="{Binding MicrophoneController.MicrophoneLine}"
                                   DisplayMemberPath="Name"
                                   ToolTip="Microphone line"/>
                     </st:StackPanel>

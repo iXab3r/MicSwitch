@@ -2,9 +2,9 @@ using PoeShared.Audio.Models;
 
 namespace MicSwitch.Services
 {
-    internal interface IMicrophoneController : IDisposableReactiveObject
+    internal interface IMMDeviceController : IDisposableReactiveObject
     {
-        MMDeviceLineData LineId { get; }
+        MMDeviceId LineId { get; }
 
         bool? Mute { get; set; }
 

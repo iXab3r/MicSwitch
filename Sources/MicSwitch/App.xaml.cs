@@ -25,7 +25,7 @@ namespace MicSwitch
             Container.AddNewExtensionIfNotExists<UpdaterRegistrations>();
             
             Container.RegisterType<IHotkeyEditorViewModel, HotkeyEditorViewModel>()
-                     .RegisterSingleton<IMicrophoneControllerEx, ComplexMicrophoneController>()
+                     .RegisterSingleton<IMMDeviceControllerEx, ComplexMMDeviceController>()
                      .RegisterSingleton<IMicSwitchOverlayViewModel, MicSwitchOverlayViewModel>()
                      .RegisterSingleton<IComplexHotkeyTracker, ComplexHotkeyTracker>()
                      .RegisterSingleton<IMicrophoneControllerViewModel, MicrophoneControllerViewModel>()

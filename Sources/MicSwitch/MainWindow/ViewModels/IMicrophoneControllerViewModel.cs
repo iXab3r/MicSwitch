@@ -5,7 +5,7 @@ namespace MicSwitch.MainWindow.ViewModels
 {
     internal interface IMicrophoneControllerViewModel : IDisposableReactiveObject
     {
-        ReadOnlyObservableCollection<MMDeviceLineData> Microphones { get; }
+        ReadOnlyObservableCollection<MMDeviceId> Microphones { get; }
         
         MuteMode MuteMode { get; set; }
         
@@ -37,7 +37,7 @@ namespace MicSwitch.MainWindow.ViewModels
         
         bool MicrophoneMuted { get; }
         
-        MMDeviceLineData MMDeviceLine { get; set; }
+        MMDeviceId MicrophoneLine { get; set; }
         
         double MicrophoneVolume { get; set; }
         
