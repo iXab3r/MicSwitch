@@ -10,21 +10,27 @@ namespace MicSwitch.MainWindow.ViewModels
 {
     internal sealed class MicSwitchOverlayViewModel : OverlayViewModelBase, IMicSwitchOverlayViewModel
     {
+        private static readonly Binder<MicSwitchOverlayViewModel> Binder = new();
         private static readonly TimeSpan ConfigThrottlingTimeout = TimeSpan.FromMilliseconds(250);
+        
         private readonly IConfigProvider<MicSwitchOverlayConfig> configProvider;
         private readonly IImageProvider imageProvider;
         private readonly IOverlayWindowController overlayWindowController;
-        private readonly IMMDeviceControllerEx immDeviceController;
+
+        static MicSwitchOverlayViewModel()
+        {
+            Binder.BindIf(x => x.MicrophoneDeviceController != null && x.MicrophoneDeviceController.Mute.HasValue, x => x.MicrophoneDeviceController.Mute.Value)
+                .Else(x => false)
+                .To(x => x.MicrophoneMute);
+        }
 
         public MicSwitchOverlayViewModel(
             IOverlayWindowController overlayWindowController,
-            IMMDeviceControllerEx immDeviceController,
             IConfigProvider<MicSwitchOverlayConfig> configProvider,
             IImageProvider imageProvider,
             [Dependency(WellKnownSchedulers.UI)] IScheduler uiScheduler)
         {
             this.overlayWindowController = overlayWindowController;
-            this.immDeviceController = immDeviceController;
             this.configProvider = configProvider;
             this.imageProvider = imageProvider;
             OverlayMode = OverlayMode.Transparent;
@@ -43,7 +49,6 @@ namespace MicSwitch.MainWindow.ViewModels
                 .AddTo(Anchors);
 
             this.RaiseWhenSourceValue(x => x.IsEnabled, overlayWindowController, x => x.IsEnabled).AddTo(Anchors);
-            this.RaiseWhenSourceValue(x => x.Mute, immDeviceController, x => x.Mute, uiScheduler).AddTo(Anchors);
             this.RaiseWhenSourceValue(x => x.MicrophoneImage, imageProvider, x => x.MicrophoneImage, uiScheduler).AddTo(Anchors);
             
             ToggleLockStateCommand = CommandWrapper.Create(
@@ -74,15 +79,15 @@ namespace MicSwitch.MainWindow.ViewModels
                 .SubscribeSafe(x => x.LogWndProc("MicOverlay").AddTo(Anchors), Log.HandleUiException)
                 .AddTo(Anchors);
 
-            this.WhenAnyValue(x => x.OverlayVisibilityMode, x => x.Mute)
+            this.WhenAnyValue(x => x.OverlayVisibilityMode, x => x.MicrophoneMute)
                 .Select(_ =>
                 {
                     return OverlayVisibilityMode switch
                     {
                         OverlayVisibilityMode.Always => true,
                         OverlayVisibilityMode.Never => false,
-                        OverlayVisibilityMode.WhenMuted => Mute,
-                        OverlayVisibilityMode.WhenUnmuted => !Mute,
+                        OverlayVisibilityMode.WhenMuted => MicrophoneMute,
+                        OverlayVisibilityMode.WhenUnmuted => !MicrophoneMute,
                         _ => throw new ArgumentOutOfRangeException(nameof(OverlayVisibilityMode), OverlayVisibilityMode, "Unknown visibility mode")
                     };
                 })
@@ -114,6 +119,8 @@ namespace MicSwitch.MainWindow.ViewModels
                         .AddTo(Anchors);
                 }, Log.HandleUiException)
                 .AddTo(Anchors);
+            
+            Binder.Attach(this).AddTo(Anchors);
         }
 
         public bool IsEnabled
@@ -122,9 +129,11 @@ namespace MicSwitch.MainWindow.ViewModels
             set => overlayWindowController.IsEnabled = value;
         }
 
-        public bool Mute => immDeviceController.Mute ?? false;
+        public bool MicrophoneMute { get; [UsedImplicitly] private set; }
 
         public OverlayVisibilityMode OverlayVisibilityMode { get; set; }
+        public IMMDeviceController MicrophoneDeviceController { get; set; }
+        public IMMDeviceController OutputDeviceController { get; set; }
 
         public ImageSource MicrophoneImage => imageProvider.MicrophoneImage;
 
@@ -140,7 +149,7 @@ namespace MicSwitch.MainWindow.ViewModels
 
         private void LoadConfig(MicSwitchOverlayConfig config)
         {
-            base.ApplyConfig(config);
+            ApplyConfig(config);
             OverlayVisibilityMode = config.OverlayVisibilityMode;
         }
     }

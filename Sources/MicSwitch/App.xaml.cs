@@ -15,7 +15,7 @@ namespace MicSwitch
     /// <summary>
     ///     Interaction logic for App.xaml
     /// </summary>
-    [SupportedOSPlatform("windows")]
+    [SupportedOSPlatform("Windows10.0.20348.0")]
     public partial class App : ApplicationBase
     {
         public readonly TimeSpan StartupTimeout = TimeSpan.FromSeconds(10);
@@ -23,17 +23,21 @@ namespace MicSwitch
         private void InitializeContainer()
         {
             Container.AddNewExtensionIfNotExists<UpdaterRegistrations>();
-            
-            Container.RegisterType<IHotkeyEditorViewModel, HotkeyEditorViewModel>()
-                     .RegisterSingleton<IMMDeviceControllerEx, ComplexMMDeviceController>()
-                     .RegisterSingleton<IMicSwitchOverlayViewModel, MicSwitchOverlayViewModel>()
-                     .RegisterSingleton<IComplexHotkeyTracker, ComplexHotkeyTracker>()
-                     .RegisterSingleton<IMicrophoneControllerViewModel, MicrophoneControllerViewModel>()
-                     .RegisterSingleton<IMainWindowViewModel, MainWindowViewModel>()
-                     .RegisterSingleton<IImageProvider, ImageProvider>()
-                     .RegisterSingleton<IConfigProvider, ConfigProviderFromFile>();
+
+            Container
+                .RegisterSingleton<IOutputControllerViewModel, OutputControllerViewModel>()
+                .RegisterSingleton<IMicSwitchOverlayViewModel, MicSwitchOverlayViewModel>()
+                .RegisterSingleton<IComplexHotkeyTracker, ComplexHotkeyTracker>()
+                .RegisterSingleton<IMicrophoneControllerViewModel, MicrophoneControllerViewModel>()
+                .RegisterSingleton<IMainWindowViewModel, MainWindowViewModel>()
+                .RegisterSingleton<IImageProvider, ImageProvider>()
+                .RegisterSingleton<IConfigProvider, ConfigProviderFromFile>();
+
+            Container
+                .RegisterType<IMMDeviceControllerEx, ComplexMMDeviceController>()
+                .RegisterType<IHotkeyEditorViewModel, HotkeyEditorViewModel>();
         }
-        
+
         private void InitializeUpdateSettings()
         {
             var updateSourceProvider = Container.Resolve<IUpdateSourceProvider>();
@@ -110,7 +114,7 @@ namespace MicSwitch
             Log.Debug(() => $"Resolved squirrel events handler: {squirrelEventsHandler}");
 
             SingleInstanceValidationRoutine(true);
-            
+
             var configProvider = Container.Resolve<IConfigProvider>();
             if (configProvider is ConfigProviderFromFile fromFile)
             {
@@ -119,10 +123,11 @@ namespace MicSwitch
                 fromFile.RegisterStrategy(defaultConfigProviderStrategy);
                 fromFile.Reload();
             }
+
             Log.Debug("Initial configuration loaded");
-            
+
             InitializeUpdateSettings();
-            
+
             sw.Step("Actualizing configuration format");
             Log.Debug("Initializing config provider");
             var hotkeyConfigProvider = Container.Resolve<IConfigProvider<MicSwitchHotkeyConfig>>();
@@ -131,16 +136,16 @@ namespace MicSwitch
             ActualizeConfig(mainConfigProvider, hotkeyConfigProvider);
             ActualizeConfig(mainConfigProvider, overlayConfigProvider);
             ActualizeConfig(mainConfigProvider);
-            
+
             sw.Step("Registering overlay");
             var overlayController = Container.Resolve<IOverlayWindowController>(WellKnownWindows.AllWindows);
             var overlayViewModelFactory = Container.Resolve<IFactory<IMicSwitchOverlayViewModel, IOverlayWindowController>>();
             var overlayViewModel = overlayViewModelFactory.Create(overlayController).AddTo(Anchors);
-            
+
             var mainWindow = Container.Resolve<MainWindow.Views.MainWindow>();
             Current.MainWindow = mainWindow;
             sw.Step($"Main window view initialized");
-            
+
             var viewController = new WindowViewController(mainWindow);
             var mainWindowViewModel = Container.Resolve<IMainWindowViewModel>(
                 new DependencyOverride<IWindowViewController>(viewController),
@@ -166,10 +171,11 @@ namespace MicSwitch
                 };
                 config.Notification = null;
             }
+
             mainConfigProvider.Save(config);
             Log.Debug("Config format updated successfully");
         }
-        
+
         private void ActualizeConfig(IConfigProvider<MicSwitchConfig> mainConfigProvider, IConfigProvider<MicSwitchHotkeyConfig> hotkeyConfigProvider)
         {
             Log.Debug($"Actualizing configuration format of {hotkeyConfigProvider}");
@@ -179,9 +185,9 @@ namespace MicSwitch
             {
                 Log.Debug("Main configuration is up-to-date");
                 return;
-            } 
-            
-            Log.Warn($"Main configuration is obsolete, converting to a newer format: { new { mainConfig.MicrophoneHotkey, mainConfig.MicrophoneHotkeyAlt, mainConfig.SuppressHotkey } }");
+            }
+
+            Log.Warn($"Main configuration is obsolete, converting to a newer format: {new {mainConfig.MicrophoneHotkey, mainConfig.MicrophoneHotkeyAlt, mainConfig.SuppressHotkey}}");
             var config = hotkeyConfigProvider.ActualConfig.CloneJson();
             config.Hotkey = new HotkeyConfig()
             {
@@ -193,8 +199,9 @@ namespace MicSwitch
             {
                 config.MuteMode = mainConfig.MuteMode.Value;
             }
+
             hotkeyConfigProvider.Save(config);
-            
+
             mainConfig.MicrophoneHotkey = null;
             mainConfig.MicrophoneHotkeyAlt = null;
             mainConfig.SuppressHotkey = null;
@@ -202,7 +209,7 @@ namespace MicSwitch
             mainConfigProvider.Save(mainConfig);
             Log.Debug("Config format updated successfully");
         }
-        
+
         private void ActualizeConfig(IConfigProvider<MicSwitchConfig> mainConfigProvider, IConfigProvider<MicSwitchOverlayConfig> overlayConfigProvider)
         {
             Log.Debug($"Actualizing configuration format of {overlayConfigProvider}");
@@ -214,30 +221,35 @@ namespace MicSwitch
                 return;
             }
 
-            Log.Warn($"Main configuration is obsolete, converting to a newer format: { new { mainConfig.OverlayBounds, mainConfig.OverlayEnabled } }");
+            Log.Warn($"Main configuration is obsolete, converting to a newer format: {new {mainConfig.OverlayBounds, mainConfig.OverlayEnabled}}");
             var config = overlayConfigProvider.ActualConfig.CloneJson();
             if (mainConfig.OverlayBounds != null)
             {
                 config.OverlayBounds = mainConfig.OverlayBounds.Value;
             }
+
             if (mainConfig.OverlayEnabled != null)
             {
                 config.OverlayVisibilityMode = mainConfig.OverlayEnabled == false ? OverlayVisibilityMode.Never : OverlayVisibilityMode.Always;
             }
+
             if (mainConfig.OverlayOpacity != null)
             {
                 config.OverlayOpacity = mainConfig.OverlayOpacity.Value;
             }
+
             if (mainConfig.MicrophoneIcon != null)
             {
                 config.MicrophoneIcon = mainConfig.MicrophoneIcon;
             }
+
             if (mainConfig.MutedMicrophoneIcon != null)
             {
                 config.MutedMicrophoneIcon = mainConfig.MutedMicrophoneIcon;
             }
+
             overlayConfigProvider.Save(config);
-            
+
             mainConfig.OverlayBounds = null;
             mainConfig.OverlayEnabled = null;
             mainConfig.OverlayOpacity = null;

@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Media;
+using MicSwitch.Services;
 
 namespace MicSwitch.MainWindow.Models
 {
@@ -12,5 +13,6 @@ namespace MicSwitch.MainWindow.Models
         ImageSource StreamingMicrophoneImage { get; }
         ImageSource MutedMicrophoneImage { get; }
         
+        IMMDeviceController MicrophoneDeviceController { get; set; }
     }
 }

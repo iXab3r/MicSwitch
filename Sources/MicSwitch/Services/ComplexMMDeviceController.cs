@@ -11,19 +11,19 @@ namespace MicSwitch.Services
 
         public ComplexMMDeviceController(
             IFactory<MultimediaDeviceController, IMMDeviceProvider> multimediaControllerFactory,
-            IMMDeviceProvider mmDeviceProvider)
+            IMMDeviceProvider deviceProvider)
         {
-            devices = mmDeviceProvider
-                .Microphones
+            devices = deviceProvider
+                .Devices
                 .ToObservableChangeSet()
                 .Filter(x => x.LineId != MMDeviceId.All.LineId)
                 .Transform(x =>
                 {
-                    var multimediaLine = multimediaControllerFactory.Create(mmDeviceProvider);
+                    var multimediaLine = multimediaControllerFactory.Create(deviceProvider);
                     multimediaLine.LineId = x;
                     return (IMMDeviceController) multimediaLine;
                 })
-                .Bind(out var sources)
+                .BindToCollection(out var sources)
                 .AddKey(x => x.LineId)
                 .AsObservableCache();
 
@@ -45,11 +45,11 @@ namespace MicSwitch.Services
 
             this.WhenAnyValue(x => x.ActiveController)
                 .Select(x => x?.LineId.LineId == MMDeviceId.All.LineId
-                    ? sources.ToObservableChangeSet().OnItemAdded(newMicrophone =>
+                    ? sources.ToObservableChangeSet().OnItemAdded(newDevice =>
                     {
-                        Log.Debug($"New microphone {newMicrophone.LineId} detected in All microphones mode, assigning following parameters: {new {Mute, VolumePercent}}");
-                        newMicrophone.Mute = Mute;
-                        newMicrophone.VolumePercent = VolumePercent;
+                        Log.Debug($"New device {newDevice.LineId} detected in All devices mode, assigning following parameters: {new {Mute, VolumePercent}}");
+                        newDevice.Mute = Mute;
+                        newDevice.VolumePercent = VolumePercent;
                     })
                     : Observable.Empty<IChangeSet>())
                 .Switch()

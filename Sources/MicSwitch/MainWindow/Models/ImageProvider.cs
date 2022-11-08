@@ -15,16 +15,15 @@ namespace MicSwitch.MainWindow.Models
         private readonly BitmapImage defaultMutedMicrophoneImage = new BitmapImage(new Uri("pack://application:,,,/Resources/microphoneDisabled.ico", UriKind.RelativeOrAbsolute));
 
         public ImageProvider(
-            [NotNull] IMMDeviceControllerEx immDeviceController,
             [NotNull] IConfigProvider<MicSwitchOverlayConfig> configProvider,
             [NotNull] [Dependency(WellKnownSchedulers.UI)] IScheduler uiScheduler)
         {
             Observable.Merge(
-                    immDeviceController.WhenAnyValue(x => x.Mute).ToUnit(),
+                    this.WhenAnyValue(x => x.MicrophoneDeviceController.Mute).ToUnit(),
                     this.WhenAnyValue(x => x.StreamingMicrophoneImage).ToUnit(),
                     this.WhenAnyValue(x => x.MutedMicrophoneImage).ToUnit())
                 .ObserveOn(uiScheduler)
-                .Select(x => immDeviceController.Mute ?? false ? MutedMicrophoneImage : StreamingMicrophoneImage)
+                .Select(x => MicrophoneDeviceController?.Mute ?? false ? MutedMicrophoneImage : StreamingMicrophoneImage)
                 .SubscribeSafe(x => MicrophoneImage = x, Log.HandleUiException)
                 .AddTo(Anchors);
 
@@ -55,5 +54,7 @@ namespace MicSwitch.MainWindow.Models
         public ImageSource MutedMicrophoneImage { get; private set; }
 
         public Icon MicrophoneImageAsIcon { get; private set; }
+        
+        public IMMDeviceController MicrophoneDeviceController { get; set; }
     }
 }

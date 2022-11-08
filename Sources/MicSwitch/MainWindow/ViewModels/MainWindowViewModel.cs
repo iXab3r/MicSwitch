@@ -35,13 +35,23 @@ namespace MicSwitch.MainWindow.ViewModels
         private readonly IAppArguments appArguments;
         private readonly IApplicationAccessor applicationAccessor;
         private readonly ObservableAsPropertyHelper<TwoStateNotification> audioNotificationSource;
+
+        private static readonly Binder<MainWindowViewModel> Binder = new();
+
+        static MainWindowViewModel()
+        {
+            Binder.Bind(x => x.MicrophoneController.Controller).To(x => x.Overlay.MicrophoneDeviceController);
+            Binder.Bind(x => x.OutputController.Controller).To(x => x.Overlay.OutputDeviceController);
+            Binder.Bind(x => x.MicrophoneController.Controller).To(x => x.ImageProvider.MicrophoneDeviceController);
+        }
         
         public MainWindowViewModel(
             IAppArguments appArguments,
             IApplicationAccessor applicationAccessor,
             IFactory<IStartupManager, StartupManagerArgs> startupManagerFactory,
             IMicSwitchOverlayViewModel overlay,
-            IMicrophoneControllerViewModel microphoneControllerViewModel,
+            IMicrophoneControllerViewModel microphoneController,
+            IOutputControllerViewModel outputController,
             IOverlayWindowController overlayWindowController,
             IWaveOutDeviceSelectorViewModel waveOutDeviceSelector,
             IAudioNotificationsManager audioNotificationsManager,
@@ -61,14 +71,16 @@ namespace MicSwitch.MainWindow.ViewModels
 
             this.appArguments = appArguments;
             this.applicationAccessor = applicationAccessor;
-            this.MicrophoneController = microphoneControllerViewModel.AddTo(Anchors);
             this.mainWindowTracker = mainWindowTracker;
             this.configProvider = configProvider;
             this.overlayConfigProvider = overlayConfigProvider;
             this.notificationsManager = notificationsManager;
             this.viewController = viewController;
             this.rng = rng;
+
+            MicrophoneController = microphoneController.AddTo(Anchors);
             ApplicationUpdater = appUpdater.AddTo(Anchors);
+            OutputController = outputController;
             WaveOutDeviceSelector = waveOutDeviceSelector;
             ImageProvider = imageProvider;
             ErrorMonitor = errorMonitor;
@@ -76,7 +88,7 @@ namespace MicSwitch.MainWindow.ViewModels
             AudioSelectorWhenUnmuted = audioSelectorFactory.Create().AddTo(Anchors);
             WindowState = WindowState.Minimized;
             Overlay = overlay.AddTo(Anchors);
-            
+
             try
             {
                 var startupManagerArgs = new StartupManagerArgs
@@ -116,9 +128,9 @@ namespace MicSwitch.MainWindow.ViewModels
                 })
                 .AddTo(Anchors);
             
-            MicrophoneController.ObservableForProperty(x => x.MicrophoneMuted, skipInitial: true)
+            MicrophoneController.ObservableForProperty(x => x.Mute, skipInitial: true)
                 .DistinctUntilChanged()
-                .Where(x => !MicrophoneController.MicrophoneLine.IsEmpty)
+                .Where(x => !MicrophoneController.DeviceId.IsEmpty)
                 .Select(isMuted => (isMuted.Value ? AudioNotification.Off : AudioNotification.On) ?? default(AudioNotificationType).ToString())
                 .Where(notificationToPlay => !string.IsNullOrEmpty(notificationToPlay))
                 .Select(notificationToPlay => Observable.FromAsync(async token =>
@@ -207,7 +219,7 @@ namespace MicSwitch.MainWindow.ViewModels
                 .AddTo(Anchors);
 
             Observable.Merge(
-                    microphoneControllerViewModel.ObservableForProperty(x => x.MuteMode, skipInitial: true).ToUnit(),
+                    microphoneController.ObservableForProperty(x => x.MuteMode, skipInitial: true).ToUnit(),
                     waveOutDeviceSelector.ObservableForProperty(x => x.SelectedItem, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.AudioNotification, skipInitial: true).ToUnit(),
                     this.ObservableForProperty(x => x.MinimizeOnClose, skipInitial: true).ToUnit(),
@@ -277,6 +289,8 @@ namespace MicSwitch.MainWindow.ViewModels
                 accent: SwatchHelper.Lookup[(MaterialDesignColor) SecondaryColor.LightBlue]);
             var paletteHelper = new PaletteHelper();
             paletteHelper.SetTheme(theme);
+            
+            Binder.Attach(this).AddTo(Anchors);
         }
 
         public bool IsElevated => appArguments.IsElevated;
@@ -343,6 +357,8 @@ namespace MicSwitch.MainWindow.ViewModels
 
         public string Title { get; }
 
+        public IOutputControllerViewModel OutputController { get; }
+        
         public IWaveOutDeviceSelectorViewModel WaveOutDeviceSelector { get; }
         
         public IImageProvider ImageProvider { get; }

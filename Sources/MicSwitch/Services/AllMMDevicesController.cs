@@ -7,9 +7,9 @@ namespace MicSwitch.Services
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(AllMMDevicesController));
 
-        private readonly ReadOnlyObservableCollection<IMMDeviceController> devices;
+        private readonly IReadOnlyObservableCollection<IMMDeviceController> devices;
 
-        public AllMMDevicesController(ReadOnlyObservableCollection<IMMDeviceController> devices)
+        public AllMMDevicesController(IReadOnlyObservableCollection<IMMDeviceController> devices)
         {
             this.devices = devices;
             LineId = MMDeviceId.All;
