@@ -18,15 +18,8 @@ namespace MicSwitch.Modularity
         
         public HotkeyConfig HotkeyForPushToMute { get; set; }
         
-        public HotkeyConfig HotkeyForOutputMute { get; set; }
-        
-        public HotkeyConfig HotkeyForOutputVolumeDown { get; set; }
-        
-        public HotkeyConfig HotkeyForOutputVolumeUp { get; set; }
-        
         public bool EnableAdvancedHotkeys { get; set; }
         
-        public bool EnableOutputVolumeControl { get; set; }
 
         public MicrophoneState InitialMicrophoneState { get; set; } = MicrophoneState.Any;
         

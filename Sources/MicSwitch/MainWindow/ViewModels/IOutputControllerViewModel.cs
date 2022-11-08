@@ -2,7 +2,9 @@ namespace MicSwitch.MainWindow.ViewModels;
 
 internal interface IOutputControllerViewModel : IMediaController
 {
-    IHotkeyEditorViewModel HotkeyOutputMute { get; }
-    IHotkeyEditorViewModel HotkeyOutputVolumeUp { get; }
-    IHotkeyEditorViewModel HotkeyOutputVolumeDown { get; }
+    public IHotkeyEditorViewModel HotkeyToggleMute { get; }
+    public IHotkeyEditorViewModel HotkeyMute { get; }
+    public IHotkeyEditorViewModel HotkeyUnmute { get; }
+    public IHotkeyEditorViewModel HotkeyVolumeUp { get; }
+    public IHotkeyEditorViewModel HotkeyVolumeDown { get; }
 }

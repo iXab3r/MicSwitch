@@ -28,10 +28,10 @@ namespace MicSwitch.MainWindow.ViewModels
                 .Else(x => default)
                 .To(x => x.OutputVolume);
             Binder.BindIf(x => x.OutputDeviceController != null && x.OutputDeviceController.Mute == true, x => PackIconKind.VolumeMute)
-                .ElseIf(x => x.OutputVolume == 0, x => PackIconKind.VolumeOff)
-                .ElseIf(x => x.OutputVolume > 0.25, x => PackIconKind.VolumeLow)
-                .ElseIf(x => x.OutputVolume > 0.5, x => PackIconKind.VolumeMedium)
-                .ElseIf(x => x.OutputVolume > 0.75, x => PackIconKind.VolumeHigh)
+                .ElseIf(x => x.OutputVolume <= 0, x => PackIconKind.VolumeOff)
+                .ElseIf(x => x.OutputVolume <= 0.33, x => PackIconKind.VolumeLow)
+                .ElseIf(x => x.OutputVolume <= 0.66, x => PackIconKind.VolumeMedium)
+                .ElseIf(x => x.OutputVolume > 0.66, x => PackIconKind.VolumeHigh)
                 .Else(x => PackIconKind.None)
                 .To(x => x.OutputVolumeKind);
         }
@@ -132,6 +132,16 @@ namespace MicSwitch.MainWindow.ViewModels
                 }, Log.HandleUiException)
                 .AddTo(Anchors);
             
+            var showOutputIconSource = this.WhenAnyValue(x => x.OutputDeviceController.VolumePercent, x => x.OutputDeviceController.Mute);
+
+            showOutputIconSource.Subscribe(_ => ShowOutputIcon = true).AddTo(Anchors);
+
+            Observable.Merge(
+                    showOutputIconSource.Select(x => Observable.Timer(TimeSpan.FromSeconds(2))).Switch().ToUnit(),
+                    this.WhenAnyValue(x => x.MicrophoneMute).ToUnit())
+                .Subscribe(_ => ShowOutputIcon = false)
+                .AddTo(Anchors);
+            
             Binder.Attach(this).AddTo(Anchors);
         }
 
@@ -143,6 +153,8 @@ namespace MicSwitch.MainWindow.ViewModels
             get => overlayWindowController.IsEnabled;
             set => overlayWindowController.IsEnabled = value;
         }
+        
+        public bool ShowOutputIcon { get; private set; }
 
         public bool MicrophoneMute { get; [UsedImplicitly] private set; }
 

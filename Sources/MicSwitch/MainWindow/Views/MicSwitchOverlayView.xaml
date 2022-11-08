@@ -20,7 +20,7 @@
                 <Grid.InputBindings>
                     <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding ToggleLockStateCommand}" />
                 </Grid.InputBindings>
-                
+
                 <materialDesign:PopupEx
                     x:Name="SettingsPopup"
                     PlacementTarget="{Binding ElementName=OverlayMainPanel}"
@@ -47,25 +47,28 @@
                                         Margin="5,0"
                                         Maximum="1" />
                             </DockPanel>
-                            <eye:ButtonEx Content="Lock overlay" 
+                            <eye:ButtonEx Content="Lock overlay"
                                           Foreground="{StaticResource OverlayForegroundBrushKey}"
-                                          Command="{Binding LockWindowCommand}"/>
+                                          Command="{Binding LockWindowCommand}" />
                         </st:StackPanel>
                     </Border>
                 </materialDesign:PopupEx>
             </Grid>
             <Grid Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Top" IsHitTestVisible="False"
                   Opacity="{Binding Opacity}">
-                <Viewbox Visibility="Hidden">
+                <Viewbox x:Name="MicrophoneIcon">
                     <Image
                         RenderOptions.BitmapScalingMode="Fant"
                         gif:ImageBehavior.RepeatBehavior="Forever"
                         gif:ImageBehavior.AnimatedSource="{Binding MicrophoneImage}" />
                 </Viewbox>
-                <materialDesign:PackIcon Kind="{Binding OutputVolumeKind}" Margin="2" Width="NaN" Height="NaN"/>
-                <ProgressBar Value="{Binding OutputVolume, Mode=OneWay}" Minimum="0" Maximum="1"
-                             Width="NaN" Height="NaN" FlowDirection="RightToLeft"
-                             Style="{StaticResource MaterialDesignCircularProgressBar}"/>
+
+                <Grid x:Name="OutputIcon">
+                    <materialDesign:PackIcon Kind="{Binding OutputVolumeKind}" Margin="2" Width="NaN" Height="NaN" />
+                    <ProgressBar Value="{Binding OutputVolume, Mode=OneWay}" Minimum="0" Maximum="1"
+                                 Width="NaN" Height="NaN" FlowDirection="RightToLeft"
+                                 Style="{StaticResource MaterialDesignCircularProgressBar}" />
+                </Grid>
             </Grid>
             <Grid Grid.Row="1" DockPanel.Dock="Bottom"
                   Visibility="{Binding IsLocked, Converter={StaticResource TrueToHiddenFalseToVisibleConverter}}">
@@ -74,5 +77,54 @@
                         eye:EnableDragHelper.EnableDrag="True" />
             </Grid>
         </Grid>
+
+        <DataTemplate.Triggers>
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding ShowOutputIcon}" Value="True" />
+                </MultiDataTrigger.Conditions>
+                <MultiDataTrigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation
+                                Storyboard.TargetName="MicrophoneIcon"
+                                Storyboard.TargetProperty="Opacity"
+                                AutoReverse="False"
+                                From="1"
+                                To="0"
+                                Duration="0:0:0.3" />
+                            <DoubleAnimation
+                                Storyboard.TargetName="OutputIcon"
+                                Storyboard.TargetProperty="Opacity"
+                                AutoReverse="False"
+                                From="0"
+                                To="1"
+                                Duration="0:0:0.45" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </MultiDataTrigger.EnterActions>
+                
+                <MultiDataTrigger.ExitActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation
+                                Storyboard.TargetName="MicrophoneIcon"
+                                Storyboard.TargetProperty="Opacity"
+                                AutoReverse="False"
+                                From="0"
+                                To="1"
+                                Duration="0:0:0.3" />
+                            <DoubleAnimation
+                                Storyboard.TargetName="OutputIcon"
+                                Storyboard.TargetProperty="Opacity"
+                                AutoReverse="False"
+                                From="1"
+                                To="0"
+                                Duration="0:0:0.45" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </MultiDataTrigger.ExitActions>
+            </MultiDataTrigger>
+        </DataTemplate.Triggers>
     </DataTemplate>
 </eye:SharedResourceDictionary>

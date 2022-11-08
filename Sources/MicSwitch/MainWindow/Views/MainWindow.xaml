@@ -197,48 +197,7 @@
                     </st:StackPanel>
 
                     <Separator Grid.ColumnSpan="2" />
-                    <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Volume control:" />
-                    <CheckBox
-                        HorizontalAlignment="Left"
-                        ToolTip="Enable output devices volume control"
-                        IsChecked="{Binding OutputController.IsEnabled, Mode=TwoWay}" />
-
-                    <st:AutoGrid RowHeightOverride="Auto"
-                                 Margin="0"
-                                 ColumnSpan="2"
-                                 Columns="120,*" ChildMargin="5" RowHeight="50"
-                                 Visibility="{Binding OutputController.IsEnabled, Converter={StaticResource TrueToVisibleFalseToCollapsedConverter}}">
-                        <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Output device:" />
-                        <ComboBox st:StackPanel.Fill="Fill"
-                                  ItemsSource="{Binding OutputController.Devices}"
-                                  SelectedItem="{Binding OutputController.DeviceId}"
-                                  DisplayMemberPath="Name"
-                                  ToolTip="Output device"/>
-                        <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Output volume:" />
-                        <st:StackPanel VerticalAlignment="Center">
-                            <Slider Width="160"
-                                    Value="{Binding OutputController.Volume}"
-                                    Minimum="0" Maximum="1"
-                                    Margin="0,2,5,0"
-                                    TickFrequency="0.05"
-                                    ToolTip="Volume"/>
-                            <TextBlock
-                                MinWidth="45">
-                                <TextBlock.Text>
-                                    <Binding Path="OutputController.Volume" StringFormat="{}{0:F1}%" Converter="{StaticResource DoubleToPercentConverter}" />
-                                </TextBlock.Text>
-                            </TextBlock>
-                        </st:StackPanel>
-                        <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="for Mute:" />
-                        <ContentControl Content="{Binding OutputController.HotkeyOutputMute}" />
-                        <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="for Volume Up:" />
-                        <ContentControl Content="{Binding OutputController.HotkeyOutputVolumeUp}" />
-                        <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="for Volume Down:" />
-                        <ContentControl Content="{Binding OutputController.HotkeyOutputVolumeDown}" />
-                    </st:AutoGrid>
-
-                    <Separator Grid.ColumnSpan="2" />
-
+                    
                     <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Show overlay:" />
                     <st:StackPanel>
                         <RadioButton
@@ -370,6 +329,52 @@
 
                         <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="for Push-to-Mute:" />
                         <ContentControl Content="{Binding MicrophoneController.HotkeyPushToMute}" />
+                    </st:AutoGrid>
+
+                    <Separator Grid.ColumnSpan="2" />
+                    
+                    <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Volume control:" />
+                    <CheckBox
+                        HorizontalAlignment="Left"
+                        ToolTip="Enable output devices volume control"
+                        IsChecked="{Binding OutputController.IsEnabled, Mode=TwoWay}" />
+
+                    <st:AutoGrid RowHeightOverride="Auto"
+                                 Margin="0"
+                                 ColumnSpan="2"
+                                 Columns="120,*" ChildMargin="5" RowHeight="50"
+                                 Visibility="{Binding OutputController.IsEnabled, Converter={StaticResource TrueToVisibleFalseToCollapsedConverter}}">
+                        <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Output device:" />
+                        <ComboBox st:StackPanel.Fill="Fill"
+                                  ItemsSource="{Binding OutputController.Devices}"
+                                  SelectedItem="{Binding OutputController.DeviceId}"
+                                  DisplayMemberPath="Name"
+                                  ToolTip="Output device"/>
+                        <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Output volume:" />
+                        <st:StackPanel VerticalAlignment="Center">
+                            <Slider Width="160"
+                                    Value="{Binding OutputController.Volume}"
+                                    Minimum="0" Maximum="1"
+                                    Margin="0,2,5,0"
+                                    TickFrequency="0.05"
+                                    ToolTip="Volume"/>
+                            <TextBlock
+                                MinWidth="45">
+                                <TextBlock.Text>
+                                    <Binding Path="OutputController.Volume" StringFormat="{}{0:F1}%" Converter="{StaticResource DoubleToPercentConverter}" />
+                                </TextBlock.Text>
+                            </TextBlock>
+                        </st:StackPanel>
+                        <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="for Toggle:" />
+                        <ContentControl Content="{Binding OutputController.HotkeyToggleMute}" />
+                        <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="for Mute:" />
+                        <ContentControl Content="{Binding OutputController.HotkeyMute}" />
+                        <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="for Un-mute:" />
+                        <ContentControl Content="{Binding OutputController.HotkeyUnmute}" />
+                        <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="for Volume Up:" />
+                        <ContentControl Content="{Binding OutputController.HotkeyVolumeUp}" />
+                        <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="for Volume Down:" />
+                        <ContentControl Content="{Binding OutputController.HotkeyVolumeDown}" />
                     </st:AutoGrid>
 
                     <Separator Grid.ColumnSpan="2" />
