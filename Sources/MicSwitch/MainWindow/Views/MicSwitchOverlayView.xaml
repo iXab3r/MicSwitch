@@ -56,19 +56,18 @@
             </Grid>
             <Grid Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Top" IsHitTestVisible="False"
                   Opacity="{Binding Opacity}">
-                <Viewbox x:Name="MicrophoneIcon">
-                    <Image
-                        RenderOptions.BitmapScalingMode="Fant"
-                        gif:ImageBehavior.RepeatBehavior="Forever"
-                        gif:ImageBehavior.AnimatedSource="{Binding MicrophoneImage}" />
-                </Viewbox>
-
                 <Grid x:Name="OutputIcon">
                     <materialDesign:PackIcon Kind="{Binding OutputVolumeKind}" Margin="2" Width="NaN" Height="NaN" />
                     <ProgressBar Value="{Binding OutputVolume, Mode=OneWay}" Minimum="0" Maximum="1"
                                  Width="NaN" Height="NaN" FlowDirection="RightToLeft"
                                  Style="{StaticResource MaterialDesignCircularProgressBar}" />
                 </Grid>
+                <Viewbox x:Name="MicrophoneIcon">
+                    <Image
+                        RenderOptions.BitmapScalingMode="Fant"
+                        gif:ImageBehavior.RepeatBehavior="Forever"
+                        gif:ImageBehavior.AnimatedSource="{Binding MicrophoneImage}" />
+                </Viewbox>
             </Grid>
             <Grid Grid.Row="1" DockPanel.Dock="Bottom"
                   Visibility="{Binding IsLocked, Converter={StaticResource TrueToHiddenFalseToVisibleConverter}}">
@@ -103,8 +102,12 @@
                         </Storyboard>
                     </BeginStoryboard>
                 </MultiDataTrigger.EnterActions>
-                
-                <MultiDataTrigger.ExitActions>
+            </MultiDataTrigger>
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding ShowOutputIcon}" Value="False" />
+                </MultiDataTrigger.Conditions>
+                <MultiDataTrigger.EnterActions>
                     <BeginStoryboard>
                         <Storyboard>
                             <DoubleAnimation
@@ -123,7 +126,7 @@
                                 Duration="0:0:0.45" />
                         </Storyboard>
                     </BeginStoryboard>
-                </MultiDataTrigger.ExitActions>
+                </MultiDataTrigger.EnterActions>
             </MultiDataTrigger>
         </DataTemplate.Triggers>
     </DataTemplate>
