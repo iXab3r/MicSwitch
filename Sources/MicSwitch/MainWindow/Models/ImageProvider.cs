@@ -1,16 +1,13 @@
 using System.Drawing;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using log4net;
 using MicSwitch.Modularity;
 using MicSwitch.Services;
 
 namespace MicSwitch.MainWindow.Models
 {
-    internal sealed class ImageProvider : DisposableReactiveObject, IImageProvider
+    internal sealed class ImageProvider : DisposableReactiveObjectWithLogger, IImageProvider
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(ImageProvider));
-
         private readonly BitmapImage defaultMicrophoneImage = new BitmapImage(new Uri("pack://application:,,,/Resources/microphoneEnabled.ico", UriKind.RelativeOrAbsolute));
         private readonly BitmapImage defaultMutedMicrophoneImage = new BitmapImage(new Uri("pack://application:,,,/Resources/microphoneDisabled.ico", UriKind.RelativeOrAbsolute));
 

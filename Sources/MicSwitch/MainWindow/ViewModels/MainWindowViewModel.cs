@@ -2,7 +2,6 @@
 using System.Drawing;
 using System.Windows;
 using System.Windows.Input;
-using log4net;
 using MaterialDesignColors;
 using MaterialDesignThemes.Wpf;
 using Microsoft.Win32;
@@ -19,7 +18,8 @@ namespace MicSwitch.MainWindow.ViewModels
 {
     internal class MainWindowViewModel : DisposableReactiveObject, IMainWindowViewModel
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(MainWindowViewModel));
+        private static readonly IFluentLog Log = typeof(MainWindowViewModel).PrepareLogger();
+
         private static readonly TimeSpan ConfigThrottlingTimeout = TimeSpan.FromMilliseconds(250);
         private static readonly string ExplorerExecutablePath = Environment.ExpandEnvironmentVariables(@"%WINDIR%\explorer.exe");
         private static readonly Process CurrentProcess = Process.GetCurrentProcess();
@@ -43,6 +43,7 @@ namespace MicSwitch.MainWindow.ViewModels
             Binder.Bind(x => x.MicrophoneController.Controller).To(x => x.Overlay.MicrophoneDeviceController);
             Binder.Bind(x => x.OutputController.Controller).To(x => x.Overlay.OutputDeviceController);
             Binder.Bind(x => x.MicrophoneController.Controller).To(x => x.ImageProvider.MicrophoneDeviceController);
+            Binder.Bind(x => x.WaveOutDeviceSelector.SelectedItem).To(x => x.notificationsManager.OutputDevice);
         }
         
         public MainWindowViewModel(
@@ -131,14 +132,19 @@ namespace MicSwitch.MainWindow.ViewModels
             MicrophoneController.ObservableForProperty(x => x.Mute, skipInitial: true)
                 .DistinctUntilChanged()
                 .Where(x => !MicrophoneController.DeviceId.IsEmpty)
-                .Select(isMuted => (isMuted.Value ? AudioNotification.Off : AudioNotification.On) ?? default(AudioNotificationType).ToString())
+                .Select(isMuted => isMuted.Value switch
+                {
+                    true => AudioNotification.Off,
+                    false => AudioNotification.On,
+                    _ => default(AudioNotificationType).ToString()
+                })
                 .Where(notificationToPlay => !string.IsNullOrEmpty(notificationToPlay))
                 .Select(notificationToPlay => Observable.FromAsync(async token =>
                 {
                     Log.Debug($"Playing notification {notificationToPlay}, volume: {AudioNotificationVolume}");
                     try
                     {
-                        await audioNotificationsManager.PlayNotification(notificationToPlay, AudioNotificationVolume, waveOutDeviceSelector.SelectedItem, token);
+                        await audioNotificationsManager.PlayNotification(notificationToPlay, AudioNotificationVolume, token);
                         Log.Debug($"Played notification {notificationToPlay}");
                     }
                     catch (Exception ex)
@@ -338,7 +344,7 @@ namespace MicSwitch.MainWindow.ViewModels
                 .ToArray();
 
             var notificationToPlay = notifications.Any() ? notifications.PickRandom().SelectedValue : AudioNotificationType.Bell.ToString();
-            await notificationsManager.PlayNotification(notificationToPlay, AudioNotificationVolume);
+            await notificationsManager.PlayNotification(notificationToPlay, AudioNotificationVolume, CancellationToken.None);
         }
 
         public WindowState WindowState { get; set; }

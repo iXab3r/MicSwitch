@@ -1,15 +1,14 @@
-using log4net;
 using PoeShared.Audio.Models;
 
 namespace MicSwitch.Services
 {
     internal sealed class ComplexMMDeviceController : DisposableReactiveObject, IMMDeviceControllerEx
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(ComplexMMDeviceController));
-
-        private readonly IObservableCache<IMMDeviceController, MMDeviceId> devices;
+        private static readonly IFluentLog Log = typeof(ComplexMMDeviceController).PrepareLogger();
 
         private static readonly Binder<ComplexMMDeviceController> Binder = new();
+
+        private readonly IObservableCache<IMMDeviceController, MMDeviceId> devices;
 
         static ComplexMMDeviceController()
         {
@@ -26,49 +25,39 @@ namespace MicSwitch.Services
                 .Transform(x =>
                 {
                     var multimediaLine = multimediaControllerFactory.Create(deviceProvider);
-                    multimediaLine.LineId = x;
+                    multimediaLine.DeviceId = x;
                     return (IMMDeviceController) multimediaLine;
                 })
                 .BindToCollection(out var sources)
-                .AddKey(x => x.LineId)
+                .AddKey(x => x.DeviceId)
                 .AsObservableCache();
 
-            var allLinesController = new AllMMDevicesController(sources).AddTo(Anchors);
-
-            this.WhenAnyValue(x => x.LineId)
+            this.WhenAnyValue(x => x.DeviceId)
                 .Select(x => devices.Lookup(x))
-                .Select(x => x.HasValue ? x.Value : allLinesController)
-                .SubscribeSafe(x => ActiveController = x, Log.HandleUiException)
+                .Select(x => x.HasValue ? Observable.Return(x.Value) : Observable.Using(() => new CollectionMMDevicesController(sources), x => Observable.Return(x).Concat(Observable.Never<CollectionMMDevicesController>())))
+                .Switch()
+                .WithPrevious()
+                .SubscribeSafe(x =>
+                {
+                    Log.Debug(() => $"Active controller is updated: {x}");
+                    ActiveController = x.Current;
+                }, Log.HandleUiException)
                 .AddTo(Anchors);
-
             
-            this.WhenAnyValue(x => x.ActiveController.VolumePercent)
-                .SubscribeSafe(() => RaisePropertyChanged(nameof(VolumePercent)), Log.HandleUiException)
+            this.WhenAnyValue(x => x.ActiveController.Volume)
+                .SubscribeSafe(() => RaisePropertyChanged(nameof(Volume)), Log.HandleUiException)
                 .AddTo(Anchors);
 
             this.WhenAnyValue(x => x.ActiveController.Mute)
                 .SubscribeSafe(() => RaisePropertyChanged(nameof(Mute)), Log.HandleUiException)
                 .AddTo(Anchors);
 
-            this.WhenAnyValue(x => x.ActiveController)
-                .Select(x => x?.LineId.LineId == MMDeviceId.All.LineId
-                    ? sources.ToObservableChangeSet().OnItemAdded(newDevice =>
-                    {
-                        Log.Debug($"New device {newDevice.LineId} detected in All devices mode, assigning following parameters: {new {Mute, VolumePercent}}");
-                        newDevice.Mute = Mute;
-                        newDevice.VolumePercent = VolumePercent;
-                    })
-                    : Observable.Empty<IChangeSet>())
-                .Switch()
-                .SubscribeToErrors(Log.HandleException)
-                .AddTo(Anchors);
-
-            LineId = MMDeviceId.All;
+            DeviceId = MMDeviceId.All;
             
             Binder.Attach(this).AddTo(Anchors);
         }
 
-        public MMDeviceId LineId { get; set; }
+        public MMDeviceId DeviceId { get; set; }
 
         public bool? Mute
         {
@@ -76,10 +65,10 @@ namespace MicSwitch.Services
             set => SafeAction(ActiveController, x => x.Mute = value);
         }
 
-        public double? VolumePercent
+        public float? Volume
         {
-            get => SafeRead(ActiveController, x => x.VolumePercent);
-            set => SafeAction(ActiveController, x => x.VolumePercent = value);
+            get => SafeRead(ActiveController, x => x.Volume);
+            set => SafeAction(ActiveController, x => x.Volume = value);
         }
 
         public IMMDeviceController ActiveController { get; private set; }
@@ -97,7 +86,7 @@ namespace MicSwitch.Services
             }
             catch (Exception e)
             {
-                Log.Error($"Failed to apply operation to line {controller?.LineId}", e);
+                Log.Error($"Failed to apply operation to line {controller?.DeviceId}", e);
                 return default;
             }
         }
@@ -115,7 +104,7 @@ namespace MicSwitch.Services
             }
             catch (Exception e)
             {
-                Log.Error($"Failed to apply operation to line {controller?.LineId}", e);
+                Log.Error($"Failed to apply operation to line {controller?.DeviceId}", e);
             }
         }
     }

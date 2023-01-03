@@ -227,3 +227,4 @@ Sources/PoeShared
 *.binlog
 
 /Sources/WindowsHook*
+*_wpftmp.csproj

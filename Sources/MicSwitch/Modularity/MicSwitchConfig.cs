@@ -22,6 +22,8 @@ namespace MicSwitch.Modularity
         
         public bool VolumeControlEnabled { get; set; } = false;
         
+        public float? Volume { get; set; }
+        
         public Rect? MainWindowBounds { get; set; }
 
         [Obsolete("Replaced with Notifications")]

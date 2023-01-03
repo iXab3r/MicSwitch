@@ -79,7 +79,6 @@ internal sealed class MicrophoneControllerViewModel : MediaControllerBase<MicSwi
             .AddTo(Anchors);
 
         hotkeyConfigProvider.ListenTo(x => x.MuteMode)
-            .ObserveOn(uiScheduler)
             .Subscribe(x =>
             {
                 Log.Debug($"Mute mode loaded from config: {x}");
@@ -88,25 +87,21 @@ internal sealed class MicrophoneControllerViewModel : MediaControllerBase<MicSwi
             .AddTo(Anchors);
 
         hotkeyConfigProvider.ListenTo(x => x.EnableAdvancedHotkeys)
-            .ObserveOn(uiScheduler)
             .Subscribe(x => IsEnabled = x)
             .AddTo(Anchors);
 
         hotkeyConfigProvider.ListenTo(x => x.InitialMicrophoneState)
-            .ObserveOn(uiScheduler)
             .Subscribe(x => InitialMicrophoneState = x)
             .AddTo(Anchors);
 
         configProvider.ListenTo(x => x.VolumeControlEnabled)
-            .ObserveOn(uiScheduler)
-            .SubscribeSafe(x => MicrophoneVolumeControlEnabled = x, Log.HandleException)
+            .SubscribeSafe(x => VolumeControlIsEnabled = x, Log.HandleException)
             .AddTo(Anchors);
 
         Observable.Merge(
                 configProvider.ListenTo(x => x.MicrophoneLineId).ToUnit(),
                 Devices.ToObservableChangeSet().ToUnit())
             .Select(_ => configProvider.ActualConfig.MicrophoneLineId)
-            .ObserveOn(uiScheduler)
             .SubscribeSafe(configLineId =>
             {
                 Log.Debug($"Microphone line configuration changed, lineId: {configLineId}, known lines: {Devices.Dump()}");
@@ -124,7 +119,6 @@ internal sealed class MicrophoneControllerViewModel : MediaControllerBase<MicSwi
             .AddTo(Anchors);
 
         this.WhenAnyValue(x => x.MuteMode, x => x.InitialMicrophoneState)
-            .ObserveOn(uiScheduler)
             .SubscribeSafe(_ =>
             {
                 Log.Debug($"Processing muteMode: {MuteMode}, {Controller}.Mute: {Controller.Mute}");
@@ -156,7 +150,6 @@ internal sealed class MicrophoneControllerViewModel : MediaControllerBase<MicSwi
         hotkeyTracker
             .WhenAnyValue(x => x.IsActive)
             .Skip(1)
-            .ObserveOn(uiScheduler)
             .SubscribeSafe(async isActive =>
             {
                 Log.Debug($"Handling hotkey press (isActive: {isActive}), mute mode: {MuteMode}");
@@ -183,7 +176,6 @@ internal sealed class MicrophoneControllerViewModel : MediaControllerBase<MicSwi
                 this.ObservableForProperty(x => x.InitialMicrophoneState, skipInitial: true).ToUnit(),
                 Hotkey.ObservableForProperty(x => x.Properties, skipInitial: true).ToUnit())
             .Throttle(ConfigThrottlingTimeout)
-            .ObserveOn(uiScheduler)
             .SubscribeSafe(() =>
             {
                 var hotkeyConfig = hotkeyConfigProvider.ActualConfig.CloneJson();
@@ -197,16 +189,43 @@ internal sealed class MicrophoneControllerViewModel : MediaControllerBase<MicSwi
 
         Observable.Merge(
                 this.ObservableForProperty(x => x.DeviceId, skipInitial: true).ToUnit(),
-                this.ObservableForProperty(x => x.MicrophoneVolumeControlEnabled, skipInitial: true).ToUnit())
+                this.ObservableForProperty(x => x.Volume, skipInitial: true).ToUnit(),
+                this.ObservableForProperty(x => x.VolumeControlIsEnabled, skipInitial: true).ToUnit())
             .Throttle(ConfigThrottlingTimeout)
-            .ObserveOn(uiScheduler)
             .SubscribeSafe(() =>
             {
                 var config = configProvider.ActualConfig.CloneJson();
                 config.MicrophoneLineId = DeviceId;
-                config.VolumeControlEnabled = MicrophoneVolumeControlEnabled;
+                config.VolumeControlEnabled = VolumeControlIsEnabled;
+                config.Volume = VolumeControlIsEnabled ? Volume : null;
                 configProvider.Save(config);
             }, Log.HandleUiException)
+            .AddTo(Anchors);
+
+        if (configProvider.ActualConfig.VolumeControlEnabled && configProvider.ActualConfig.Volume != null)
+        {
+            Log.Debug(() => $"Setting initial Volume of {Controller} to {configProvider.ActualConfig.Volume}");
+            Controller.Volume = configProvider.ActualConfig.Volume;
+        }
+
+        Controller.WhenAnyValue(x => x.ActiveController)
+            .WithPrevious()
+            .Subscribe(x =>
+            {
+                if (x.Current.DeviceId.LineId != MMDeviceId.All.LineId || x.Previous == null)
+                {
+                    return;
+                }
+
+                if (VolumeControlIsEnabled)
+                {
+                    Log.Debug(() => $"Propagating volume from previous controller {x.Previous}: {x.Previous.Volume}");
+                    x.Current.Volume = x.Previous.Volume;
+                }
+                
+                Log.Debug(() => $"Propagating Mute state from previous controller {x.Previous}: {x.Previous.Mute}");
+                x.Current.Mute = x.Previous.Mute;
+            })
             .AddTo(Anchors);
         
         Binder.Attach(this).AddTo(Anchors);
@@ -227,6 +246,4 @@ internal sealed class MicrophoneControllerViewModel : MediaControllerBase<MicSwi
     public IHotkeyEditorViewModel HotkeyPushToMute { get; }
 
     public MicrophoneState InitialMicrophoneState { get; set; }
-        
-    public bool MicrophoneVolumeControlEnabled { get; set; }
 }

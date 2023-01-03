@@ -126,11 +126,11 @@
                         <CheckBox
                             ToolTip="Enable microphone volume control"
                             HorizontalAlignment="Left"
-                            IsChecked="{Binding MicrophoneController.MicrophoneVolumeControlEnabled}" />
+                            IsChecked="{Binding MicrophoneController.VolumeControlIsEnabled}" />
 
                         <Slider Width="180"
-                                IsEnabled="{Binding MicrophoneController.MicrophoneVolumeControlEnabled}"
-                                Visibility="{Binding MicrophoneController.MicrophoneVolumeControlEnabled, Converter={StaticResource TrueToVisibleFalseToCollapsedConverter}}"
+                                IsEnabled="{Binding MicrophoneController.VolumeControlIsEnabled}"
+                                Visibility="{Binding MicrophoneController.VolumeControlIsEnabled, Converter={StaticResource TrueToVisibleFalseToCollapsedConverter}}"
                                 Value="{Binding MicrophoneController.Volume}"
                                 Minimum="0" Maximum="1"
                                 Margin="5,4,5,0"
@@ -143,7 +143,7 @@
                             </TextBlock.Text>
                         </TextBlock>
                         <TextBlock Style="{StaticResource WarningIconTextBlock}" Margin="2.5,0,0,0"
-                                   Visibility="{Binding MicrophoneController.MicrophoneVolumeControlEnabled, Converter={StaticResource TrueToCollapsedFalseToVisibleConverter}}"
+                                   Visibility="{Binding MicrophoneController.VolumeControlIsEnabled, Converter={StaticResource TrueToCollapsedFalseToVisibleConverter}}"
                                    ToolTip="May be inaccurate because Volume control is disabled" />
                     </st:StackPanel>
 

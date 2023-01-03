@@ -1,13 +1,11 @@
 using System.Windows.Input;
-using log4net;
 using MicSwitch.MainWindow.Models;
 
 namespace MicSwitch.MainWindow.ViewModels
 {
-    internal sealed class HotkeyEditorViewModel : DisposableReactiveObject, IHotkeyEditorViewModel
+    internal sealed class HotkeyEditorViewModel : DisposableReactiveObjectWithLogger, IHotkeyEditorViewModel
     {
         private static readonly Binder<HotkeyEditorViewModel> Binder = new();
-        private static readonly ILog Log = LogManager.GetLogger(typeof(HotkeyEditorViewModel));
 
         private readonly IHotkeyConverter hotkeyConverter;
        

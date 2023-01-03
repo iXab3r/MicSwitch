@@ -2,7 +2,6 @@ using System.Drawing;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Interop;
-using log4net;
 using MicSwitch.MainWindow.Models;
 using MicSwitch.Modularity;
 using PInvoke;
@@ -11,7 +10,7 @@ namespace MicSwitch.Services
 {
     internal sealed class ComplexHotkeyTracker : DisposableReactiveObject, IComplexHotkeyTracker
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(ComplexHotkeyTracker));
+        private static readonly IFluentLog Log = typeof(ComplexHotkeyTracker).PrepareLogger();
         private static readonly Process CurrentProcess = Process.GetCurrentProcess();
 
         private readonly IHotkeyConverter hotkeyConverter;

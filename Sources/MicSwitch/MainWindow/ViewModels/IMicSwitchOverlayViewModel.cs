@@ -7,7 +7,7 @@ namespace MicSwitch.MainWindow.ViewModels
     {
         bool MicrophoneMute { get; }
         
-        double? OutputVolume { get; }
+        float? OutputVolume { get; }
         
         bool IsEnabled { get; set; }
         

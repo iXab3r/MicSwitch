@@ -18,8 +18,6 @@ namespace MicSwitch.MainWindow.ViewModels
         
         IHotkeyEditorViewModel HotkeyPushToMute { get; }
         
-        bool MicrophoneVolumeControlEnabled { get; set; }
-        
         MicrophoneState InitialMicrophoneState { get; set; }
     }
 }

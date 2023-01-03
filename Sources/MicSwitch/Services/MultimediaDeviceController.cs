@@ -1,13 +1,13 @@
-using log4net;
 using MicSwitch.Modularity;
 using NAudio.CoreAudioApi;
 using PoeShared.Audio.Models;
+using PropertyChanged;
 
 namespace MicSwitch.Services
 {
-    internal sealed class MultimediaDeviceController : DisposableReactiveObject, IMMDeviceControllerEx
+    internal sealed class MultimediaDeviceController : DisposableReactiveObject, IMMDeviceController
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(MultimediaDeviceController));
+        private static readonly IFluentLog Log = typeof(MultimediaDeviceController).PrepareLogger();
         private static readonly TimeSpan SamplingInterval = TimeSpan.FromMilliseconds(50);
 
         private readonly IMMDeviceProvider deviceProvider;
@@ -15,7 +15,7 @@ namespace MicSwitch.Services
         public MultimediaDeviceController(IMMDeviceProvider deviceProvider)
         {
             this.deviceProvider = deviceProvider;
-            this.WhenAnyValue(x => x.LineId)
+            this.WhenAnyValue(x => x.DeviceId)
                 .Where(x => !x.IsEmpty)
                 .SubscribeSafe(InitializeLine, Log.HandleException)
                 .AddTo(Anchors);
@@ -26,9 +26,9 @@ namespace MicSwitch.Services
                 {
                     if (mixer == null)
                     {
-                        if (!LineId.IsEmpty)
+                        if (!DeviceId.IsEmpty)
                         {
-                            Log.Info($"Unbound controller from line #{LineId}");
+                            Log.Info($"Unbound controller from line #{DeviceId}");
                         }
                     }
                     else
@@ -42,7 +42,7 @@ namespace MicSwitch.Services
                             mixer.IconPath,
                             AudioClientFormat = mixer.AudioClient?.MixFormat
                         };
-                        Log.Info($"Successfully bound to line #{LineId}, volume: {VolumePercent}, isOn: {Mute}, line: {description}");
+                        Log.Info($"Successfully bound to line #{DeviceId}, volume: {Volume}, isOn: {Mute}, line: {description}");
                     }
                 })
                 .Select(mixer => mixer != null
@@ -58,7 +58,7 @@ namespace MicSwitch.Services
                 {
                     if (Log.IsDebugEnabled)
                     {
-                        Log.Debug($"[#{LineId}] Volume notification: {evt.Dump()}");
+                        Log.WithSuffix(DeviceId).Debug($"Volume notification: {new { evt.Muted, evt.MasterVolume }}");
                     }
                 })
                 .SubscribeSafe(Update, Log.HandleException)
@@ -67,7 +67,8 @@ namespace MicSwitch.Services
 
         public MMDevice MixerControl { get; private set; }
 
-        public double? VolumePercent
+        [DoNotNotify]
+        public float? Volume
         {
             get => MixerControl?.AudioEndpointVolume?.MasterVolumeLevelScalar;
             set
@@ -77,13 +78,14 @@ namespace MicSwitch.Services
                     return;
                 }
                 
-                Log.Debug($"[#{LineId}] Setting volume to {value.Value} (current: {VolumePercent})");
-                MixerControl.AudioEndpointVolume.MasterVolumeLevelScalar = (float) value.Value;
+                Log.WithSuffix(DeviceId).Debug($"Setting volume to {value.Value} (current: {Volume})");
+                MixerControl.AudioEndpointVolume.MasterVolumeLevelScalar = value.Value;
             }
         }
 
-        public MMDeviceId LineId { get; set; }
+        public MMDeviceId DeviceId { get; set; }
         
+        [DoNotNotify]
         public bool? Mute
         {
             get => MixerControl?.AudioEndpointVolume?.Mute;
@@ -96,12 +98,12 @@ namespace MicSwitch.Services
 
                 if (value.Value)
                 {
-                    Log.Debug($"[#{LineId}] Disabling mic");
+                    Log.WithSuffix(DeviceId).Debug($"Disabling mic");
                     MixerControl.AudioEndpointVolume.Mute = true;
                 }
                 else
                 {
-                    Log.Debug($"[#{LineId}] Enabling mic");
+                    Log.WithSuffix(DeviceId).Debug($"Enabling mic");
                     MixerControl.AudioEndpointVolume.Mute = false;
                 }
             }
@@ -109,16 +111,16 @@ namespace MicSwitch.Services
 
         private void Update()
         {
-            this.RaisePropertyChanged(nameof(VolumePercent));
+            this.RaisePropertyChanged(nameof(Volume));
             this.RaisePropertyChanged(nameof(Mute));
         }
 
         private void InitializeLine()
         {
-            Log.Info($"Binding to line ({LineId})...");
-            VolumePercent = null;
+            Log.Info($"Binding to line ({DeviceId})...");
+            Volume = null;
             Mute = null;
-            MixerControl = LineId.IsEmpty ? null : deviceProvider.GetMixerControl(LineId.LineId);
+            MixerControl = DeviceId.IsEmpty ? null : deviceProvider.GetMixerControl(DeviceId.LineId);
         }
     }
 }

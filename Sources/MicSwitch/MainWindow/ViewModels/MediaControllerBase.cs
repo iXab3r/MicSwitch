@@ -19,10 +19,11 @@ internal abstract class MediaControllerBase<TConfig> : DisposableReactiveObjectW
 
     static MediaControllerBase()
     {
-        Binder.Bind(x => x.deviceController.VolumePercent).To((x, v) => x.Volume = v ?? 0);
-        Binder.Bind(x => x.deviceController.Mute).To((x, v) => x.Mute = v ?? false);
-        Binder.BindIf(x => x.IsEnabled, x => (double?)x.Volume).To(x => x.deviceController.VolumePercent);
-        Binder.Bind(x => x.DeviceId).To(x => x.deviceController.LineId);
+        Binder.Bind(x => x.deviceController.Volume).To((x, v) => x.Volume = v);
+        Binder.Bind(x => x.deviceController.Mute).To((x, v) => x.Mute = v);
+        Binder.BindIf(x => x.VolumeControlIsEnabled, x => x.Volume).To(x => x.deviceController.Volume);
+        
+        Binder.Bind(x => x.DeviceId).To(x => x.deviceController.DeviceId);
     }
 
     protected MediaControllerBase(
@@ -35,7 +36,6 @@ internal abstract class MediaControllerBase<TConfig> : DisposableReactiveObjectW
     {
         deviceProvider.Devices
             .ToObservableChangeSet()
-            .ObserveOn(uiScheduler)
             .BindToCollection(out var microphones)
             .SubscribeToErrors(Log.HandleUiException)
             .AddTo(Anchors);
@@ -57,13 +57,15 @@ internal abstract class MediaControllerBase<TConfig> : DisposableReactiveObjectW
     
     public bool IsEnabled { get; set; }
     
+    public bool VolumeControlIsEnabled { get; set; }
+    
     public IMMDeviceControllerEx Controller { get; }
     
     public CommandWrapper MuteMicrophoneCommand { get; }
     
-    public bool Mute { get; [UsedImplicitly] private set; }
+    public bool? Mute { get; [UsedImplicitly] private set; }
 
-    public double Volume { get; set; }
+    public float? Volume { get; set; }
     
     protected IHotkeyEditorViewModel PrepareHotkey(
         string description,
@@ -138,7 +140,6 @@ internal abstract class MediaControllerBase<TConfig> : DisposableReactiveObjectW
 
         owner.hotkeyConfigProvider.ListenTo(fieldToMonitor)
             .Select(x => x ?? HotkeyConfig.Empty)
-            .ObserveOn(owner.uiScheduler)
             .SubscribeSafe(config =>
             {
                 owner.Log.Debug($"Setting new hotkeys configuration: {config.Dump()}, current: {result.Properties}");
@@ -168,7 +169,7 @@ internal abstract class MediaControllerBase<TConfig> : DisposableReactiveObjectW
             bool argBool => argBool,
             _ => !deviceController.Mute
         };
-        Log.Debug($"{(mute == true ? "Muting" : "Un-muting")} microphone {deviceController.LineId}");
+        Log.Debug($"{(mute == true ? "Muting" : "Un-muting")} microphone {deviceController.DeviceId}");
         deviceController.Mute = mute;
     }
 }

@@ -20,7 +20,6 @@ namespace MicSwitch.Modularity
         
         public bool EnableAdvancedHotkeys { get; set; }
         
-
         public MicrophoneState InitialMicrophoneState { get; set; } = MicrophoneState.Any;
         
         public int Version { get; set; } = 1;

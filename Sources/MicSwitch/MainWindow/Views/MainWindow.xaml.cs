@@ -7,9 +7,9 @@ namespace MicSwitch.MainWindow.Views
     /// <summary>
     ///     Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow 
+    public partial class MainWindow
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(MainWindow));
+        private static readonly IFluentLog Log = typeof(MainWindow).PrepareLogger();
         private readonly CompositeDisposable anchors = new();
 
         public MainWindow(IAppArguments appArguments)

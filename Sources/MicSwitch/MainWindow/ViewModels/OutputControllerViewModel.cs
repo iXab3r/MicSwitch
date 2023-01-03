@@ -59,12 +59,12 @@ namespace MicSwitch.MainWindow.ViewModels
                 .SwitchIf(x => x.Value == true, x => Observable.Interval(TimeSpan.FromMilliseconds(10)), x => Observable.Empty<long>())
                 .SubscribeSafe(x =>
                 {
-                    if (Controller.VolumePercent == null)
+                    if (Controller.Volume == null)
                     {
                         return;
                     }
 
-                    Controller.VolumePercent = Math.Min(1, Controller.VolumePercent.Value + 0.01);
+                    Controller.Volume = (float)Math.Min(1, Controller.Volume.Value + 0.01);
                 }, Log.HandleUiException)
                 .AddTo(Anchors);
 
@@ -73,12 +73,12 @@ namespace MicSwitch.MainWindow.ViewModels
                 .SwitchIf(x => x.Value == true, x => Observable.Interval(TimeSpan.FromMilliseconds(10)), x => Observable.Empty<long>())
                 .SubscribeSafe(x =>
                 {
-                    if (Controller.VolumePercent == null)
+                    if (Controller.Volume == null)
                     {
                         return;
                     }
 
-                    Controller.VolumePercent = Math.Max(0, Controller.VolumePercent.Value - 0.01);
+                    Controller.Volume = (float)Math.Max(0, Controller.Volume.Value - 0.01);
                 }, Log.HandleUiException)
                 .AddTo(Anchors);
 

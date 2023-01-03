@@ -24,7 +24,7 @@ namespace MicSwitch.MainWindow.ViewModels
                 .Else(x => false)
                 .To(x => x.MicrophoneMute);
             
-            Binder.BindIf(x => x.OutputDeviceController != null, x => x.OutputDeviceController.VolumePercent)
+            Binder.BindIf(x => x.OutputDeviceController != null, x => x.OutputDeviceController.Volume)
                 .Else(x => default)
                 .To(x => x.OutputVolume);
             Binder.BindIf(x => x.OutputDeviceController != null && x.OutputDeviceController.Mute == true, x => PackIconKind.VolumeMute)
@@ -104,7 +104,6 @@ namespace MicSwitch.MainWindow.ViewModels
                     };
                 })
                 .DistinctUntilChanged()
-                .ObserveOn(uiScheduler)
                 .SubscribeSafe(x => IsEnabled = x, Log.HandleUiException)
                 .AddTo(Anchors);
             
@@ -132,7 +131,7 @@ namespace MicSwitch.MainWindow.ViewModels
                 }, Log.HandleUiException)
                 .AddTo(Anchors);
             
-            var showOutputIconSource = this.WhenAnyValue(x => x.OutputDeviceController.VolumePercent, x => x.OutputDeviceController.Mute);
+            var showOutputIconSource = this.WhenAnyValue(x => x.OutputDeviceController.Volume, x => x.OutputDeviceController.Mute);
 
             showOutputIconSource.Subscribe(_ => ShowOutputIcon = true).AddTo(Anchors);
 
@@ -145,7 +144,7 @@ namespace MicSwitch.MainWindow.ViewModels
             Binder.Attach(this).AddTo(Anchors);
         }
 
-        public double? OutputVolume { get; [UsedImplicitly] private set; }
+        public float? OutputVolume { get; [UsedImplicitly] private set; }
         public PackIconKind OutputVolumeKind { get; [UsedImplicitly] private set; }
 
         public bool IsEnabled
