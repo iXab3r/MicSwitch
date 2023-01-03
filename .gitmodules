@@ -8,3 +8,6 @@
 [submodule "Submodules/PropertyBinder"]
 	path = Submodules/PropertyBinder
 	url = https://github.com/iXab3r/PropertyBinder.git
+[submodule "Submodules/gong-wpf-dragdrop"]
+	path = Submodules/gong-wpf-dragdrop
+	url = https://github.com/iXab3r/gong-wpf-dragdrop.git

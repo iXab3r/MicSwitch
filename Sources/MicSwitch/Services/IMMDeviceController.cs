@@ -9,5 +9,7 @@ namespace MicSwitch.Services
         bool? Mute { get; set; }
 
         float? Volume { get; set; }
+        
+        bool IsConnected { get; }
     }
 }

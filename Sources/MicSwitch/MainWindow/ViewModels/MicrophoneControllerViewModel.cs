@@ -1,4 +1,5 @@
-﻿using MicSwitch.MainWindow.Models;
+﻿using AutoCompleteTextBox.Editors;
+using MicSwitch.MainWindow.Models;
 using MicSwitch.Modularity;
 using MicSwitch.Services;
 using NAudio.CoreAudioApi;
@@ -8,6 +9,7 @@ namespace MicSwitch.MainWindow.ViewModels;
 
 internal sealed class MicrophoneControllerViewModel : MediaControllerBase<MicSwitchHotkeyConfig>, IMicrophoneControllerViewModel
 {
+    private readonly IConfigProvider<MicSwitchConfig> configProvider;
     private static readonly Binder<MicrophoneControllerViewModel> Binder = new();
 
     static MicrophoneControllerViewModel()
@@ -24,6 +26,7 @@ internal sealed class MicrophoneControllerViewModel : MediaControllerBase<MicSwi
         IConfigProvider<MicSwitchHotkeyConfig> hotkeyConfigProvider,
         [Dependency(WellKnownSchedulers.UI)] IScheduler uiScheduler) : base(deviceProvider, deviceControllerFactory.Create(deviceProvider), hotkeyTrackerFactory, hotkeyEditorFactory, hotkeyConfigProvider, uiScheduler)
     {
+        this.configProvider = configProvider;
         Hotkey = PrepareHotkey("Mute/Un-mute microphone", x => x.Hotkey, (config, hotkeyConfig) => config.Hotkey = hotkeyConfig);
         HotkeyToggle = PrepareHotkey("Toggle microphone state", x => x.HotkeyForToggle, (config, hotkeyConfig) => config.HotkeyForToggle = hotkeyConfig);
         HotkeyMute = PrepareHotkey("Mute microphone", x => x.HotkeyForMute, (config, hotkeyConfig) => config.HotkeyForMute = hotkeyConfig);
@@ -97,25 +100,9 @@ internal sealed class MicrophoneControllerViewModel : MediaControllerBase<MicSwi
         configProvider.ListenTo(x => x.VolumeControlEnabled)
             .SubscribeSafe(x => VolumeControlIsEnabled = x, Log.HandleException)
             .AddTo(Anchors);
-
-        Observable.Merge(
-                configProvider.ListenTo(x => x.MicrophoneLineId).ToUnit(),
-                Devices.ToObservableChangeSet().ToUnit())
-            .Select(_ => configProvider.ActualConfig.MicrophoneLineId)
-            .SubscribeSafe(configLineId =>
-            {
-                Log.Debug($"Microphone line configuration changed, lineId: {configLineId}, known lines: {Devices.Dump()}");
-
-                var micLine = Devices.FirstOrDefault(line => line.Equals(configLineId));
-                if (micLine.IsEmpty)
-                {
-                    Log.Debug($"Selecting first one of available microphone lines, known lines: {Devices.Dump()}");
-                    micLine = Devices.FirstOrDefault();
-                }
-
-                DeviceId = micLine;
-                MuteMicrophoneCommand.ResetError();
-            }, Log.HandleUiException)
+        
+        configProvider.ListenTo(x => x.MicrophoneLineId)
+            .SubscribeSafe(x => DeviceId = x, Log.HandleException)
             .AddTo(Anchors);
 
         this.WhenAnyValue(x => x.MuteMode, x => x.InitialMicrophoneState)
@@ -227,7 +214,13 @@ internal sealed class MicrophoneControllerViewModel : MediaControllerBase<MicSwi
                 x.Current.Mute = x.Previous.Mute;
             })
             .AddTo(Anchors);
-        
+
+        deviceProvider.Devices.ToObservableChangeSet()
+            .ObserveOn(uiScheduler)
+            .BindToCollection(out var knownDevices)
+            .Subscribe()
+            .AddTo(Anchors);
+        KnownDevices = new AutoCompleteSuggestionProvider<MMDeviceId>(knownDevices);
         Binder.Attach(this).AddTo(Anchors);
     }
 
@@ -246,4 +239,6 @@ internal sealed class MicrophoneControllerViewModel : MediaControllerBase<MicSwi
     public IHotkeyEditorViewModel HotkeyPushToMute { get; }
 
     public MicrophoneState InitialMicrophoneState { get; set; }
+    
+    public IComboSuggestionProvider KnownDevices { get; set; }
 }

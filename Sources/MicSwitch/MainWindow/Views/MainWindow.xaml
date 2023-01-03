@@ -15,6 +15,8 @@
                  xmlns:eye="clr-namespace:PoeShared.UI;assembly=PoeShared.Wpf"
                  xmlns:tb="http://www.hardcodet.net/taskbar"
                  xmlns:wpf="http://coderush.net/poeeye/"
+                 xmlns:editors="http://wpfcontrols.com/"
+                 xmlns:models1="clr-namespace:PoeShared.Audio.Models;assembly=PoeShared.Wpf"
                  mc:Ignorable="d"
                  d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel}"
                  WindowState="{Binding WindowState, Mode=TwoWay}"
@@ -95,16 +97,26 @@
                 <st:AutoGrid Columns="120,*" ChildMargin="5" RowHeight="32">
                     <TextBlock Style="{StaticResource SettingsLabelStyle}" st:AutoGrid.RowHeightOverride="40"
                                Text="Microphone:" />
-                    <st:StackPanel st:AutoGrid.RowHeightOverride="40">
-                        <ComboBox st:StackPanel.Fill="Fill"
-                                  ItemsSource="{Binding MicrophoneController.Devices}"
-                                  SelectedItem="{Binding MicrophoneController.DeviceId}"
-                                  DisplayMemberPath="Name"
-                                  ToolTip="Microphone line"/>
+                    <st:StackPanel st:AutoGrid.RowHeightOverride="40" Orientation="Horizontal" >
+                        <editors:AutoCompleteComboBox st:StackPanel.Fill="Fill"
+                                                      HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                                                      ToolTip="Microphone line"
+                                                      Provider="{Binding MicrophoneController.KnownDevices}"
+                                                      Text="{Binding MicrophoneController.DeviceId.Name, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                                      SelectedItem="{Binding MicrophoneController.DeviceId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                            <editors:AutoCompleteComboBox.ItemTemplate>
+                                <DataTemplate DataType="{x:Type models1:MMDeviceId}">
+                                    <TextBlock Text="{Binding Name}"/>
+                                </DataTemplate>
+                            </editors:AutoCompleteComboBox.ItemTemplate>
+                        </editors:AutoCompleteComboBox>
+                        <TextBlock Style="{StaticResource WarningIconTextBlock}" Margin="2.5,0,0,0"
+                                   Visibility="{Binding MicrophoneController.Controller.IsConnected, Converter={StaticResource TrueToCollapsedFalseToVisibleConverter}}"
+                                   ToolTip="Not connected" />
                     </st:StackPanel>
 
                     <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Mute:" />
-                    <st:StackPanel>
+                    <st:StackPanel IsEnabled="{Binding MicrophoneController.Controller.IsConnected}">
                         <CheckBox
                             ToolTip="Mute microphone on system-level"
                             HorizontalAlignment="Left"
@@ -122,7 +134,8 @@
                     </st:StackPanel>
 
                     <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Microphone volume:" />
-                    <st:StackPanel>
+                    <st:StackPanel
+                        IsEnabled="{Binding MicrophoneController.Controller.IsConnected}">
                         <CheckBox
                             ToolTip="Enable microphone volume control"
                             HorizontalAlignment="Left"

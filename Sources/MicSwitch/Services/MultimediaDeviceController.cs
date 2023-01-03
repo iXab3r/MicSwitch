@@ -7,18 +7,21 @@ namespace MicSwitch.Services
 {
     internal sealed class MultimediaDeviceController : DisposableReactiveObject, IMMDeviceController
     {
+        private static readonly Binder<MultimediaDeviceController> Binder = new();
+
         private static readonly IFluentLog Log = typeof(MultimediaDeviceController).PrepareLogger();
         private static readonly TimeSpan SamplingInterval = TimeSpan.FromMilliseconds(50);
 
         private readonly IMMDeviceProvider deviceProvider;
 
+        static MultimediaDeviceController()
+        {
+            Binder.Bind(x => x.MixerControl != null).To(x => x.IsConnected);
+        }
+
         public MultimediaDeviceController(IMMDeviceProvider deviceProvider)
         {
             this.deviceProvider = deviceProvider;
-            this.WhenAnyValue(x => x.DeviceId)
-                .Where(x => !x.IsEmpty)
-                .SubscribeSafe(InitializeLine, Log.HandleException)
-                .AddTo(Anchors);
 
             this.WhenAnyValue(x => x.MixerControl)
                 .DisposePrevious()
@@ -63,6 +66,20 @@ namespace MicSwitch.Services
                 })
                 .SubscribeSafe(Update, Log.HandleException)
                 .AddTo(Anchors);
+
+            this.WhenAnyValue(x => x.DeviceId)
+                .Select(x => x.IsEmpty ? Observable.Return(default(MMDevice)) : deviceProvider.DevicesById.WatchCurrentValue(x))
+                .Switch()
+                .Subscribe(x =>
+                {
+                    Volume = null;
+                    Mute = null;
+                    MixerControl = x;
+                })
+                .AddTo(Anchors);
+            
+            Binder.Attach(this).AddTo(Anchors);
+            Disposable.Create(() => Log.Debug(() => $"Controller of multimedia device {DeviceId} was disposed")).AddTo(Anchors);
         }
 
         public MMDevice MixerControl { get; private set; }
@@ -82,6 +99,8 @@ namespace MicSwitch.Services
                 MixerControl.AudioEndpointVolume.MasterVolumeLevelScalar = value.Value;
             }
         }
+
+        public bool IsConnected { get; [UsedImplicitly] private set; }
 
         public MMDeviceId DeviceId { get; set; }
         
@@ -113,14 +132,6 @@ namespace MicSwitch.Services
         {
             this.RaisePropertyChanged(nameof(Volume));
             this.RaisePropertyChanged(nameof(Mute));
-        }
-
-        private void InitializeLine()
-        {
-            Log.Info($"Binding to line ({DeviceId})...");
-            Volume = null;
-            Mute = null;
-            MixerControl = DeviceId.IsEmpty ? null : deviceProvider.GetMixerControl(DeviceId.LineId);
         }
     }
 }

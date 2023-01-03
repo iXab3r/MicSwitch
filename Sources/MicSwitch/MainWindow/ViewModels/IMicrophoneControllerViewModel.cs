@@ -1,3 +1,4 @@
+using AutoCompleteTextBox.Editors;
 using MicSwitch.MainWindow.Models;
 
 namespace MicSwitch.MainWindow.ViewModels
@@ -19,5 +20,7 @@ namespace MicSwitch.MainWindow.ViewModels
         IHotkeyEditorViewModel HotkeyPushToMute { get; }
         
         MicrophoneState InitialMicrophoneState { get; set; }
+        
+        IComboSuggestionProvider KnownDevices { get; set; }
     }
 }

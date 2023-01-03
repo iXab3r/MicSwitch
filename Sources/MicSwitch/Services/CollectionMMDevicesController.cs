@@ -4,8 +4,15 @@ namespace MicSwitch.Services
 {
     internal sealed class CollectionMMDevicesController : DisposableReactiveObjectWithLogger, IMMDeviceController
     {
+        private static readonly Binder<CollectionMMDevicesController> Binder = new();
+
         private readonly IReadOnlyObservableCollection<IMMDeviceController> devices;
         private readonly SharedResourceLatch updateLatch = new("Multiple devices update latch");
+
+        static CollectionMMDevicesController()
+        {
+            Binder.Bind(x => x.devices.Any(y => y.IsConnected)).To(x => x.IsConnected);
+        }
 
         public CollectionMMDevicesController(IReadOnlyObservableCollection<IMMDeviceController> devices)
         {
@@ -71,6 +78,10 @@ namespace MicSwitch.Services
                     Volume = x.Value;
                 }, Log.HandleUiException)
                 .AddTo(Anchors);
+            
+            Binder.Attach(this).AddTo(Anchors);
+
+            Disposable.Create(() => Log.Debug(() => $"Controller of multiple devices was disposed, devices: {devices.DumpToString()}")).AddTo(Anchors);
         }
 
         public MMDeviceId DeviceId { get; set; }
@@ -78,5 +89,7 @@ namespace MicSwitch.Services
         public bool? Mute { get; set; }
 
         public float? Volume { get; set; }
+        
+        public bool IsConnected { get; [UsedImplicitly] private set; }
     }
 }

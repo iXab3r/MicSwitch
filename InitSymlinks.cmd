@@ -7,6 +7,7 @@ mklink /J /D PoeShared.Tests "../Submodules/PoeEye/PoeEye/PoeShared.Tests"
 mklink /J /D PoeShared.Squirrel "../Submodules/PoeEye/PoeEye/PoeShared.Squirrel"
 mklink /J /D PoeShared.Squirrel.Shared "../Submodules/PoeEye/PoeEye/PoeShared.Squirrel.Shared"
 mklink /J /D WindowsHook "../Submodules/PoeEye/PoeEye/WindowsHook"
+mklink /J /D gong-wpf-dragdrop "../Submodules/gong-wpf-dragdrop"
 
 mklink /J /D PropertyBinder "../Submodules/PropertyBinder/PropertyBinder"
 mklink /J /D PropertyBinder.Tests "../Submodules/PropertyBinder/PropertyBinder.Tests"

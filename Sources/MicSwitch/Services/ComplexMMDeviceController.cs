@@ -4,11 +4,8 @@ namespace MicSwitch.Services
 {
     internal sealed class ComplexMMDeviceController : DisposableReactiveObject, IMMDeviceControllerEx
     {
-        private static readonly IFluentLog Log = typeof(ComplexMMDeviceController).PrepareLogger();
-
         private static readonly Binder<ComplexMMDeviceController> Binder = new();
-
-        private readonly IObservableCache<IMMDeviceController, MMDeviceId> devices;
+        private static readonly IFluentLog Log = typeof(ComplexMMDeviceController).PrepareLogger();
 
         static ComplexMMDeviceController()
         {
@@ -18,23 +15,34 @@ namespace MicSwitch.Services
             IFactory<MultimediaDeviceController, IMMDeviceProvider> multimediaControllerFactory,
             IMMDeviceProvider deviceProvider)
         {
-            devices = deviceProvider
-                .Devices
-                .ToObservableChangeSet()
-                .Filter(x => x.LineId != MMDeviceId.All.LineId)
-                .Transform(x =>
-                {
-                    var multimediaLine = multimediaControllerFactory.Create(deviceProvider);
-                    multimediaLine.DeviceId = x;
-                    return (IMMDeviceController) multimediaLine;
-                })
-                .BindToCollection(out var sources)
-                .AddKey(x => x.DeviceId)
-                .AsObservableCache();
-
             this.WhenAnyValue(x => x.DeviceId)
-                .Select(x => devices.Lookup(x))
-                .Select(x => x.HasValue ? Observable.Return(x.Value) : Observable.Using(() => new CollectionMMDevicesController(sources), x => Observable.Return(x).Concat(Observable.Never<CollectionMMDevicesController>())))
+                .Select(deviceId => Observable.Using(() =>
+                {
+                    if (deviceId.LineId == MMDeviceId.All.LineId)
+                    {
+                        deviceProvider
+                            .Devices
+                            .ToObservableChangeSet()
+                            .Filter(x => x.LineId != MMDeviceId.All.LineId)
+                            .Transform(deviceId =>
+                            {
+                                var multimediaLine = multimediaControllerFactory.Create(deviceProvider);
+                                multimediaLine.DeviceId = deviceId;
+                                return (IMMDeviceController) multimediaLine;
+                            })
+                            .DisposeMany()
+                            .BindToCollection(out var sources)
+                            .AddKey(x => x.DeviceId)
+                            .AsObservableCache();
+                        return (IMMDeviceController)new CollectionMMDevicesController(sources);
+                    }
+                    else
+                    {
+                        var multimediaLine = multimediaControllerFactory.Create(deviceProvider);
+                        multimediaLine.DeviceId = deviceId;
+                        return multimediaLine;
+                    }
+                }, x => Observable.Return(x).Concat(Observable.Never<CollectionMMDevicesController>())))
                 .Switch()
                 .WithPrevious()
                 .SubscribeSafe(x =>
@@ -50,6 +58,10 @@ namespace MicSwitch.Services
 
             this.WhenAnyValue(x => x.ActiveController.Mute)
                 .SubscribeSafe(() => RaisePropertyChanged(nameof(Mute)), Log.HandleUiException)
+                .AddTo(Anchors);
+            
+            this.WhenAnyValue(x => x.ActiveController.IsConnected)
+                .SubscribeSafe(() => RaisePropertyChanged(nameof(IsConnected)), Log.HandleUiException)
                 .AddTo(Anchors);
 
             DeviceId = MMDeviceId.All;
@@ -70,6 +82,8 @@ namespace MicSwitch.Services
             get => SafeRead(ActiveController, x => x.Volume);
             set => SafeAction(ActiveController, x => x.Volume = value);
         }
+
+        public bool IsConnected => SafeRead(ActiveController, x => x.IsConnected);
 
         public IMMDeviceController ActiveController { get; private set; }
 
