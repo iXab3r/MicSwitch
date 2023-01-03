@@ -224,6 +224,7 @@ Sources/PoeShared
 /Sources/PoeShared
 /Sources/PropertyBinder*
 /Sources/PoeShared*
+/Sources/gong-wpf-dragdrop*
 *.binlog
 
 /Sources/WindowsHook*
