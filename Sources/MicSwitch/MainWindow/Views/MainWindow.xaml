@@ -78,7 +78,7 @@
         <DockPanel>
             <tb:TaskbarIcon Visibility="{Binding TrayIconVisibility, Mode=TwoWay}"
                             ToolTipText="{Binding Title}"
-                            LeftClickCommand="{Binding MicrophoneController.MuteMicrophoneCommand}"
+                            LeftClickCommand="{Binding MicrophoneController.MuteCommand}"
                             DoubleClickCommand="{Binding ShowAppCommand}">
                 <tb:TaskbarIcon.ContextMenu>
                     <ContextMenu>
@@ -120,16 +120,16 @@
                         <CheckBox
                             ToolTip="Mute microphone on system-level"
                             HorizontalAlignment="Left"
-                            Command="{Binding MicrophoneController.MuteMicrophoneCommand}"
+                            Command="{Binding MicrophoneController.MuteCommand}"
                             CommandParameter="{Binding IsChecked, RelativeSource={RelativeSource Self}}"
                             IsChecked="{Binding MicrophoneController.Mute, Mode=OneWay}" />
                         <fa:FontAwesome Icon="Warning"
                                         Margin="5,0"
-                                        Visibility="{Binding MicrophoneController.MuteMicrophoneCommand.Error, Converter={StaticResource NullToCollapsedConverter}}"
+                                        Visibility="{Binding MicrophoneController.MuteCommand.Error, Converter={StaticResource NullToCollapsedConverter}}"
                                         Foreground="{StaticResource NegativeBrush}"
                                         HorizontalAlignment="Left"
                                         VerticalAlignment="Center"
-                                        ToolTip="{Binding MicrophoneController.MuteMicrophoneCommand.Error}"
+                                        ToolTip="{Binding MicrophoneController.MuteCommand.Error}"
                                         FontSize="18" />
                     </st:StackPanel>
 

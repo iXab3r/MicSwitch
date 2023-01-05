@@ -22,5 +22,5 @@ internal interface IMediaController : IDisposableReactiveObject
         
     float? Volume { get; set; }
     
-    CommandWrapper MuteMicrophoneCommand { get; }
+    CommandWrapper MuteCommand { get; }
 }

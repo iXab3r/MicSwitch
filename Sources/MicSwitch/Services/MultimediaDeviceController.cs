@@ -84,23 +84,35 @@ namespace MicSwitch.Services
 
         public MMDevice MixerControl { get; private set; }
 
+        public bool IsConnected { get; [UsedImplicitly] private set; }
+
+        public bool SynchronizationIsEnabled { get; set; }
+
         [DoNotNotify]
         public float? Volume
         {
             get => MixerControl?.AudioEndpointVolume?.MasterVolumeLevelScalar;
             set
             {
-                if (value == null || MixerControl?.AudioEndpointVolume == null)
+                if (value == null || value.Equals(Volume))
                 {
                     return;
                 }
+                if (!SynchronizationIsEnabled)
+                {
+                    throw new InvalidOperationException($"Synchronization is disabled for device {DeviceId}");
+                }
                 
+                var endpoint = MixerControl?.AudioEndpointVolume;
+                if (endpoint == null)
+                {
+                    return;
+                }
+
                 Log.WithSuffix(DeviceId).Debug($"Setting volume to {value.Value} (current: {Volume})");
-                MixerControl.AudioEndpointVolume.MasterVolumeLevelScalar = value.Value;
+                endpoint.MasterVolumeLevelScalar = value.Value;
             }
         }
-
-        public bool IsConnected { get; [UsedImplicitly] private set; }
 
         public MMDeviceId DeviceId { get; set; }
         
@@ -110,7 +122,13 @@ namespace MicSwitch.Services
             get => MixerControl?.AudioEndpointVolume?.Mute;
             set
             {
-                if (value == null || MixerControl?.AudioEndpointVolume == null)
+                if (value == null || value.Equals(Mute))
+                {
+                    return;
+                }
+                
+                var endpoint = MixerControl?.AudioEndpointVolume;
+                if (endpoint == null)
                 {
                     return;
                 }
@@ -118,12 +136,12 @@ namespace MicSwitch.Services
                 if (value.Value)
                 {
                     Log.WithSuffix(DeviceId).Debug($"Disabling mic");
-                    MixerControl.AudioEndpointVolume.Mute = true;
+                    endpoint.Mute = true;
                 }
                 else
                 {
                     Log.WithSuffix(DeviceId).Debug($"Enabling mic");
-                    MixerControl.AudioEndpointVolume.Mute = false;
+                    endpoint.Mute = false;
                 }
             }
         }
@@ -132,6 +150,14 @@ namespace MicSwitch.Services
         {
             this.RaisePropertyChanged(nameof(Volume));
             this.RaisePropertyChanged(nameof(Mute));
+        }
+
+        protected override void FormatToString(ToStringBuilder builder)
+        {
+            base.FormatToString(builder);
+            builder.AppendParameter(nameof(DeviceId), DeviceId);
+            builder.AppendParameter(nameof(Volume), Volume);
+            builder.AppendParameter(nameof(Mute), Mute);
         }
     }
 }

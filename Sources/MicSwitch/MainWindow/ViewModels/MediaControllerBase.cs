@@ -24,6 +24,7 @@ internal abstract class MediaControllerBase<TConfig> : DisposableReactiveObjectW
         Binder.BindIf(x => x.VolumeControlIsEnabled, x => x.Volume).To(x => x.deviceController.Volume);
         
         Binder.Bind(x => x.DeviceId).To(x => x.deviceController.DeviceId);
+        Binder.Bind(x => x.VolumeControlIsEnabled).To(x => x.Controller.SynchronizationIsEnabled);
     }
 
     protected MediaControllerBase(
@@ -36,10 +37,10 @@ internal abstract class MediaControllerBase<TConfig> : DisposableReactiveObjectW
     {
         deviceProvider.Devices
             .ToObservableChangeSet()
-            .BindToCollection(out var microphones)
+            .BindToCollection(out var devices)
             .SubscribeToErrors(Log.HandleUiException)
             .AddTo(Anchors);
-        Devices = microphones;
+        Devices = devices;
         
         Controller = deviceController.AddTo(Anchors);
         this.deviceController = deviceController;
@@ -47,7 +48,7 @@ internal abstract class MediaControllerBase<TConfig> : DisposableReactiveObjectW
         this.hotkeyEditorFactory = hotkeyEditorFactory;
         this.hotkeyConfigProvider = hotkeyConfigProvider;
         this.uiScheduler = uiScheduler;
-        MuteMicrophoneCommand = CommandWrapper.Create<object>(MuteMicrophoneCommandExecuted);
+        MuteCommand = CommandWrapper.Create<object>(MuteMicrophoneCommandExecuted);
         Binder.Attach(this).AddTo(Anchors);
     }
     
@@ -61,7 +62,7 @@ internal abstract class MediaControllerBase<TConfig> : DisposableReactiveObjectW
     
     public IMMDeviceControllerEx Controller { get; }
     
-    public CommandWrapper MuteMicrophoneCommand { get; }
+    public CommandWrapper MuteCommand { get; }
     
     public bool? Mute { get; [UsedImplicitly] private set; }
 

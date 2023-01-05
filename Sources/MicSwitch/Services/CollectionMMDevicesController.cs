@@ -7,11 +7,11 @@ namespace MicSwitch.Services
         private static readonly Binder<CollectionMMDevicesController> Binder = new();
 
         private readonly IReadOnlyObservableCollection<IMMDeviceController> devices;
-        private readonly SharedResourceLatch updateLatch = new("Multiple devices update latch");
 
         static CollectionMMDevicesController()
         {
             Binder.Bind(x => x.devices.Any(y => y.IsConnected)).To(x => x.IsConnected);
+            Binder.BindAction(x => x.devices.ForEach(device => SetSynchronizationState(device, x.SynchronizationIsEnabled)));
         }
 
         public CollectionMMDevicesController(IReadOnlyObservableCollection<IMMDeviceController> devices)
@@ -37,48 +37,36 @@ namespace MicSwitch.Services
 
             this.WhenAnyValue(x => x.Volume)
                 .Skip(1)
+                .EnableIf(this.WhenAnyValue(y => y.SynchronizationIsEnabled))
                 .Subscribe(x =>
                 {
                     Log.Debug(() => $"Setting {nameof(Volume)} to {x} for {devices.Count} devices: {devices.DumpToString()}");
-                    using (updateLatch.Rent())
-                    {
-                        devices.ForEach(y => y.Volume = x);
-                    }
+                    devices.ForEach(y => y.Volume = x);
                 }, Log.HandleUiException)
                 .AddTo(Anchors);
-            
+
             this.WhenAnyValue(x => x.Mute)
                 .Skip(1)
+                .EnableIf(this.WhenAnyValue(y => y.SynchronizationIsEnabled))
                 .SubscribeSafe(x =>
                 {
                     Log.Debug(() => $"Setting {nameof(Mute)} to {x} for {devices.Count}");
-                    using (updateLatch.Rent())
-                    {
-                        devices.ForEach(y => y.Mute = x);
-                    }
+                    devices.ForEach(y => y.Mute = x);
                 }, Log.HandleUiException)
                 .AddTo(Anchors);
-            
+
             devices.ToObservableChangeSet()
                 .WhenPropertyChanged(x => x.Mute, notifyOnInitialValue: false)
                 .Do(x => Log.Debug(() => $"Device {x.Sender} {nameof(x.Sender.Mute)} has changed to {x.Value}"))
-                .Where(x => !updateLatch.IsBusy)
-                .Subscribe(x =>
-                {
-                    Mute = x.Value;
-                }, Log.HandleUiException)
+                .Subscribe(x => { Mute = x.Value; }, Log.HandleUiException)
                 .AddTo(Anchors);
 
             devices.ToObservableChangeSet()
                 .WhenPropertyChanged(x => x.Volume, notifyOnInitialValue: false)
                 .Do(x => Log.Debug(() => $"Device {x.Sender} {nameof(x.Sender.Volume)} has changed to {x.Value}"))
-                .Where(x => !updateLatch.IsBusy)
-                .Subscribe(x =>
-                {
-                    Volume = x.Value;
-                }, Log.HandleUiException)
+                .Subscribe(x => { Volume = x.Value; }, Log.HandleUiException)
                 .AddTo(Anchors);
-            
+
             Binder.Attach(this).AddTo(Anchors);
 
             Disposable.Create(() => Log.Debug(() => $"Controller of multiple devices was disposed, devices: {devices.DumpToString()}")).AddTo(Anchors);
@@ -89,7 +77,14 @@ namespace MicSwitch.Services
         public bool? Mute { get; set; }
 
         public float? Volume { get; set; }
-        
+
         public bool IsConnected { get; [UsedImplicitly] private set; }
+
+        public bool SynchronizationIsEnabled { get; set; }
+
+        private static void SetSynchronizationState(IMMDeviceController deviceController, bool value)
+        {
+            deviceController.SynchronizationIsEnabled = value;
+        }
     }
 }

@@ -9,10 +9,12 @@ namespace MicSwitch.Services
 
         static ComplexMMDeviceController()
         {
+            Binder.Bind(x => x.SynchronizationIsEnabled).To(x => x.ActiveController.SynchronizationIsEnabled);
         }
 
         public ComplexMMDeviceController(
             IFactory<MultimediaDeviceController, IMMDeviceProvider> multimediaControllerFactory,
+            IFactory<CollectionMMDevicesController, IReadOnlyObservableCollection<IMMDeviceController>> collectionControllerFactory,
             IMMDeviceProvider deviceProvider)
         {
             this.WhenAnyValue(x => x.DeviceId)
@@ -34,7 +36,7 @@ namespace MicSwitch.Services
                             .BindToCollection(out var sources)
                             .AddKey(x => x.DeviceId)
                             .AsObservableCache();
-                        return (IMMDeviceController)new CollectionMMDevicesController(sources);
+                        return (IMMDeviceController)collectionControllerFactory.Create(sources);
                     }
                     else
                     {
@@ -84,6 +86,8 @@ namespace MicSwitch.Services
         }
 
         public bool IsConnected => SafeRead(ActiveController, x => x.IsConnected);
+        
+        public bool SynchronizationIsEnabled { get; set; }
 
         public IMMDeviceController ActiveController { get; private set; }
 

@@ -6,6 +6,13 @@ namespace MicSwitch.MainWindow.ViewModels
 {
     internal sealed class OutputControllerViewModel : MediaControllerBase<MicSwitchVolumeControlConfig>, IOutputControllerViewModel
     {
+        private static readonly Binder<OutputControllerViewModel> Binder = new();
+
+        static OutputControllerViewModel()
+        {
+            Binder.Bind(x => x.IsEnabled).To(x => x.VolumeControlIsEnabled);
+        }
+
         public OutputControllerViewModel(
             IMMRenderDeviceProvider deviceProvider,
             IFactory<IMMDeviceControllerEx, IMMDeviceProvider> deviceControllerFactory,
@@ -100,7 +107,7 @@ namespace MicSwitch.MainWindow.ViewModels
                     }
 
                     DeviceId = line;
-                    MuteMicrophoneCommand.ResetError();
+                    MuteCommand.ResetError();
                 }, Log.HandleUiException)
                 .AddTo(Anchors);
 
@@ -117,6 +124,8 @@ namespace MicSwitch.MainWindow.ViewModels
                     hotkeyConfigProvider.Save(hotkeyConfig);
                 }, Log.HandleUiException)
                 .AddTo(Anchors);
+            
+            Binder.Attach(this).AddTo(Anchors);
         }
 
         public IHotkeyEditorViewModel HotkeyToggleMute { get; }

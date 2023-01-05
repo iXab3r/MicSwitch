@@ -11,5 +11,10 @@ namespace MicSwitch.Services
         float? Volume { get; set; }
         
         bool IsConnected { get; }
+        
+        /// <summary>
+        /// If true, controller will apply two-way sync of Volume, Mute and other state
+        /// </summary>
+        bool SynchronizationIsEnabled { get; set; }
     }
 }
