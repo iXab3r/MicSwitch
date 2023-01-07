@@ -1,3 +1,4 @@
+using AutoCompleteTextBox.Editors;
 using MicSwitch.Services;
 using PoeShared.Audio.Models;
 
@@ -23,4 +24,6 @@ internal interface IMediaController : IDisposableReactiveObject
     float? Volume { get; set; }
     
     CommandWrapper MuteCommand { get; }
+    
+    IComboSuggestionProvider KnownDevices { get; }
 }

@@ -358,13 +358,25 @@
                                  Columns="120,*" ChildMargin="5" RowHeight="50"
                                  Visibility="{Binding OutputController.IsEnabled, Converter={StaticResource TrueToVisibleFalseToCollapsedConverter}}">
                         <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Output device:" />
-                        <ComboBox st:StackPanel.Fill="Fill"
-                                  ItemsSource="{Binding OutputController.Devices}"
-                                  SelectedItem="{Binding OutputController.DeviceId}"
-                                  DisplayMemberPath="Name"
-                                  ToolTip="Output device"/>
+                        <st:StackPanel  st:AutoGrid.RowHeightOverride="40" Orientation="Horizontal" >
+                            <editors:AutoCompleteComboBox st:StackPanel.Fill="Fill"
+                                                          HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                                                          ToolTip="Output device"
+                                                          Provider="{Binding OutputController.KnownDevices}"
+                                                          Text="{Binding OutputController.DeviceId.Name, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                                          SelectedItem="{Binding OutputController.DeviceId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                <editors:AutoCompleteComboBox.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type models1:MMDeviceId}">
+                                        <TextBlock Text="{Binding Name}"/>
+                                    </DataTemplate>
+                                </editors:AutoCompleteComboBox.ItemTemplate>
+                            </editors:AutoCompleteComboBox>
+                            <TextBlock Style="{StaticResource WarningIconTextBlock}" Margin="2.5,0,0,0"
+                                       Visibility="{Binding OutputController.Controller.IsConnected, Converter={StaticResource TrueToCollapsedFalseToVisibleConverter}}"
+                                       ToolTip="Not connected" />
+                        </st:StackPanel>
                         <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="Output volume:" />
-                        <st:StackPanel VerticalAlignment="Center">
+                        <st:StackPanel VerticalAlignment="Center" IsEnabled="{Binding OutputController.Controller.IsConnected}">
                             <Slider Width="160"
                                     Value="{Binding OutputController.Volume}"
                                     Minimum="0" Maximum="1"

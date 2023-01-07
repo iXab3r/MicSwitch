@@ -1,4 +1,5 @@
-﻿using MicSwitch.MainWindow.Models;
+﻿using AutoCompleteTextBox.Editors;
+using MicSwitch.MainWindow.Models;
 using MicSwitch.Modularity;
 using MicSwitch.Services;
 using NAudio.CoreAudioApi;
@@ -37,6 +38,7 @@ internal abstract class MediaControllerBase<TConfig> : DisposableReactiveObjectW
     {
         deviceProvider.Devices
             .ToObservableChangeSet()
+            .ObserveOn(uiScheduler)
             .BindToCollection(out var devices)
             .SubscribeToErrors(Log.HandleUiException)
             .AddTo(Anchors);
@@ -49,6 +51,27 @@ internal abstract class MediaControllerBase<TConfig> : DisposableReactiveObjectW
         this.hotkeyConfigProvider = hotkeyConfigProvider;
         this.uiScheduler = uiScheduler;
         MuteCommand = CommandWrapper.Create<object>(MuteMicrophoneCommandExecuted);
+
+        deviceProvider.Devices
+            .ToObservableChangeSet()
+            .ObserveOn(uiScheduler)
+            .BindToCollection(out var knownDevices)
+            .Subscribe()
+            .AddTo(Anchors);
+        KnownDevices = new AutoCompleteSuggestionProvider<MMDeviceId>(knownDevices);
+
+        Observable.CombineLatest(
+                this.WhenAnyValue(x => x.DeviceId),
+                this.Devices.ToObservableChangeSet().CountIf(), (deviceId, devicesCount) => new {deviceId, devicesCount})
+            .Where(x => x.deviceId.IsEmpty && x.devicesCount > 0)
+            .Subscribe(() =>
+            {
+                var firstDevice = Devices.FirstOrDefault();
+                Log.Debug(() => $"Resetting device id to first device: {firstDevice}, known devices: {Devices.DumpToString()}");
+                DeviceId = firstDevice;
+            })
+            .AddTo(Anchors);
+        
         Binder.Attach(this).AddTo(Anchors);
     }
     
@@ -67,6 +90,8 @@ internal abstract class MediaControllerBase<TConfig> : DisposableReactiveObjectW
     public bool? Mute { get; [UsedImplicitly] private set; }
 
     public float? Volume { get; set; }
+    
+    public IComboSuggestionProvider KnownDevices { get; }
     
     protected IHotkeyEditorViewModel PrepareHotkey(
         string description,

@@ -77,6 +77,7 @@ namespace MicSwitch.MainWindow.ViewModels
 
             PrepareTracker(HotkeyMode.Hold, HotkeyVolumeDown)
                 .ObservableForProperty(x => x.IsActive, skipInitial: true)
+                .Where(x => Controller.IsConnected)
                 .SwitchIf(x => x.Value == true, x => Observable.Interval(TimeSpan.FromMilliseconds(10)), x => Observable.Empty<long>())
                 .SubscribeSafe(x =>
                 {
@@ -86,28 +87,6 @@ namespace MicSwitch.MainWindow.ViewModels
                     }
 
                     Controller.Volume = (float)Math.Max(0, Controller.Volume.Value - 0.01);
-                }, Log.HandleUiException)
-                .AddTo(Anchors);
-
-
-            Observable.Merge(
-                    hotkeyConfigProvider.ListenTo(x => x.DeviceId).ToUnit(),
-                    Devices.ToObservableChangeSet().ToUnit())
-                .Select(_ => hotkeyConfigProvider.ActualConfig.DeviceId)
-                .ObserveOn(uiScheduler)
-                .SubscribeSafe(configLineId =>
-                {
-                    Log.Debug($"Device line configuration changed, lineId: {configLineId}, known lines: {Devices.Dump()}");
-
-                    var line = Devices.FirstOrDefault(line => line.Equals(configLineId));
-                    if (line.IsEmpty)
-                    {
-                        Log.Debug($"Selecting first one of available microphone lines, known lines: {Devices.Dump()}");
-                        line = Devices.FirstOrDefault();
-                    }
-
-                    DeviceId = line;
-                    MuteCommand.ResetError();
                 }, Log.HandleUiException)
                 .AddTo(Anchors);
 
@@ -124,12 +103,22 @@ namespace MicSwitch.MainWindow.ViewModels
                     hotkeyConfigProvider.Save(hotkeyConfig);
                 }, Log.HandleUiException)
                 .AddTo(Anchors);
+        
+            hotkeyConfigProvider.ListenTo(x => x.DeviceId)
+                .SubscribeSafe(x =>
+                {
+                    Log.Debug($"Device line configuration changed, lineId: {x}, known lines: {Devices.Dump()}");
+                    DeviceId = x;
+                }, Log.HandleException)
+                .AddTo(Anchors);
             
             Binder.Attach(this).AddTo(Anchors);
         }
 
         public IHotkeyEditorViewModel HotkeyToggleMute { get; }
+        
         public IHotkeyEditorViewModel HotkeyMute { get; }
+        
         public IHotkeyEditorViewModel HotkeyUnmute { get; }
 
         public IHotkeyEditorViewModel HotkeyVolumeUp { get; }

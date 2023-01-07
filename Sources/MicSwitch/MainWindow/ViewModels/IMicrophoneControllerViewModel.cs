@@ -20,7 +20,5 @@ namespace MicSwitch.MainWindow.ViewModels
         IHotkeyEditorViewModel HotkeyPushToMute { get; }
         
         MicrophoneState InitialMicrophoneState { get; set; }
-        
-        IComboSuggestionProvider KnownDevices { get; set; }
     }
 }

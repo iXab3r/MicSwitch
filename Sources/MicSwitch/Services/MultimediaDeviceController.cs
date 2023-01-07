@@ -36,16 +36,7 @@ namespace MicSwitch.Services
                     }
                     else
                     {
-                        var description = new
-                        {
-                            mixer.ID,
-                            mixer.State,
-                            mixer.FriendlyName,
-                            mixer.DeviceFriendlyName,
-                            mixer.IconPath,
-                            AudioClientFormat = mixer.AudioClient?.MixFormat
-                        };
-                        Log.Info($"Successfully bound to line #{DeviceId}, volume: {Volume}, isOn: {Mute}, line: {description}");
+                        Log.Info($"Successfully bound to line #{DeviceId}, volume: {Volume}, isOn: {Mute}");
                     }
                 })
                 .Select(mixer => mixer != null

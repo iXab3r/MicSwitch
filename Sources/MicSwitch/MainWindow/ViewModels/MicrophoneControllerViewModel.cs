@@ -214,13 +214,6 @@ internal sealed class MicrophoneControllerViewModel : MediaControllerBase<MicSwi
                 x.Current.Mute = x.Previous.Mute;
             })
             .AddTo(Anchors);
-
-        deviceProvider.Devices.ToObservableChangeSet()
-            .ObserveOn(uiScheduler)
-            .BindToCollection(out var knownDevices)
-            .Subscribe()
-            .AddTo(Anchors);
-        KnownDevices = new AutoCompleteSuggestionProvider<MMDeviceId>(knownDevices);
         Binder.Attach(this).AddTo(Anchors);
     }
 
@@ -239,6 +232,4 @@ internal sealed class MicrophoneControllerViewModel : MediaControllerBase<MicSwi
     public IHotkeyEditorViewModel HotkeyPushToMute { get; }
 
     public MicrophoneState InitialMicrophoneState { get; set; }
-    
-    public IComboSuggestionProvider KnownDevices { get; set; }
 }
