@@ -25,12 +25,12 @@ namespace MicSwitch.Services
                     Log.Debug(() => $"New device {newDevice.DeviceId} detected in All devices mode, assigning following parameters: {new {Mute, VolumePercent = Volume}}");
                     if (Mute != null)
                     {
-                        newDevice.Mute = Mute;
+                        SetMuteSafe(Log, newDevice, Mute);
                     }
 
                     if (Volume != null)
                     {
-                        newDevice.Volume = Volume;
+                        SetVolumeSafe(Log, newDevice, Volume);
                     }
                 }).SubscribeToErrors(Log.HandleUiException)
                 .AddTo(Anchors);
@@ -38,20 +38,20 @@ namespace MicSwitch.Services
             this.WhenAnyValue(x => x.Volume)
                 .Skip(1)
                 .EnableIf(this.WhenAnyValue(y => y.SynchronizationIsEnabled))
-                .Subscribe(x =>
+                .Subscribe(volume =>
                 {
-                    Log.Debug(() => $"Setting {nameof(Volume)} to {x} for {devices.Count} devices: {devices.DumpToString()}");
-                    devices.ForEach(y => y.Volume = x);
+                    Log.Debug(() => $"Setting {nameof(Volume)} to {volume} for {devices.Count} devices: {devices.DumpToString()}");
+                    devices.ForEach(device => SetVolumeSafe(Log, device, volume));
                 }, Log.HandleUiException)
                 .AddTo(Anchors);
 
             this.WhenAnyValue(x => x.Mute)
                 .Skip(1)
                 .EnableIf(this.WhenAnyValue(y => y.SynchronizationIsEnabled))
-                .SubscribeSafe(x =>
+                .SubscribeSafe(mute =>
                 {
-                    Log.Debug(() => $"Setting {nameof(Mute)} to {x} for {devices.Count}");
-                    devices.ForEach(y => y.Mute = x);
+                    Log.Debug(() => $"Setting {nameof(Mute)} to {mute} for {devices.Count}");
+                    devices.ForEach(device => SetMuteSafe(Log, device, mute));
                 }, Log.HandleUiException)
                 .AddTo(Anchors);
 
@@ -85,6 +85,32 @@ namespace MicSwitch.Services
         private static void SetSynchronizationState(IMMDeviceController deviceController, bool value)
         {
             deviceController.SynchronizationIsEnabled = value;
+        }
+        
+        private static void SetVolumeSafe(IFluentLog log, IMMDeviceController deviceController, float? value)
+        {
+            try
+            {
+                log.Debug(() => $"Setting Volume to {value}, device: {deviceController}");
+                deviceController.Volume = value;
+            }
+            catch (Exception e)
+            {
+                log.Warn($"Failed to set Volume to {value}, device: {deviceController}");
+            }
+        }
+        
+        private static void SetMuteSafe(IFluentLog log, IMMDeviceController deviceController, bool? value)
+        {
+            try
+            {
+                log.Debug(() => $"Setting Mute to {value}, device: {deviceController}");
+                deviceController.Mute = value;
+            }
+            catch (Exception e)
+            {
+                log.Warn($"Failed to set Mute to {value}, device: {deviceController}");
+            }
         }
     }
 }
