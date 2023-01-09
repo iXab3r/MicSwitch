@@ -55,12 +55,15 @@ Also it supports configurable mute/unmute sounds(similar to TeamSpeak/Ventrilo) 
 * I am usually using [Jetbrains Rider](https://www.jetbrains.com/rider/ "Jetbrains Rider") so there MAY be some issues if you are using Microsoft Visual Studio, although I am trying to keep things compatible
 
 ### Build from command line
-1. git clone https://github.com/iXab3r/MicSwitch.git
-2. cd MicSwitch
-3. git submodule init (if you have error accessing DeploymentScripts repository simply ignore that submodule - it's used only to build/publish installer)
-5. git submodule update --checkout
-5. InitSymlinks.cmd
-6. dotnet build Sources/MicSwitch
+
+```bash
+git clone https://github.com/iXab3r/MicSwitch.git
+cd MicSwitch
+git submodule init # (if you have error accessing DeploymentScripts repository simply ignore that submodule - it's used only to build/publish installer)
+git submodule update --checkout
+InitSymlinks.cmd
+dotnet build Sources/MicSwitch
+```
 
 That's it. Portable version will be in **bin** folder. Framework-dependent version
 
@@ -70,7 +73,7 @@ Migrating to something cross-platform like Avalon, Xamarin is an option, but not
 
 Meanwhile you could take a look at
 ### MacOS
-**MuteKey** (thanks to benpeter for finding it): https://apps.apple.com/us/app/mutekey/id1509590766?mt=12
+**MuteKey** (thanks to @benpeter for finding it): https://apps.apple.com/us/app/mutekey/id1509590766?mt=12
 
 ### Linux
 ???
