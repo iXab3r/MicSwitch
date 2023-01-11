@@ -147,8 +147,22 @@ namespace MicSwitch.Services
         {
             base.FormatToString(builder);
             builder.AppendParameter(nameof(DeviceId), DeviceId);
-            builder.AppendParameter(nameof(Volume), Volume);
-            builder.AppendParameter(nameof(Mute), Mute);
+            try
+            {
+                builder.AppendParameter(nameof(Volume), Volume);
+            }
+            catch (Exception e)
+            {
+                builder.AppendParameter(nameof(Volume), $"Error: {e.Message}");
+            }
+            try
+            {
+                builder.AppendParameter(nameof(Mute), Mute);
+            }
+            catch (Exception e)
+            {
+                builder.AppendParameter(nameof(Mute), $"Error: {e.Message}");
+            }
         }
     }
 }
