@@ -23,6 +23,7 @@ namespace MicSwitch.Services
                 .OnItemAdded(newDevice =>
                 {
                     Log.Debug(() => $"New device {newDevice.DeviceId} detected in All devices mode, assigning following parameters: {new {Mute, VolumePercent = Volume}}");
+                    newDevice.SynchronizationIsEnabled = SynchronizationIsEnabled;
                     if (Mute != null)
                     {
                         SetMuteSafe(Log, newDevice, Mute);

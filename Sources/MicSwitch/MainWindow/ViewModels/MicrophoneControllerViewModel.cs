@@ -189,7 +189,7 @@ internal sealed class MicrophoneControllerViewModel : MediaControllerBase<MicSwi
             }, Log.HandleUiException)
             .AddTo(Anchors);
 
-        if (configProvider.ActualConfig.VolumeControlEnabled && configProvider.ActualConfig.Volume != null)
+        if (VolumeControlIsEnabled && configProvider.ActualConfig.Volume != null)
         {
             Log.Debug(() => $"Setting initial Volume of {Controller} to {configProvider.ActualConfig.Volume}");
             Controller.Volume = configProvider.ActualConfig.Volume;
