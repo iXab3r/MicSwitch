@@ -57,10 +57,11 @@ Also it supports configurable mute/unmute sounds(similar to TeamSpeak/Ventrilo) 
 ### Build from command line
 1. git clone https://github.com/iXab3r/MicSwitch.git
 2. cd MicSwitch
-3. git submodule init (if you have error accessing DeploymentScripts repository simply ignore that submodule - it's used only to build/publish installer)
+3. remove submodule DeploymentTools - MicSwitch's installer built and oublished as a part of another project and it's not included into this repository
+4. git submodule init 
 5. git submodule update --checkout
-5. InitSymlinks.cmd
-6. dotnet build Sources/MicSwitch
+6. InitSymlinks.cmd
+7. dotnet build Sources/MicSwitch
 
 That's it. Portable version will be in **bin** folder. Framework-dependent version
 
